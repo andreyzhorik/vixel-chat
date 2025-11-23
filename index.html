@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Vixel Chat</title>
+<meta name="description" content="Vixel Chat - prototype" />
+<!-- Minimal CSP -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; connect-src 'self' https:; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
+<style>
+  :root{
+    --bg:#000000;
+    --panel:#0a0000;
+    --accent1:#3D0000;
+    --accent2:#950101;
+    --accent3:#FF0000;
+    --text:#f5f5f5;
+    --muted:#aaaaaa;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#100);}
+  body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue";color:var(--text);display:flex;align-items:center;justify-content:center;padding:18px;}
+  .app{width:100%;max-width:1100px;height:80vh;display:grid;grid-template-columns:3fr 1fr;gap:18px;}
+  .card{background:linear-gradient(180deg,var(--panel),#120000);border-radius:14px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,0.7);display:flex;flex-direction:column;}
+  .header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(90deg,var(--accent1),var(--accent3));display:flex;align-items:center;justify-content:center;font-weight:700}
+  .title{font-size:18px}
+  .chat{flex:1;overflow:auto;padding:8px;border-radius:8px;background:rgba(0,0,0,0.2)}
+  .msg{margin:6px 0;padding:8px;border-radius:8px;background:rgba(255,255,255,0.03);max-width:84%;}
+  .msg .who{font-weight:700;font-size:13px;color:var(--accent3)}
+  .msg .text{margin-top:6px;white-space:pre-wrap}
+  .inputRow{display:flex;gap:8px;padding-top:10px}
+  input[type="text"],textarea{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:8px;border-radius:8px;outline:none}
+  .players{display:flex;flex-direction:column;gap:8px;height:100%}
+  .players .top{display:flex;justify-content:space-between;align-items:center}
+  .playerList{overflow:auto;flex:1;padding:6px;background:rgba(0,0,0,0.12);border-radius:8px}
+  .player{display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .online{background:linear-gradient(90deg,var(--accent2),var(--accent3))}
+  .offline{background:#333}
+  .small{font-size:13px;color:var(--muted)}
+  .btn{background:linear-gradient(90deg,var(--accent2),var(--accent3));padding:8px 10px;border-radius:8px;border:none;color:white;cursor:pointer}
+  .muted{color:var(--muted);font-size:13px}
+  @media (max-width:800px){.app{grid-template-columns:1fr;grid-auto-rows:1fr;height:92vh}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="card">
+    <div class="header">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vixel Chat</div>
+        <div class="small">colors: #000000 #3D0000 #950101 #FF0000</div>
+      </div>
+      <div style="margin-left:auto" id="statusBadge" class="muted">not connected</div>
+    </div>
+
+    <div id="chat" class="chat" aria-live="polite"></div>
+
+    <div class="inputRow">
+      <input id="messageInput" type="text" placeholder="Type a message..." />
+      <button id="sendBtn" class="btn">send</button>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+      <input id="nameInput" placeholder="your name" style="flex:1" />
+      <button id="loginBtn" class="btn">set name</button>
+    </div>
+  </div>
+
+  <div class="card players">
+    <div class="top">
+      <div><strong>Players</strong></div>
+      <div class="small" id="onlineCount">0 online</div>
+    </div>
+    <div class="playerList" id="playerList"></div>
+    <div style="margin-top:10px" class="small muted">Presence updates every 8s. Messages poll every 2s.</div>
+  </div>
+</div>
+
+<script>
+/* CONFIG - set your deployed worker URL here */
+const WORKER_URL = "https://vixel-chat.mrviktor2426.workers.dev/"; // <<< CHANGE THIS
+
+/* state */
+let token = localStorage.getItem('vixel_token') || null;
+let username = localStorage.getItem('vixel_user') || null;
+const POLL_MS = 2000;
+const PRESENCE_MS = 8000;
+let lastMsgId = 0;
+
+/* helpers */
+function escapeHtml(s){
+  if(!s) return '';
+  return s.replace(/[&<>"'`=\/]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;","/":"&#x2F;","`":"&#x60;","=":"&#x3D;"}[c]; });
+}
+function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!==undefined) e.innerHTML=txt; return e; }
+
+/* UI */
+const chatEl = document.getElementById('chat');
+const playerListEl = document.getElementById('playerList');
+const onlineCountEl = document.getElementById('onlineCount');
+const statusBadge = document.getElementById('statusBadge');
+const msgInput = document.getElementById('messageInput');
+const sendBtn = document.getElementById('sendBtn');
+const nameInput = document.getElementById('nameInput');
+const loginBtn = document.getElementById('loginBtn');
+
+function setStatus(s){ statusBadge.textContent = s; }
+
+function renderMessages(messages){
+  chatEl.innerHTML = '';
+  messages.forEach(m=>{
+    const mdiv = el('div','msg');
+    mdiv.innerHTML = `<div class="who">${escapeHtml(m.user)}</div><div class="text">${escapeHtml(m.text)}</div><div class="small muted" style="margin-top:6px">${new Date(m.ts).toLocaleString()}</div>`;
+    chatEl.appendChild(mdiv);
+  });
+  if(messages.length) chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function renderPlayers(list){
+  playerListEl.innerHTML = '';
+  const now = Date.now();
+  let online=0;
+  list.forEach(p=>{
+    const row = el('div','player');
+    const dot = el('div','dot ' + ( (now - p.lastSeen) < 25000 ? 'online' : 'offline' ));
+    if((now - p.lastSeen) < 25000) online++;
+    row.appendChild(dot);
+    row.appendChild(el('div','','<strong>' + escapeHtml(p.name) + '</strong>'));
+    row.appendChild(el('div','small muted', (new Date(p.lastSeen)).toLocaleTimeString()));
+    playerListEl.appendChild(row);
+  });
+  onlineCountEl.textContent = `${online} online`;
+}
+
+/* API calls */
+async function api(path, method='GET', body=null){
+  const headers = {'Accept':'application/json'};
+  if(token) headers['Authorization'] = 'Bearer ' + token;
+  if(body) headers['Content-Type'] = 'application/json';
+  const res = await fetch(WORKER_URL + path, {method, headers, body: body ? JSON.stringify(body) : undefined});
+  if(!res.ok) {
+    throw new Error('api error ' + res.status + ' ' + await res.text());
+  }
+  return res.json();
+}
+
+/* flows */
+async function setName(){
+  const name = (nameInput.value || '').trim();
+  if(!name) { alert('pick a name'); return; }
+  try{
+    const r = await api('/register', 'POST', {name});
+    token = r.token;
+    username = name;
+    localStorage.setItem('vixel_token', token);
+    localStorage.setItem('vixel_user', username);
+    setStatus('connected as ' + username);
+    nameInput.value = '';
+  }catch(e){
+    alert('register failed: ' + e.message);
+  }
+}
+
+async function sendMessage(){
+  const text = (msgInput.value || '').trim();
+  if(!text) return;
+  try{
+    await api('/send', 'POST', {text});
+    msgInput.value = '';
+    await fetchMessages(true);
+  }catch(e){
+    console.error(e);
+    alert('send failed: ' + e.message);
+  }
+}
+
+async function fetchMessages(force=false){
+  try{
+    const r = await api('/messages?after=' + lastMsgId);
+    if(r.messages && r.messages.length){
+      lastMsgId = r.messages[r.messages.length - 1].id;
+      renderMessages(r.all || r.messages);
+    }
+  }catch(e){
+    console.warn('fetch messages fail', e);
+  }
+}
+
+async function heartbeat(){
+  try{
+    await api('/presence', 'POST', {});
+  }catch(e){
+    console.warn('heartbeat fail', e);
+  }
+}
+
+async function fetchPlayers(){
+  try{
+    const r = await api('/players');
+    renderPlayers(r.players || []);
+  }catch(e){
+    console.warn('players fail', e);
+  }
+}
+
+/* polling */
+setInterval(async ()=>{ await fetchMessages(); }, POLL_MS);
+setInterval(async ()=>{ await heartbeat(); await fetchPlayers(); }, PRESENCE_MS);
+
+/* events */
+loginBtn.onclick = setName;
+sendBtn.onclick = sendMessage;
+msgInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') sendMessage(); });
+
+/* init */
+(async function init(){
+  if(token && username){
+    setStatus('connected as ' + username);
+    try{ await heartbeat(); await fetchMessages(); await fetchPlayers(); }catch(e){}
+  } else {
+    setStatus('not logged');
+  }
+})();
+</script>
+</body>
+</html>
