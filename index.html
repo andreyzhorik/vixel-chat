@@ -86,6 +86,16 @@
     border-radius:8px;
     background:rgba(255,255,255,0.05);
     max-width:84%;
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  .msg img{
+    width:24px;
+    height:24px;
+    border-radius:6px;
+    object-fit:cover;
   }
 
   .msg .who{
@@ -129,6 +139,13 @@
     gap:8px;
     padding:6px;
     border-radius:8px;
+  }
+
+  .player img{
+    width:24px;
+    height:24px;
+    border-radius:6px;
+    object-fit:cover;
   }
 
   .dot{
@@ -268,8 +285,11 @@ async function fetchMessages(){
       lastMsgId = r.messages[r.messages.length-1].id;
       chatEl.innerHTML = r.all.map(m => `
         <div class="msg">
-          <div class="who">${escapeHtml(m.user)}</div>
-          <div>${escapeHtml(m.text)}</div>
+          <img src="${m.avatar}" alt="avatar">
+          <div>
+            <div class="who">${escapeHtml(m.user)}</div>
+            <div>${escapeHtml(m.text)}</div>
+          </div>
         </div>
       `).join("");
       chatEl.scrollTop = chatEl.scrollHeight;
@@ -290,6 +310,7 @@ async function fetchPlayers(){
       return `
         <div class="player">
           <div class="dot ${live?"online":"offline"}"></div>
+          <img src="${p.avatar}" alt="avatar">
           <strong>${escapeHtml(p.name)}</strong>
         </div>
       `;
