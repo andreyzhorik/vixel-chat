@@ -4,44 +4,41 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Vixel Chat</title>
-<meta name="description" content="Vixel Chat - prototype" />
-<!-- Minimal CSP -->
-<meta http-equiv="Content-Security-Policy"
-      content="default-src 'self'; connect-src 'self' https:; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
 <style>
-  :root{
-    --bg:#000000;
-    --panel:#0a0000;
-    --accent1:#3D0000;
-    --accent2:#950101;
-    --accent3:#FF0000;
-    --text:#f5f5f5;
-    --muted:#aaaaaa;
-  }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#100);}
-  body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue";color:var(--text);display:flex;align-items:center;justify-content:center;padding:18px;}
-  .app{width:100%;max-width:1100px;height:80vh;display:grid;grid-template-columns:3fr 1fr;gap:18px;}
-  .card{background:linear-gradient(180deg,var(--panel),#120000);border-radius:14px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,0.7);display:flex;flex-direction:column;}
-  .header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-  .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(90deg,var(--accent1),var(--accent3));display:flex;align-items:center;justify-content:center;font-weight:700}
-  .title{font-size:18px}
-  .chat{flex:1;overflow:auto;padding:8px;border-radius:8px;background:rgba(0,0,0,0.2)}
-  .msg{margin:6px 0;padding:8px;border-radius:8px;background:rgba(255,255,255,0.03);max-width:84%;}
-  .msg .who{font-weight:700;font-size:13px;color:var(--accent3)}
-  .msg .text{margin-top:6px;white-space:pre-wrap}
-  .inputRow{display:flex;gap:8px;padding-top:10px}
-  input[type="text"],textarea{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:8px;border-radius:8px;outline:none}
-  .players{display:flex;flex-direction:column;gap:8px;height:100%}
-  .players .top{display:flex;justify-content:space-between;align-items:center}
-  .playerList{overflow:auto;flex:1;padding:6px;background:rgba(0,0,0,0.12);border-radius:8px}
-  .player{display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px}
-  .dot{width:10px;height:10px;border-radius:50%}
-  .online{background:linear-gradient(90deg,var(--accent2),var(--accent3))}
-  .offline{background:#333}
-  .small{font-size:13px;color:var(--muted)}
-  .btn{background:linear-gradient(90deg,var(--accent2),var(--accent3));padding:8px 10px;border-radius:8px;border:none;color:white;cursor:pointer}
-  .muted{color:var(--muted);font-size:13px}
-  @media (max-width:800px){.app{grid-template-columns:1fr;grid-auto-rows:1fr;height:92vh}}
+:root{
+  --bg:#000000;
+  --panel:#0a0000;
+  --accent1:#3D0000;
+  --accent2:#950101;
+  --accent3:#FF0000;
+  --text:#f5f5f5;
+  --muted:#aaaaaa;
+}
+html,body{height:100%;margin:0;background:radial-gradient(circle at 10% 10%, rgba(255,0,0,0.06), transparent 8%), linear-gradient(180deg,var(--bg),#060000);}
+body{font-family:Inter,system-ui,Segoe UI,Roboto; color:var(--text);display:flex;align-items:center;justify-content:center;padding:18px;}
+.app{width:100%;max-width:1100px;height:88vh;display:grid;grid-template-columns:3fr 1fr;gap:18px;}
+.card{background:linear-gradient(180deg,var(--panel),#120000);border-radius:14px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,0.7);display:flex;flex-direction:column;}
+.header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(90deg,var(--accent1),var(--accent3));display:flex;align-items:center;justify-content:center;font-weight:700}
+.title{font-size:18px}
+.chat{flex:1;overflow:auto;padding:12px;border-radius:8px;background:rgba(0,0,0,0.2);display:flex;flex-direction:column;gap:8px}
+.msg{padding:10px;border-radius:10px;background:linear-gradient(90deg, rgba(255,0,0,0.05), rgba(255,255,255,0.01));max-width:78%;}
+.msg .who{font-weight:700;font-size:13px;color:var(--accent3)}
+.msg .text{margin-top:8px;white-space:pre-wrap}
+.inputRow{display:flex;gap:8px;padding-top:10px}
+input[type="text"],textarea,select{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:8px;border-radius:8px;outline:none}
+.players{display:flex;flex-direction:column;gap:8px;height:100%}
+.playerList{overflow:auto;flex:1;padding:6px;background:rgba(0,0,0,0.12);border-radius:8px}
+.player{display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px}
+.dot{width:10px;height:10px;border-radius:50%}
+.online{background:linear-gradient(90deg,var(--accent2),var(--accent3))}
+.offline{background:#333}
+.small{font-size:13px;color:var(--muted)}
+.btn{background:linear-gradient(90deg,var(--accent2),var(--accent3));padding:8px 10px;border-radius:8px;border:none;color:white;cursor:pointer}
+.avatar{width:36px;height:36px;border-radius:6px;overflow:hidden}
+.controls{display:flex;gap:8px;align-items:center}
+.meta{display:flex;gap:6px;align-items:center}
+.badge{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -53,7 +50,13 @@
         <div class="title">Vixel Chat</div>
         <div class="small">colors: #000000 #3D0000 #950101 #FF0000</div>
       </div>
-      <div style="margin-left:auto" id="statusBadge" class="muted">not connected</div>
+      <div style="margin-left:auto" id="statusBadge" class="small">not connected</div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <input id="roomInput" placeholder="room (main)" style="flex:1" />
+      <input id="roomPass" placeholder="room password (optional)" />
+      <button id="joinBtn" class="btn">join</button>
     </div>
 
     <div id="chat" class="chat" aria-live="polite"></div>
@@ -62,14 +65,17 @@
       <input id="messageInput" type="text" placeholder="Type a message..." />
       <button id="sendBtn" class="btn">send</button>
     </div>
+
     <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
       <input id="nameInput" placeholder="your name" style="flex:1" />
+      <input id="avatarInput" placeholder="avatar url (optional)" />
       <button id="loginBtn" class="btn">set name</button>
     </div>
+    <div style="margin-top:6px" class="small muted">Tip: use a room password to enable client-side encryption for that room.</div>
   </div>
 
   <div class="card players">
-    <div class="top">
+    <div class="top" style="display:flex;justify-content:space-between;align-items:center">
       <div><strong>Players</strong></div>
       <div class="small" id="onlineCount">0 online</div>
     </div>
@@ -79,149 +85,205 @@
 </div>
 
 <script>
-/* CONFIG /
-const WORKER_URL = "https://vixel-chat.mrviktor2426.workers.dev";
-
-/* state */
-let token = localStorage.getItem('vixel_token') || null;
-let username = localStorage.getItem('vixel_user') || null;
+/* CONFIG */
+const WORKER_URL = 'https://vixel-chat.mrviktor2426.workers.dev';
 const POLL_MS = 2000;
 const PRESENCE_MS = 8000;
-let lastMsgId = 0;
+const OFFLINE_MS = 25000;
+let token = localStorage.getItem('vixel_token') || null;
+let username = localStorage.getItem('vixel_user') || null;
+let room = localStorage.getItem('vixel_room') || 'main';
+let roomKey = null; // CryptoKey when using password
+let lastMsgId = '';
+let typingTimeout = null;
+let typingSent = false;
 
 /* helpers */
-function escapeHtml(s){
-  if(!s) return '';
-  return s.replace(/[&<>"'`=\/]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;","/":"&#x2F;","`":"&#x60;","=":"&#x3D;"}[c]; });
-}
-function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!==undefined) e.innerHTML=txt; return e; }
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!==undefined) e.innerHTML=html; return e; }
+function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>"'`=\/]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;","/":"&#x2F;","`":"&#x60;","=":"&#x3D;"}[c])); }
+function setStatus(s){ document.getElementById('statusBadge').textContent = s; }
 
-/* UI */
+/* crypto helpers (AES-GCM with PBKDF2) */
+async function deriveKeyFromPassword(pw, room) {
+  const enc = new TextEncoder();
+  const salt = enc.encode('vixel:' + room);
+  const baseKey = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt','decrypt']
+  );
+  return key;
+}
+async function encryptText(key, plaintext) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const ct = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, enc.encode(plaintext));
+  const combined = new Uint8Array(iv.byteLength + ct.byteLength);
+  combined.set(iv,0); combined.set(new Uint8Array(ct), iv.byteLength);
+  return btoa(String.fromCharCode(...combined));
+}
+async function decryptText(key, b64) {
+  try {
+    const data = Uint8Array.from(atob(b64), c=>c.charCodeAt(0));
+    const iv = data.slice(0,12);
+    const ct = data.slice(12);
+    const dec = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, key, ct);
+    return new TextDecoder().decode(dec);
+  } catch(e) { return null; }
+}
+
+/* UI refs */
 const chatEl = document.getElementById('chat');
 const playerListEl = document.getElementById('playerList');
 const onlineCountEl = document.getElementById('onlineCount');
-const statusBadge = document.getElementById('statusBadge');
 const msgInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
 const nameInput = document.getElementById('nameInput');
+const avatarInput = document.getElementById('avatarInput');
 const loginBtn = document.getElementById('loginBtn');
+const roomInput = document.getElementById('roomInput');
+const roomPass = document.getElementById('roomPass');
+const joinBtn = document.getElementById('joinBtn');
 
-function setStatus(s){ statusBadge.textContent = s; }
-
+/* render */
 function renderMessages(messages){
   chatEl.innerHTML = '';
   messages.forEach(m=>{
-    const mdiv = el('div','msg');
-    mdiv.innerHTML = `<div class="who">${escapeHtml(m.user)}</div><div class="text">${escapeHtml(m.text)}</div><div class="small muted" style="margin-top:6px">${new Date(m.ts).toLocaleString()}</div>`;
-    chatEl.appendChild(mdiv);
+    const md = el('div','msg');
+    const who = `<div class="who"><img class="avatar" src="${escapeHtml(m.avatar||'')}" style="width:20px;height:20px;vertical-align:middle;margin-right:8px;border-radius:4px">${escapeHtml(m.user)}</div>`;
+    md.innerHTML = who + `<div class="text">${escapeHtml(m.text || '')}</div><div class="small badge" style="margin-top:6px">${new Date(m.ts).toLocaleTimeString()}</div>`;
+    chatEl.appendChild(md);
   });
   if(messages.length) chatEl.scrollTop = chatEl.scrollHeight;
 }
-
 function renderPlayers(list){
   playerListEl.innerHTML = '';
   const now = Date.now();
   let online=0;
   list.forEach(p=>{
     const row = el('div','player');
-    const dot = el('div','dot ' + ( (now - p.lastSeen) < 25000 ? 'online' : 'offline' ));
-    if((now - p.lastSeen) < 25000) online++;
+    const dot = el('div','dot ' + ((now - p.lastSeen) < OFFLINE_MS ? 'online' : 'offline'));
+    if((now - p.lastSeen) < OFFLINE_MS) online++;
     row.appendChild(dot);
-    row.appendChild(el('div','','<strong>' + escapeHtml(p.name) + '</strong>'));
-    row.appendChild(el('div','small muted', (new Date(p.lastSeen)).toLocaleTimeString()));
+    const name = el('div','','<strong>' + escapeHtml(p.name) + '</strong>');
+    const av = el('img','avatar'); av.src = p.avatar || '';
+    row.appendChild(av);
+    row.appendChild(name);
+    row.appendChild(el('div','small', (new Date(p.lastSeen)).toLocaleTimeString()));
     playerListEl.appendChild(row);
   });
   onlineCountEl.textContent = `${online} online`;
 }
 
-/* API calls */
+/* API */
 async function api(path, method='GET', body=null){
-  const headers = {'Accept':'application/json'};
-  if(token) headers['Authorization'] = 'Bearer ' + token;
-  if(body) headers['Content-Type'] = 'application/json';
-  const res = await fetch(WORKER_URL + path, {method, headers, body: body ? JSON.stringify(body) : undefined});
-  if(!res.ok) {
-    throw new Error('api error ' + res.status + ' ' + await res.text());
-  }
+  const headers = { 'Accept':'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  if (body) headers['Content-Type'] = 'application/json';
+  const res = await fetch(WORKER_URL + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 /* flows */
 async function setName(){
   const name = (nameInput.value || '').trim();
-  if(!name) { alert('pick a name'); return; }
-  try{
-    const r = await api('/register', 'POST', {name});
-    token = r.token;
-    username = name;
-    localStorage.setItem('vixel_token', token);
-    localStorage.setItem('vixel_user', username);
-    setStatus('connected as ' + username);
-    nameInput.value = '';
-  }catch(e){
-    alert('register failed: ' + e.message);
-  }
+  const av = (avatarInput.value || '').trim();
+  if (!name) return alert('pick a name');
+  const r = await api('/register','POST',{ name, avatar: av || null });
+  token = r.token;
+  username = name;
+  localStorage.setItem('vixel_token', token);
+  localStorage.setItem('vixel_user', username);
+  setStatus('connected as ' + username);
+  nameInput.value = ''; avatarInput.value = '';
+  await heartbeat(); await fetchPlayers(); await fetchMessages(true);
 }
-
 async function sendMessage(){
-  const text = (msgInput.value || '').trim();
-  if(!text) return;
-  try{
-    await api('/send', 'POST', {text});
-    msgInput.value = '';
-    await fetchMessages(true);
-  }catch(e){
-    console.error(e);
-    alert('send failed: ' + e.message);
+  let text = (msgInput.value || '').trim();
+  if (!text) return;
+  // client throttle (extra)
+  sendBtn.disabled = true; setTimeout(()=>sendBtn.disabled=false, 600);
+  const payload = { room, text, encrypted: false };
+  if (roomKey) {
+    payload.text = await encryptText(roomKey, text);
+    payload.encrypted = true;
   }
+  await api('/send','POST', payload);
+  msgInput.value = '';
+  await fetchMessages(true);
 }
-
 async function fetchMessages(force=false){
-  try{
-    const r = await api('/messages?after=' + lastMsgId);
-    if(r.messages && r.messages.length){
+  try {
+    const r = await api('/messages?room=' + encodeURIComponent(room) + '&after=' + encodeURIComponent(lastMsgId || ''));
+    if (r.messages && r.messages.length){
       lastMsgId = r.messages[r.messages.length - 1].id;
+      // decrypt if needed
+      for (let m of r.messages) {
+        if (m.encrypted && roomKey) {
+          const dec = await decryptText(roomKey, m.text);
+          m.text = dec === null ? '[cannot decrypt]' : dec;
+        }
+      }
       renderMessages(r.all || r.messages);
     }
-  }catch(e){
-    console.warn('fetch messages fail', e);
-  }
+  } catch(e) { console.warn('fetch fail', e); }
 }
-
 async function heartbeat(){
-  try{
-    await api('/presence', 'POST', {});
-  }catch(e){
-    console.warn('heartbeat fail', e);
-  }
+  if (!token) return;
+  try { await api('/presence','POST',{}); } catch(e){ console.warn('hb',e); }
 }
-
 async function fetchPlayers(){
-  try{
-    const r = await api('/players');
-    renderPlayers(r.players || []);
-  }catch(e){
-    console.warn('players fail', e);
-  }
+  try { const r = await api('/players'); renderPlayers(r.players || []); } catch(e){ console.warn('players', e); }
 }
 
-/* polling */
-setInterval(async ()=>{ await fetchMessages(); }, POLL_MS);
-setInterval(async ()=>{ await heartbeat(); await fetchPlayers(); }, PRESENCE_MS);
+/* typing */
+async function sendTyping(isTyping){
+  if (!token) return;
+  try { await api('/typing','POST',{room, typing:isTyping}); } catch(e){ /* ignore */ }
+}
+
+/* join room & room password */
+async function joinRoom(){
+  room = (roomInput.value || 'main').trim();
+  localStorage.setItem('vixel_room', room);
+  const pass = (roomPass.value || '').trim();
+  if (pass) {
+    roomKey = await deriveKeyFromPassword(pass, room);
+    setStatus(`${username||'anon'} @ ${room} (encrypted)`);
+  } else {
+    roomKey = null;
+    setStatus(`${username||'anon'} @ ${room}`);
+  }
+  lastMsgId = '';
+  await fetchMessages(true);
+}
 
 /* events */
 loginBtn.onclick = setName;
 sendBtn.onclick = sendMessage;
-msgInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') sendMessage(); });
+msgInput.addEventListener('keydown', (e)=>{ if (e.key==='Enter') sendMessage(); });
+msgInput.addEventListener('input', ()=>{
+  if (!typingSent) { sendTyping(true); typingSent=true; }
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(()=>{ sendTyping(false); typingSent=false; }, 1500);
+});
+joinBtn.onclick = joinRoom;
+
+/* polling */
+setInterval(fetchMessages, POLL_MS);
+setInterval(async ()=>{ await heartbeat(); await fetchPlayers(); }, PRESENCE_MS);
 
 /* init */
 (async function init(){
-  if(token && username){
-    setStatus('connected as ' + username);
-    try{ await heartbeat(); await fetchMessages(); await fetchPlayers(); }catch(e){}
-  } else {
-    setStatus('not logged');
-  }
+  roomInput.value = room;
+  if (token && username) setStatus('connected as ' + username);
+  else setStatus('not logged');
+  await fetchPlayers();
+  await fetchMessages();
 })();
 </script>
 </body>
