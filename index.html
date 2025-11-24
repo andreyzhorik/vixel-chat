@@ -176,7 +176,7 @@
 
     <div class="header">
       <div class="logo">
-        <img src="https://api.dicebear.com/6.x/pixel-art/svg?seed=Vixel&backgroundType=gradient&colors=000000,3D0000,950101,FF0000">
+        <img src="https://raw.githubusercontent.com/mrviktor2426/vixel-assets/main/logo.png" alt="Logo">
       </div>
       <div>
         <div class="title">Vixel Chat</div>
@@ -283,15 +283,16 @@ async function fetchMessages(){
     const r = await API("/messages?after="+lastMsgId);
     if(r.messages?.length){
       lastMsgId = r.messages[r.messages.length-1].id;
-      chatEl.innerHTML = r.all.map(m => `
-        <div class="msg">
-          <img src="${m.avatar}" alt="avatar">
-          <div>
-            <div class="who">${escapeHtml(m.user)}</div>
-            <div>${escapeHtml(m.text)}</div>
-          </div>
-        </div>
-      `).join("");
+chatEl.innerHTML = r.all.map(m => `
+  <div class="msg">
+    <img src="${m.avatar || 'https://api.dicebear.com/6.x/pixel-art/svg?seed=Unknown&backgroundType=gradient&colors=000000,3D0000,950101,FF0000'}" alt="avatar">
+    <div>
+      <div class="who">${escapeHtml(m.user)}</div>
+      <div>${escapeHtml(m.text)}</div>
+    </div>
+  </div>
+`).join("");
+
       chatEl.scrollTop = chatEl.scrollHeight;
     }
   }catch(e){}
