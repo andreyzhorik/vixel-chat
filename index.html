@@ -6,165 +6,145 @@
 <title>Vixel Chat</title>
 
 <style>
-  :root{
-    --bg:#000000;
-    --panel:#150000;
-    --accent1:#5A0000;
-    --accent2:#C00000;
-    --accent3:#FF2A2A;
-    --text:#ffffff;
-    --muted:#bbbbbb;
-  }
-
-  html,body{
-    height:100%;margin:0;
-    background:linear-gradient(180deg,var(--bg),#1b0000);
-  }
-
-  body{
-    font-family:Inter,system-ui;
-    color:var(--text);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:18px;
-  }
-
-  .app{
-    width:100%;
-    max-width:1100px;
-    height:80vh;
-    display:grid;
-    grid-template-columns:3fr 1fr;
-    gap:18px;
-  }
-
-  .card{
-    background:linear-gradient(180deg,var(--panel),#220000);
-    border-radius:14px;
-    padding:12px;
-    box-shadow:0 8px 30px rgba(0,0,0,0.7);
-    display:flex;
-    flex-direction:column;
-  }
-
-  .header{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:8px;
-  }
-
-  .logo{
-    width:52px;
-    height:52px;
-    border-radius:10px;
-    overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .logo img{
-    width:100%;
-    height:100%;
-    object-fit:contain;
-  }
-
-  .title{font-size:20px;}
-
-  .chat{
-    flex:1;
-    overflow:auto;
-    padding:8px;
-    border-radius:8px;
-    background:rgba(0,0,0,0.25);
-  }
-
-  .msg{
-    margin:6px 0;
-    padding:8px;
-    border-radius:8px;
-    background:rgba(255,255,255,0.05);
-    max-width:84%;
-    display:flex;
-    gap:8px;
-    align-items:center;
-  }
-
-  .msg img{
-    width:24px;
-    height:24px;
-    border-radius:6px;
-    object-fit:cover;
-  }
-
-  .msg .who{
-    font-weight:700;
-    color:var(--accent3);
-  }
-
-  .inputRow{
-    display:flex;
-    gap:8px;
-    padding-top:10px;
-  }
-
-  input, textarea{
-    background:transparent;
-    border:1px solid rgba(255,255,255,0.15);
-    color:var(--text);
-    padding:8px;
-    border-radius:8px;
-    outline:none;
-  }
-
-  .players{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    height:100%;
-  }
-
-  .playerList{
-    overflow:auto;
-    flex:1;
-    padding:6px;
-    background:rgba(0,0,0,0.18);
-    border-radius:8px;
-  }
-
-  .player{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:6px;
-    border-radius:8px;
-  }
-
-  .player img{
-    width:24px;
-    height:24px;
-    border-radius:6px;
-    object-fit:cover;
-  }
-
-  .dot{
-    width:10px;
-    height:10px;
-    border-radius:50%;
-  }
-
-  .online{background:var(--accent2);}
-  .offline{background:#444;}
-
-  .btn{
-    background:linear-gradient(90deg,var(--accent2),var(--accent3));
-    padding:8px 10px;
-    border-radius:8px;
-    border:none;
-    color:white;
-    cursor:pointer;
-  }
+:root{
+  --bg:#000000;
+  --panel:#150000;
+  --accent1:#5A0000;
+  --accent2:#C00000;
+  --accent3:#FF2A2A;
+  --text:#ffffff;
+  --muted:#bbbbbb;
+}
+html,body{
+  height:100%;margin:0;
+  background:linear-gradient(180deg,var(--bg),#1b0000);
+}
+body{
+  font-family:Inter,system-ui;
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.app{
+  width:100%;
+  max-width:1100px;
+  height:80vh;
+  display:grid;
+  grid-template-columns:3fr 1fr;
+  gap:18px;
+}
+.card{
+  background:linear-gradient(180deg,var(--panel),#220000);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.7);
+  display:flex;
+  flex-direction:column;
+}
+.header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+.logo{
+  width:52px;
+  height:52px;
+  border-radius:10px;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.logo img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+.title{font-size:20px;}
+.chat{
+  flex:1;
+  overflow:auto;
+  padding:8px;
+  border-radius:8px;
+  background:rgba(0,0,0,0.25);
+}
+.msg{
+  margin:6px 0;
+  padding:8px;
+  border-radius:8px;
+  background:rgba(255,255,255,0.05);
+  max-width:84%;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.msg img{
+  width:24px;
+  height:24px;
+  border-radius:6px;
+  object-fit:cover;
+}
+.msg .who{
+  font-weight:700;
+  color:var(--accent3);
+}
+.inputRow{
+  display:flex;
+  gap:8px;
+  padding-top:10px;
+}
+input, textarea{
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.15);
+  color:var(--text);
+  padding:8px;
+  border-radius:8px;
+  outline:none;
+}
+.players{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  height:100%;
+}
+.playerList{
+  overflow:auto;
+  flex:1;
+  padding:6px;
+  background:rgba(0,0,0,0.18);
+  border-radius:8px;
+}
+.player{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px;
+  border-radius:8px;
+}
+.player img{
+  width:24px;
+  height:24px;
+  border-radius:6px;
+  object-fit:cover;
+}
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+}
+.online{background:var(--accent2);}
+.offline{background:#444;}
+.btn{
+  background:linear-gradient(90deg,var(--accent2),var(--accent3));
+  padding:8px 10px;
+  border-radius:8px;
+  border:none;
+  color:white;
+  cursor:pointer;
+}
 </style>
 </head>
 
@@ -173,10 +153,9 @@
 
   <!-- CHAT PANEL -->
   <div class="card">
-
     <div class="header">
       <div class="logo">
-        <img src="assets/logo.png">
+        <img src="https://api.dicebear.com/6.x/pixel-art/svg?seed=Vixel&backgroundType=gradient&colors=000000,3D0000,950101,FF0000">
       </div>
       <div>
         <div class="title">Vixel Chat</div>
@@ -210,7 +189,7 @@
 </div>
 
 <script>
-const WORKER_URL = "https://vixel-chat.mrviktor2426.workers.dev";
+const WORKER_URL = "YOUR_WORKER_URL_HERE"; // replace with your Cloudflare Worker URL
 
 let token = localStorage.getItem('vixel_token');
 let username = localStorage.getItem('vixel_user');
@@ -225,25 +204,14 @@ const statusBadge = document.getElementById("statusBadge");
 const msgInput = document.getElementById("messageInput");
 const nameInput = document.getElementById("nameInput");
 
-function escapeHtml(t){
-  return t.replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));
-}
-
-function setStatus(t){
-  statusBadge.textContent = t;
-}
+function escapeHtml(t){return t.replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));}
+function setStatus(t){statusBadge.textContent = t;}
 
 async function API(path, method="GET", body=null){
   const h = {"Accept":"application/json"};
   if(token) h["Authorization"] = "Bearer "+token;
   if(body) h["Content-Type"] = "application/json";
-
-  const res = await fetch(WORKER_URL + path,{
-    method,
-    headers:h,
-    body:body ? JSON.stringify(body) : null
-  });
-
+  const res = await fetch(WORKER_URL + path,{method, headers:h, body: body ? JSON.stringify(body):null});
   if(!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -251,7 +219,6 @@ async function API(path, method="GET", body=null){
 async function setName(){
   const name = nameInput.value.trim();
   if(!name) return alert("enter a name bro");
-
   try{
     const r = await API("/register","POST",{name});
     token = r.token;
@@ -259,23 +226,14 @@ async function setName(){
     localStorage.setItem("vixel_token",token);
     localStorage.setItem("vixel_user",name);
     setStatus("connected as "+name);
-    nameInput.value = "";
-  }catch(e){
-    alert("name issue: "+e.message);
-  }
+    nameInput.value="";
+  }catch(e){alert("name issue: "+e.message);}
 }
 
 async function sendMessage(){
   const t = msgInput.value.trim();
   if(!t) return;
-
-  try{
-    await API("/send","POST",{text:t});
-    msgInput.value = "";
-    fetchMessages();
-  }catch(e){
-    alert("send fail: "+e.message);
-  }
+  try{ await API("/send","POST",{text:t}); msgInput.value=""; fetchMessages(); }catch(e){alert("send fail: "+e.message);}
 }
 
 async function fetchMessages(){
@@ -283,16 +241,15 @@ async function fetchMessages(){
     const r = await API("/messages?after="+lastMsgId);
     if(r.messages?.length){
       lastMsgId = r.messages[r.messages.length-1].id;
-chatEl.innerHTML = r.all.map(m => `
-  <div class="msg">
-    <img src="${m.avatar || 'https://api.dicebear.com/6.x/pixel-art/svg?seed=Unknown&backgroundType=gradient&colors=000000,3D0000,950101,FF0000'}" alt="avatar">
-    <div>
-      <div class="who">${escapeHtml(m.user)}</div>
-      <div>${escapeHtml(m.text)}</div>
-    </div>
-  </div>
-`).join("");
-
+      chatEl.innerHTML = r.all.map(m=>`
+        <div class="msg">
+          <img src="${m.avatar}" alt="avatar">
+          <div>
+            <div class="who">${escapeHtml(m.user)}</div>
+            <div>${escapeHtml(m.text)}</div>
+          </div>
+        </div>
+      `).join("");
       chatEl.scrollTop = chatEl.scrollHeight;
     }
   }catch(e){}
@@ -302,45 +259,30 @@ async function fetchPlayers(){
   try{
     const r = await API("/players");
     const now = Date.now();
-    let on = 0;
-
+    let on=0;
     playerListEl.innerHTML = r.players.map(p=>{
-      const live = (now - p.lastSeen) < 20000;
-      if(live) on++;
-
-      return `
-        <div class="player">
-          <div class="dot ${live?"online":"offline"}"></div>
-          <img src="${p.avatar}" alt="avatar">
-          <strong>${escapeHtml(p.name)}</strong>
-        </div>
-      `;
+      const live = (now - p.lastSeen)<20000; if(live) on++;
+      return `<div class="player">
+        <div class="dot ${live?"online":"offline"}"></div>
+        <img src="${p.avatar}" alt="avatar">
+        <strong>${escapeHtml(p.name)}</strong>
+      </div>`;
     }).join("");
-
     document.getElementById("onlineCount").textContent = on+" online";
   }catch(e){}
 }
 
-async function heartbeat(){
-  try{ await API("/presence","POST"); }catch(e){}
-}
+async function heartbeat(){ try{ await API("/presence","POST"); }catch(e){} }
 
 document.getElementById("loginBtn").onclick = setName;
 document.getElementById("sendBtn").onclick = sendMessage;
-msgInput.addEventListener("keydown",e=>{
-  if(e.key==="Enter") sendMessage();
-});
+msgInput.addEventListener("keydown",e=>{ if(e.key==="Enter") sendMessage(); });
 
 setInterval(fetchMessages,POLL);
 setInterval(()=>{heartbeat();fetchPlayers();},PRESENCE);
 
 (async ()=>{
-  if(token && username){
-    setStatus("connected as "+username);
-    await heartbeat();
-    fetchMessages();
-    fetchPlayers();
-  }
+  if(token && username){ setStatus("connected as "+username); await heartbeat(); fetchMessages(); fetchPlayers(); }
 })();
 </script>
 </body>
