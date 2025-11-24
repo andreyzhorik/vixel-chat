@@ -266,7 +266,6 @@ async function setName(){
     username = name;
     localStorage.setItem("vixel_token",token);
     localStorage.setItem("vixel_user",name);
-    document.getElementById("logoLetter").textContent = name[0].toUpperCase();
     setStatus("connected as "+name);
     nameInput.value = "";
   }catch(e){
