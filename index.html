@@ -3,577 +3,402 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Vixel Chat — upgraded</title>
+<title>Vixel Chat</title>
 <style>
   :root{
     --bg:#000000;
-    --panel:#140000;
-    --panel-2:#1f0000;
-    --accent:#ff2a2a;
-    --accent-dark:#950101;
-    --muted:#bdbdbd;
-    --glass: rgba(255,255,255,0.03);
+    --panel:#150000;
+    --panel2:#1b0000;
+    --accent1:#5A0000;
+    --accent2:#C00000;
+    --accent3:#FF2A2A;
+    --text:#ffffff;
+    --muted:#bbbbbb;
   }
 
-  /* Prevent whole page scroll — only messages will scroll */
   html,body{
     height:100%;
     margin:0;
-    overflow:hidden;
-    background: linear-gradient(180deg, var(--bg), #200000);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    color: #fff;
+    overflow:hidden; /* prevent page scroll; only messages scroll */
+    background:linear-gradient(180deg,var(--bg),#1b0000);
+    font-family:Inter,system-ui,Arial;
+    color:var(--text);
   }
 
-  /* App layout */
-  .wrap {
+  .wrap{
     height:100vh;
     display:flex;
-    align-items:stretch;
+    align-items:center;
     justify-content:center;
-    padding:20px;
+    padding:18px;
     box-sizing:border-box;
   }
 
-  .container {
+  .app{
     width:100%;
-    max-width:1200px;
-    height:calc(100vh - 40px);
+    max-width:1100px;
+    height:80vh;
     display:grid;
-    grid-template-columns: 1fr 340px;
+    grid-template-columns:3fr 1fr;
     gap:18px;
-    align-items:stretch;
+    min-height:0;
   }
 
-  /* Chat card */
-  .card {
-    background: linear-gradient(180deg,var(--panel),var(--panel-2));
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
     border-radius:14px;
-    padding:14px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+    padding:12px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.7);
     display:flex;
     flex-direction:column;
-    border: 1px solid rgba(255,0,0,0.06);
-    min-height:0; /* important so children can flex/scroll */
+    border:1px solid rgba(255,0,0,0.04);
+    min-height:0; /* important for flex children to scroll */
   }
 
-  /* Header */
-  .header {
+  .header{
     display:flex;
-    gap:12px;
     align-items:center;
-    margin-bottom:10px;
+    gap:10px;
+    margin-bottom:8px;
   }
 
-  .logo {
-    width:64px;
-    height:64px;
-    border-radius:12px;
+  .logo{
+    width:52px;
+    height:52px;
+    border-radius:10px;
     overflow:hidden;
-    flex:0 0 64px;
-    background:transparent;
     display:flex;
     align-items:center;
     justify-content:center;
-    box-shadow:0 6px 30px rgba(255,0,0,0.06);
-    animation: logoGlow 3s infinite;
+    background:transparent;
   }
-  .logo img{ width:100%; height:100%; object-fit:contain; display:block; }
+  .logo img{ width:100%; height:100%; object-fit:contain; }
 
-  @keyframes logoGlow {
-    0%{ filter: drop-shadow(0 0 8px rgba(255,42,42,0.28)); }
-    50%{ filter: drop-shadow(0 0 20px rgba(255,42,42,0.45)); transform:translateY(-1px); }
-    100%{ filter: drop-shadow(0 0 8px rgba(255,42,42,0.28)); transform:translateY(0); }
-  }
+  .title{font-size:20px;}
+  .sub{color:var(--muted);font-size:13px;}
 
-  .title {
-    font-size:20px;
-    font-weight:700;
-  }
-  .sub { color:var(--muted); font-size:13px; margin-top:4px; }
-
-  .status { margin-left:auto; color:var(--muted); font-size:13px; }
-
-  /* MESSAGES area (ONLY this scrolls) */
-  .messagesWrap {
+  /* ONLY messages scroll */
+  .messages {
     flex:1;
-    min-height:0; /* IMPORTANT for proper flex scrolling */
-    margin-bottom:8px;
-    border-radius:10px;
-    background: var(--glass);
+    overflow-y:auto;
     padding:12px;
-    overflow-y:auto; /* only this scrolls */
+    border-radius:8px;
+    background:rgba(0,0,0,0.20);
     display:flex;
     flex-direction:column;
     gap:8px;
+    min-height:0; /* crucial */
     scroll-behavior:smooth;
   }
 
-  /* message bubble */
-  .msg {
-    display:flex;
-    gap:10px;
+  .msg{
     max-width:78%;
     padding:10px 12px;
     border-radius:12px;
-    background: rgba(255,255,255,0.03);
-    align-items:flex-start;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
-    transform-origin:center;
-    animation: msgPop .14s ease;
-    word-break:break-word;
-  }
-  @keyframes msgPop {
-    from{opacity:0; transform:translateY(6px) scale(.99);}
-    to{opacity:1; transform:translateY(0) scale(1);}
-  }
-
-  .avatar {
-    width:34px; height:34px; border-radius:8px;
-    flex:0 0 34px; display:flex; align-items:center; justify-content:center;
-    background:var(--accent); color:#fff; font-weight:700;
-  }
-
-  .meta { font-size:13px; color:var(--muted); font-weight:700; margin-bottom:4px; }
-  .text { font-size:15px; line-height:1.35; color:#fff; }
-
-  /* own vs other */
-  .msg.own { margin-left:auto; background: linear-gradient(180deg, rgba(255,30,30,0.14), rgba(255,0,0,0.06)); border:1px solid rgba(255,0,0,0.12); }
-  .msg.other { margin-right:auto; background: linear-gradient(180deg, rgba(80,0,0,0.12), rgba(40,0,0,0.06)); border:1px solid rgba(255,255,255,0.02); }
-
-  .time { font-size:12px; color:var(--muted); margin-left:8px; align-self:flex-end; }
-
-  /* input area */
-  .controls {
     display:flex;
     gap:10px;
-    align-items:center;
-    padding-top:6px;
+    align-items:flex-start;
+    background:rgba(255,255,255,0.03);
+    box-shadow:0 6px 18px rgba(0,0,0,0.45);
+    word-break:break-word;
+    animation:pop .12s ease;
   }
-  .controls input[type="text"]{
-    flex:1;
-    padding:10px 12px;
-    border-radius:10px;
-    background:transparent;
-    border:1px solid rgba(255,255,255,0.08);
-    color: #fff;
-    outline:none;
-  }
-  .controls button {
-    background: linear-gradient(90deg,var(--accent-dark),var(--accent));
-    border:none; padding:10px 14px; border-radius:10px; color:#fff; cursor:pointer; font-weight:700;
-    box-shadow:0 8px 20px rgba(255,0,0,0.12);
-  }
-  .controls .smallBtn { padding:8px 10px; font-size:14px; }
+  @keyframes pop { from{opacity:0; transform:translateY(6px) scale(.99);} to{opacity:1; transform:none;} }
 
-  /* bottom meta (name set) */
-  .nameRow { display:flex; gap:8px; margin-top:8px; align-items:center; }
-  .nameRow input { padding:8px 10px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.06); color:#fff; }
+  .avatar{ width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; background:var(--accent3); flex-shrink:0; }
+  .meta{ font-weight:700; color:var(--muted); margin-bottom:4px; font-size:13px; }
+  .text{ font-size:15px; color:#fff; line-height:1.35; }
 
-  /* PLAYERS column */
-  .playersCard { padding:14px; display:flex; flex-direction:column; gap:12px; min-height:0; }
-  .playersList { background: rgba(0,0,0,0.12); border-radius:10px; padding:10px; min-height:0; overflow:hidden; } /* no scroll */
-  .playerRow { display:flex; align-items:center; gap:10px; padding:8px; border-radius:8px; background: rgba(255,255,255,0.02); }
-  .dot { width:10px; height:10px; border-radius:50%; }
-  .dot.online { background: var(--accent); box-shadow:0 0 6px rgba(255,0,0,0.15); }
-  .dot.offline { background:#444; }
+  .msg.own{ margin-left:auto; background:linear-gradient(180deg, rgba(255,30,30,0.12), rgba(255,0,0,0.04)); border:1px solid rgba(255,0,0,0.08); }
+  .msg.other{ margin-right:auto; background:linear-gradient(180deg, rgba(80,0,0,0.10), rgba(40,0,0,0.03)); border:1px solid rgba(255,255,255,0.02); }
 
-  /* emoji picker */
-  .emojiPicker { position:relative; }
-  .emojiPanel {
-    position:absolute;
-    bottom:44px;
-    right:0;
-    background:#120000;
-    padding:8px;
-    border-radius:8px;
+  .time{ font-size:12px; color:var(--muted); margin-left:8px; align-self:flex-end; }
+
+  .inputRow{
     display:flex;
-    gap:6px;
-    box-shadow:0 8px 28px rgba(0,0,0,0.6);
-    border:1px solid rgba(255,255,255,0.03);
+    gap:8px;
+    padding-top:10px;
   }
-  .emojiPanel button { background:transparent; border:none; font-size:20px; cursor:pointer; }
 
-  /* make layout a bit bigger on desktop */
+  input[type="text"]{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.12);
+    color:var(--text);
+    padding:10px;
+    border-radius:8px;
+    outline:none;
+    flex:1;
+  }
+
+  .btn{
+    background:linear-gradient(90deg,var(--accent2),var(--accent3));
+    padding:10px 14px;
+    border-radius:8px;
+    border:none;
+    color:white;
+    cursor:pointer;
+    font-weight:700;
+  }
+
+  .players{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    height:100%;
+  }
+
+  .playerList{
+    overflow:hidden; /* no scroll here; only messages scroll */
+    flex:1;
+    padding:6px;
+    background:rgba(0,0,0,0.18);
+    border-radius:8px;
+  }
+
+  .player{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:6px;
+    border-radius:8px;
+    background:rgba(255,255,255,0.02);
+  }
+
+  .dot{ width:10px; height:10px; border-radius:50%; }
+  .dot.online{ background:var(--accent2); box-shadow:0 0 6px rgba(255,0,0,0.12); }
+  .dot.offline{ background:#444; }
+
+  .small{ color:var(--muted); font-size:13px; }
+
   @media(min-width:1100px){
-    .container { grid-template-columns: 1.25fr 360px; }
-    .logo { width:76px; height:76px; flex:0 0 76px; }
-    .avatar{ width:40px; height:40px; flex:0 0 40px; border-radius:10px; }
+    .logo{ width:64px; height:64px; border-radius:12px; }
+    .avatar{ width:40px; height:40px; border-radius:10px; }
   }
 </style>
 </head>
 <body>
-
 <div class="wrap">
-  <div class="container">
+  <div class="app">
 
-    <!-- CHAT COLUMN -->
+    <!-- CHAT PANEL -->
     <div class="card" id="chatCard">
       <div class="header">
-        <div class="logo" title="Vixel">
-          <img src="https://raw.githubusercontent.com/andreyzhorik/VIXEL/main/logonobg.png" alt="vixel logo" />
-        </div>
+        <div class="logo"><img src="https://raw.githubusercontent.com/andreyzhorik/VIXEL/main/logonobg.png" alt="vixel"></div>
         <div>
           <div class="title">Vixel Chat</div>
-          <div class="sub">red glow • messages saved locally</div>
+          <div class="sub">server-backed — everyone sees messages</div>
         </div>
-        <div class="status" id="statusText">not connected</div>
+        <div style="margin-left:auto;" id="statusBadge" class="small">not connected</div>
       </div>
 
-      <!-- messages container (ONLY this scrolls) -->
-      <div class="messagesWrap" id="messages"></div>
+      <div id="messages" class="messages"></div>
 
-      <!-- typing indicator -->
-      <div id="typing" style="height:22px;color:var(--muted);font-size:13px;margin-top:4px;opacity:0;transition:0.12s;">
-        <span id="typingUser"></span>
-        <span style="margin-left:6px">typing</span>
-        <span style="display:inline-flex;margin-left:6px;gap:4px">
-          <span style="width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bounce 1s infinite"></span>
-          <span style="width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bounce 1s infinite .2s"></span>
-          <span style="width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bounce 1s infinite .4s"></span>
-        </span>
+      <div class="inputRow">
+        <input id="messageInput" type="text" placeholder="Type a message..." autocomplete="off" />
+        <button id="sendBtn" class="btn">Send</button>
       </div>
 
-      <div class="controls" style="margin-top:8px;">
-        <div style="display:flex;gap:8px;flex:1;align-items:center;">
-          <div class="emojiPicker" style="position:relative;">
-            <button id="emojiBtn" class="smallBtn" style="background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:var(--muted)">🙂</button>
-            <div id="emojiPanel" class="emojiPanel" style="display:none;">
-              <button data-e="😀">😀</button>
-              <button data-e="😁">😁</button>
-              <button data-e="😂">😂</button>
-              <button data-e="😎">😎</button>
-              <button data-e="🔥">🔥</button>
-              <button data-e="✨">✨</button>
-              <button data-e="❤️">❤️</button>
-              <button data-e="👍">👍</button>
-            </div>
-          </div>
-
-          <input id="msgInput" type="text" placeholder="Type a message..." autocomplete="off" />
-        </div>
-
-        <button id="sendBtn">Send</button>
-      </div>
-
-      <div class="nameRow" style="margin-top:10px;">
-        <input id="nameInput" placeholder="your name" />
-        <button id="setNameBtn">Set Name</button>
-        <div style="margin-left:auto;color:var(--muted);font-size:13px;" id="nameCooldown"></div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+        <input id="nameInput" placeholder="your name" style="flex:1" />
+        <button id="loginBtn" class="btn">Set Name</button>
       </div>
     </div>
 
-    <!-- PLAYERS COLUMN -->
-    <div class="card playersCard">
+    <!-- PLAYERS PANEL -->
+    <div class="card players">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <strong>Players</strong>
-        <div style="color:var(--muted)" id="onlineCount">0 online</div>
+        <div id="onlineCount" class="small">0 online</div>
       </div>
-
-      <div class="playersList" id="playerList">
-        <!-- fixed: no scrolling -->
-      </div>
-
-      <div style="color:var(--muted);font-size:13px;margin-top:auto;">Vixel • local demo</div>
+      <div id="playerList" class="playerList"></div>
     </div>
 
   </div>
 </div>
 
-<!-- sound -->
-<audio id="sendSound" src="data:audio/ogg;base64,T2dnUwACAAAAAAAAAABVDJxIAAAAAH1nY2gAAAAAAAEAAACAgICAgP///w=="></audio>
-
 <script>
-/*
-  Full feature single-file:
-  - Only .messagesWrap scrolls (min-height:0 on flex parents)
-  - LocalStorage save/load (messages and players)
-  - Username change cooldown (1 week)
-  - Emoji picker, timestamps, sounds, animations, online dots
-  - If WORKER_URL + token exist it will attempt to use API endpoints (keeps compatibility)
-*/
+/* config */
+const WORKER_URL = "https://vixel-chat.mrviktor2426.workers.dev";
+const POLL = 2000;      // fetch messages interval
+const PRESENCE = 8000;  // presence heartbeat
+const NAME_LIMIT = 7 * 24 * 60 * 60 * 1000; // 1 week name change cooldown
 
-const WORKER_URL = "https://vixel-chat.mrviktor2426.workers.dev"; // keep if you want to call backend
-const USE_BACKEND = false; // set to true to try calling API instead of localStorage (requires token)
-const POLL = 2000;
-const PRESENCE = 8000;
-const NAME_LIMIT = 7 * 24 * 60 * 60 * 1000;
+/* state */
+let token = localStorage.getItem('vixel_token');
+let username = localStorage.getItem('vixel_user');
+let lastMsgId = ''; /* server uses string ids like ts:rand */
 
 const messagesEl = document.getElementById('messages');
-const msgInput = document.getElementById('msgInput');
-const sendBtn = document.getElementById('sendBtn');
-const nameInput = document.getElementById('nameInput');
-const setNameBtn = document.getElementById('setNameBtn');
-const statusText = document.getElementById('statusText');
-const onlineCountEl = document.getElementById('onlineCount');
 const playerListEl = document.getElementById('playerList');
-const typingEl = document.getElementById('typing');
-const typingUserEl = document.getElementById('typingUser');
-const emojiBtn = document.getElementById('emojiBtn');
-const emojiPanel = document.getElementById('emojiPanel');
-const nameCooldownEl = document.getElementById('nameCooldown');
-const sendSound = document.getElementById('sendSound');
+const statusBadge = document.getElementById('statusBadge');
+const msgInput = document.getElementById('messageInput');
+const nameInput = document.getElementById('nameInput');
 
-let token = localStorage.getItem('vixel_token') || null;
-let username = localStorage.getItem('vixel_user') || null;
-let lastNameChange = Number(localStorage.getItem('vixel_last_name_change') || 0);
-let messages = JSON.parse(localStorage.getItem('vixel_msgs') || '[]');
-let players = JSON.parse(localStorage.getItem('vixel_players') || '[]');
-let lastMsgId = 0;
+function escapeHtml(t){ return String(t||'').replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m])); }
+function setStatus(t){ statusBadge.textContent = t; }
 
-// helper
-function fmtTime(ts){
-  const d = new Date(ts);
-  return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+/* API helper */
+async function API(path, method='GET', body=null){
+  const headers = {'Accept':'application/json'};
+  if(token) headers['Authorization'] = 'Bearer '+token;
+  if(body) headers['Content-Type'] = 'application/json';
+  const res = await fetch(WORKER_URL + path, { method, headers, body: body ? JSON.stringify(body) : null });
+  if(!res.ok) throw new Error(await res.text());
+  return res.json();
 }
 
-function save() {
-  localStorage.setItem('vixel_msgs', JSON.stringify(messages));
-  localStorage.setItem('vixel_players', JSON.stringify(players));
-}
-
-// render players (fixed list, no scroll)
-function renderPlayers(){
-  if(!players || !players.length){
-    playerListEl.innerHTML = `<div style="color:var(--muted);padding:8px">no players yet</div>`;
-    onlineCountEl.textContent = "0 online";
-    return;
-  }
-  const now = Date.now();
-  let online = 0;
-  playerListEl.innerHTML = players.map(p=>{
-    const isOnline = (now - (p.lastSeen||0)) < 20000;
-    if(isOnline) online++;
-    return `<div class="playerRow">
-      <div class="dot ${isOnline ? 'online' : 'offline'}" title="${isOnline ? 'online' : 'offline'}"></div>
-      <div style="width:36px;height:36px;border-radius:8px;background:${isOnline ? 'var(--accent)' : '#550000'};display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff">${escapeHtml(p.name[0]||'?').toUpperCase()}</div>
-      <div>
-        <div style="font-weight:700">${escapeHtml(p.name)}</div>
-        <div style="font-size:12px;color:var(--muted)">${isOnline ? 'online' : 'last seen ' + timeAgo(p.lastSeen)}</div>
-      </div>
-    </div>`;
-  }).join('');
-  onlineCountEl.textContent = `${online} online`;
-}
-
-function timeAgo(ts){
-  if(!ts) return 'never';
-  const s = Math.floor((Date.now()-ts)/1000);
-  if(s < 60) return `${s}s`;
-  if(s < 3600) return `${Math.floor(s/60)}m`;
-  if(s < 86400) return `${Math.floor(s/3600)}h`;
-  return `${Math.floor(s/86400)}d`;
-}
-
-// render messages (scroll container only)
-function renderMessages(scrollToBottom=true){
-  messagesEl.innerHTML = messages.map(m=>{
-    const cls = m.own ? 'msg own' : 'msg other';
-    const who = escapeHtml(m.user || 'anon');
-    const txt = escapeHtml(m.text || '');
-    const time = fmtTime(m.ts || Date.now());
-    const avatar = escapeHtml((m.user||' ')[0] || '?').toUpperCase();
-    return `<div class="${cls}">
-      <div class="avatar">${avatar}</div>
-      <div style="display:flex;flex-direction:column;">
-        <div class="meta">${who} <span class="time" style="font-weight:600;color:var(--muted);font-size:12px;margin-left:8px">${time}</span></div>
-        <div class="text">${txt}</div>
-      </div>
-    </div>`;
-  }).join('');
-  if(scrollToBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
-}
-
-// sanitize simple
-function escapeHtml(t){
-  return String(t||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-}
-
-// local demo: add player or update lastSeen
-function touchPresence(){
-  if(!username) return;
-  const now = Date.now();
-  const found = players.find(p=>p.name === username);
-  if(found) found.lastSeen = now;
-  else players.push({ name: username, lastSeen: now });
-  save();
-  renderPlayers();
-}
-
-// send msg (tries backend if enabled + token, else local)
-async function sendMessage(){
-  const text = msgInput.value.trim();
-  if(!text) return;
-  const m = { id: ++lastMsgId, user: username || 'Guest', text, ts: Date.now(), own: true };
-  messages.push(m);
-  save();
-  renderMessages(true);
-  msgInput.value = '';
-  sendSound.currentTime = 0; sendSound.play().catch(()=>{});
-  touchPresence();
-
-  // If backend is enabled and token exists, attempt to POST (keeps old API structure)
-  if(USE_BACKEND && token){
-    try{
-      await fetch(WORKER_URL + '/send', {
-        method:'POST',
-        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
-        body: JSON.stringify({ text })
-      });
-    }catch(e){
-      console.warn('backend send failed', e);
-    }
-  }
-}
-
-// allow receiving a message locally (demo)
-function receiveMessage(user, text){
-  const m = { id: ++lastMsgId, user, text, ts: Date.now(), own: false };
-  messages.push(m);
-  save();
-  renderMessages(true);
-}
-
-// name change with 1-week cooldown
+/* register (set name) with cooldown */
 async function setName(){
   const name = nameInput.value.trim();
   if(!name) return alert('enter a name bro');
-  const now = Date.now();
-  if(lastNameChange && (now - lastNameChange) < NAME_LIMIT){
-    const left = Math.ceil((NAME_LIMIT - (now - lastNameChange)) / (1000*60*60*24));
-    return alert(`you can change name again in ${left} day(s)`);
+  const lastChange = Number(localStorage.getItem('vixel_last_name_change') || 0);
+  if(lastChange && (Date.now() - lastChange) < NAME_LIMIT){
+    const daysLeft = Math.ceil((NAME_LIMIT - (Date.now() - lastChange)) / (1000*60*60*24));
+    return alert('you can change your name again in '+daysLeft+' day(s)');
   }
-
-  // call backend register if you want; for local demo we just set
   try{
-    if(USE_BACKEND){
-      // if you want backend registration you can implement here
-      // const res = await fetch(WORKER_URL + '/register', { method:'POST', body: JSON.stringify({name}), headers:{'Content-Type':'application/json'}});
-      // const data = await res.json();
-      // token = data.token; localStorage.setItem('vixel_token', token);
-    }
+    const r = await API('/register','POST',{name});
+    token = r.token;
     username = name;
+    localStorage.setItem('vixel_token', token);
     localStorage.setItem('vixel_user', name);
-    lastNameChange = Date.now();
-    localStorage.setItem('vixel_last_name_change', String(lastNameChange));
-    statusText.textContent = 'connected as ' + username;
+    localStorage.setItem('vixel_last_name_change', Date.now());
+    setStatus('connected as '+name);
     nameInput.value = '';
-    nameCooldownEl.textContent = 'name locked for 7 days';
-    touchPresence();
+    await heartbeat(); // announce presence immediately
+    fetchPlayers();
+    fetchMessages();
   }catch(e){
-    alert('name set failed: ' + e);
+    alert('register failed: '+e.message);
   }
 }
 
-// small helper - typing indicator
-let typingTimeout = null;
-msgInput.addEventListener('input', () => {
-  if(msgInput.value.trim()) {
-    typingEl.style.opacity = 1;
-    typingUserEl.textContent = (username || 'You');
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(()=> { typingEl.style.opacity = 0; }, 900);
-  } else {
-    typingEl.style.opacity = 0;
+/* send message to server */
+async function sendMessage(){
+  const text = msgInput.value.trim();
+  if(!text) return;
+  try{
+    await API('/send','POST',{text});
+    msgInput.value = '';
+    // fetch new messages ASAP
+    fetchMessages();
+  }catch(e){
+    alert('send failed: '+e.message);
   }
-});
-
-// emoji picker
-emojiBtn.addEventListener('click', (e)=>{
-  emojiPanel.style.display = emojiPanel.style.display === 'none' ? 'flex' : 'none';
-});
-emojiPanel.addEventListener('click', (e)=>{
-  const t = e.target;
-  if(t.dataset && t.dataset.e){
-    msgInput.value += t.dataset.e;
-    msgInput.focus();
-    emojiPanel.style.display = 'none';
-  }
-});
-
-// send button + enter
-sendBtn.addEventListener('click', sendMessage);
-msgInput.addEventListener('keydown', (e)=> {
-  if(e.key === 'Enter') { sendMessage(); e.preventDefault(); }
-});
-
-// set name button
-setNameBtn.addEventListener('click', setName);
-
-// demo / presence polling (local)
-function pollPresence(){
-  // mark random other players for demo (if none exist create some)
-  if(players.length < 2){
-    players = players.filter(p => p.name === username); // keep self if present
-    // add demo players
-    if(!players.find(p=>p.name==='Nova')) players.push({name:'Nova', lastSeen: Date.now() - 5000});
-    if(!players.find(p=>p.name==='Rex')) players.push({name:'Rex', lastSeen: Date.now() - 20000});
-    if(!players.find(p=>p.name==='Echo')) players.push({name:'Echo', lastSeen: Date.now() - 45000});
-    save();
-  } else {
-    // randomly toggle someone offline/online for demo
-    players.forEach(p=>{
-      if(p.name !== username && Math.random() < 0.06) p.lastSeen = Date.now() - (Math.random() * 70000);
-    });
-    save();
-  }
-  renderPlayers();
 }
 
-// load saved
-function init(){
-  username = localStorage.getItem('vixel_user') || username;
-  token = localStorage.getItem('vixel_token') || token;
-  lastNameChange = Number(localStorage.getItem('vixel_last_name_change') || lastNameChange);
-  messages = JSON.parse(localStorage.getItem('vixel_msgs') || '[]');
-  players = JSON.parse(localStorage.getItem('vixel_players') || '[]');
-
-  // if no name set, show hint
-  if(username) { statusText.textContent = 'connected as ' + username; } else { statusText.textContent = 'not connected'; }
-
-  // ensure messages have id sequence
-  lastMsgId = messages.reduce((m,x)=> Math.max(m, x.id||0), 0);
-
-  renderMessages(false);
-  renderPlayers();
-
-  // show cooldown text
-  if(lastNameChange && (Date.now() - lastNameChange) < NAME_LIMIT){
-    const left = Math.ceil((NAME_LIMIT - (Date.now()-lastNameChange)) / (1000*60*60*24));
-    nameCooldownEl.textContent = `name locked ${left}d`;
-  } else nameCooldownEl.textContent = '';
-
-  // presence poll + demo receive
-  setInterval(()=>{
-    pollPresence();
-    // demo: occasionally receive message
-    if(Math.random() < 0.06) receiveMessage( ['Nova','Rex','Echo'][Math.floor(Math.random()*3)], ['yo','u good?','pog','that looks fire','bruh'][Math.floor(Math.random()*5)]);
-  }, 3000);
-
-  // ensure scroll container sizes right on resize (min-height:0 ensures flexbox scrolling)
-  window.addEventListener('resize', ()=> messagesEl.scrollTop = messagesEl.scrollHeight);
+/* fetch messages after lastMsgId */
+async function fetchMessages(){
+  try{
+    const q = lastMsgId ? '?after=' + encodeURIComponent(lastMsgId) : '';
+    const r = await API('/messages' + q, 'GET');
+    // r.messages contains filtered messages (after), r.all contains all
+    if(r.messages && r.messages.length){
+      // append only new messages to DOM (we'll render from r.all for simplicity)
+      const all = r.all || [];
+      lastMsgId = all.length ? all[all.length-1].id : lastMsgId;
+      renderMessages(all);
+    } else if(!lastMsgId && r.all && r.all.length){
+      // initial load
+      const all = r.all;
+      lastMsgId = all[all.length-1].id;
+      renderMessages(all);
+    }
+  }catch(e){
+    console.error('fetchMessages err', e);
+  }
 }
 
-// small utility for timeAgo in player rows when rendering
-function timeAgoLabel(ts){
+/* render messages array (server-sent order) */
+function renderMessages(arr){
+  messagesEl.innerHTML = arr.map(m => {
+    const own = (m.user === username);
+    const cls = own ? 'msg own' : 'msg other';
+    const avatar = escapeHtml((m.user||' ').charAt(0).toUpperCase() || '?');
+    const time = new Date(m.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    return `<div class="${cls}">
+      <div class="avatar">${avatar}</div>
+      <div style="display:flex;flex-direction:column;">
+        <div class="meta">${escapeHtml(m.user)} <span class="time">${time}</span></div>
+        <div class="text">${escapeHtml(m.text)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  // keep scroll pinned to bottom if already near bottom
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+/* fetch players */
+async function fetchPlayers(){
+  try{
+    const r = await API('/players','GET');
+    const players = r.players || [];
+    // sort by lastSeen desc (worker already does but safe)
+    players.sort((a,b)=> (b.lastSeen||0) - (a.lastSeen||0));
+    const now = Date.now();
+    let onlineCount = 0;
+    playerListEl.innerHTML = players.map(p=>{
+      const isOnline = (now - (p.lastSeen||0)) < 20000;
+      if(isOnline) onlineCount++;
+      return `<div class="player">
+        <div class="dot ${isOnline ? 'online' : 'offline'}"></div>
+        <div class="avatar">${escapeHtml((p.name||' ').charAt(0).toUpperCase()||'?')}</div>
+        <div style="display:flex;flex-direction:column;">
+          <div style="font-weight:700">${escapeHtml(p.name)}</div>
+          <div style="font-size:12px;color:var(--muted)">${isOnline ? 'online' : timeAgo(p.lastSeen)}</div>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('onlineCount').textContent = onlineCount + ' online';
+  }catch(e){
+    console.error('fetchPlayers err', e);
+  }
+}
+
+/* presence heartbeat */
+async function heartbeat(){
+  try{
+    if(!token) return;
+    await API('/presence','POST', {});
+  }catch(e){
+    console.warn('presence err', e);
+  }
+}
+
+/* util: time ago for player last seen */
+function timeAgo(ts){
   if(!ts) return 'never';
-  const s = Math.floor((Date.now() - ts)/1000);
+  const s = Math.floor((Date.now() - ts) / 1000);
   if(s < 60) return `${s}s`;
   if(s < 3600) return `${Math.floor(s/60)}m`;
   if(s < 86400) return `${Math.floor(s/3600)}h`;
   return `${Math.floor(s/86400)}d`;
 }
 
-// tiny compatibility helpers
-function timeAgo(ts){
-  return timeAgoLabel(ts);
-}
+/* events */
+document.getElementById('loginBtn').onclick = setName;
+document.getElementById('sendBtn').onclick = sendMessage;
+msgInput.addEventListener('keydown', e => { if(e.key==='Enter') sendMessage(); });
 
-// kick it off
-init();
+/* polling */
+setInterval(fetchMessages, POLL);
+setInterval(()=>{ heartbeat(); fetchPlayers(); }, PRESENCE);
 
-/* expose helpers for debugging in console */
-window.vx = { messages, players, receiveMessage, sendMessage, setName, renderMessages, renderPlayers };
+/* init */
+(async function(){
+  if(token && username){
+    setStatus('connected as '+username);
+    // announce presence immediately
+    await heartbeat();
+    fetchMessages();
+    fetchPlayers();
+  } else {
+    setStatus('not connected');
+    // still can load messages publicly even if not registered
+    fetchMessages();
+    fetchPlayers();
+  }
+})();
 </script>
 </body>
 </html>
