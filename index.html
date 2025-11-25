@@ -1,430 +1,188 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vixel Chat</title>
 
 <style>
-  :root{
-    --bg:#000000;
-    --panel:#150000;
-    --accent1:#5A0000;
-    --accent2:#C00000;
-    --accent3:#FF2A2A;
-    --text:#ffffff;
-    --muted:#bbbbbb;
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
 
-  /* Prevent whole page from scrolling */
-  html, body{
-    height:100%;
-    margin:0;
-    overflow:hidden;
-    background:linear-gradient(180deg,var(--bg),#1b0000);
-    font-family:Inter,system-ui;
-    color:var(--text);
+  html, body {
+    height: 100%;
+    overflow: hidden; /* Prevent whole page scrolling */
+    font-family: Arial, sans-serif;
+    background: #000;
   }
 
-  body{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:18px;
+  .app {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
   }
 
-  /* App grid */
-  .app{
-    width:100%;
-    max-width:1100px;
-    height:80vh;
-    display:grid;
-    grid-template-columns:3fr 1fr;
-    gap:18px;
+  /* LEFT SIDE - PLAYERS */
+  .players {
+    width: 200px;
+    background: #3D0000;
+    padding: 10px;
+    color: white;
+    overflow: hidden; /* DON'T scroll */
   }
 
-  .card{
-    background:linear-gradient(180deg,var(--panel),#220000);
-    border-radius:14px;
-    padding:12px;
-    box-shadow:0 8px 30px rgba(0,0,0,0.7);
-    display:flex;
-    flex-direction:column;
+  .players h2 {
+    margin-bottom: 10px;
+    font-size: 18px;
   }
 
-  /* logo image */
-  .logo{
-    width:52px;
-    height:52px;
-    border-radius:10px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-    animation:glow 3s infinite ease-in-out;
+  #playerList div {
+    margin-bottom: 5px;
+    padding: 5px;
+    background: #950101;
+    border-radius: 6px;
   }
 
-  .logo img{
-    width:100%;
-    height:100%;
-    object-fit:contain;
+  /* CHAT AREA */
+  .chat {
+    flex: 1;
+    background: #150000;
+    display: flex;
+    flex-direction: column;
   }
 
-  @keyframes glow{
-    0%{ box-shadow:0 0 8px var(--accent3); }
-    50%{ box-shadow:0 0 18px var(--accent3); }
-    100%{ box-shadow:0 0 8px var(--accent3); }
+  /* ONLY THIS SCROLLS */
+  .messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto; 
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
-  .title{font-size:20px;}
-
-  /* ONLY chat scrolls */
-  .chat{
-    flex:1;
-    overflow-y:auto;
-    overflow-x:hidden;
-    padding:8px;
-    border-radius:8px;
-    background:rgba(0,0,0,0.25);
+  /* MESSAGE STYLES */
+  .msg {
+    max-width: 65%;
+    padding: 10px;
+    border-radius: 10px;
+    color: white;
+    word-wrap: break-word;
+    animation: pop 0.15s ease;
   }
 
-  /* messages */
-  .msg{
-    margin:6px 0;
-    padding:8px;
-    border-radius:8px;
-    background:rgba(255,255,255,0.05);
-    max-width:84%;
-    display:flex;
-    gap:8px;
-    align-items:center;
-    animation:pop .15s ease-out;
+  /* RECEIVED (LEFT) */
+  .msg-left {
+    background: #950101;
+    align-self: flex-start;
   }
 
-  @keyframes pop{
-    from{transform:scale(.96);opacity:0;}
-    to{transform:scale(1);opacity:1;}
+  /* SENT (RIGHT) */
+  .msg-right {
+    background: #FF0000;
+    align-self: flex-end;
   }
 
-  .avatar{
-    width:26px;
-    height:26px;
-    border-radius:6px;
-    background:var(--accent3);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:bold;
-    color:white;
-    flex-shrink:0;
+  @keyframes pop {
+    from { transform: scale(.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
   }
 
-  .msg .who{
-    font-weight:700;
-    color:var(--accent3);
+  /* SEND BAR */
+  .inputBar {
+    padding: 10px;
+    background: #3D0000;
+    display: flex;
+    gap: 10px;
   }
 
-  .inputRow{
-    display:flex;
-    gap:8px;
-    padding-top:10px;
+  input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    background: #150000;
+    color: white;
   }
 
-  input{
-    background:transparent;
-    border:1px solid rgba(255,255,255,0.15);
-    color:var(--text);
-    padding:8px;
-    border-radius:8px;
-    outline:none;
-  }
-
-  .players{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    height:100%;
-  }
-
-  .playerList{
-    overflow:auto;
-    flex:1;
-    padding:6px;
-    background:rgba(0,0,0,0.18);
-    border-radius:8px;
-  }
-
-  .player{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:6px;
-    border-radius:8px;
-  }
-
-  .player .avatar{
-    background:var(--accent2);
-  }
-
-  .dot{
-    width:10px;
-    height:10px;
-    border-radius:50%;
-  }
-
-  .online{background:var(--accent2);}
-  .offline{background:#444;}
-
-  .btn{
-    background:linear-gradient(90deg,var(--accent2),var(--accent3));
-    padding:8px 10px;
-    border-radius:8px;
-    border:none;
-    color:white;
-    cursor:pointer;
-    transition:.2s;
-  }
-
-  .btn:hover{
-    transform:scale(1.05);
-  }
-
-  /* Typing indicator */
-  #typing{
-    height:20px;
-    padding-left:8px;
-    color:var(--muted);
-    font-size:13px;
-    display:flex;
-    align-items:center;
-    gap:4px;
-    opacity:0;
-    transition:.2s;
-  }
-
-  .dotT{
-    width:6px;
-    height:6px;
-    border-radius:50%;
-    background:var(--muted);
-    animation:bounce 1s infinite;
-  }
-
-  .dotT:nth-child(2){ animation-delay:.2s; }
-  .dotT:nth-child(3){ animation-delay:.4s; }
-
-  @keyframes bounce{
-    0%,100%{transform:translateY(0);}
-    50%{transform:translateY(-4px);}
+  button {
+    padding: 10px 15px;
+    border: none;
+    background: #FF0000;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
   }
 </style>
-</head>
 
+</head>
 <body>
+
 <div class="app">
 
-  <!-- CHAT PANEL -->
-  <div class="card">
-
-    <div class="header" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-      <div class="logo">
-        <img src="https://raw.githubusercontent.com/andreyzhorik/VIXEL/main/logonobg.png">
-      </div>
-      <div>
-        <div class="title">Vixel Chat</div>
-        <div style="color:var(--muted)">cleaner ui + red glow</div>
-      </div>
-      <div style="margin-left:auto;color:var(--muted)" id="statusBadge">not connected</div>
-    </div>
-
-    <div id="chat" class="chat"></div>
-
-    <!-- typing indicator -->
-    <div id="typing">
-      <div class="dotT"></div>
-      <div class="dotT"></div>
-      <div class="dotT"></div>
-    </div>
-
-    <div class="inputRow">
-      <input id="messageInput" type="text" placeholder="Type a message..." />
-      <button id="sendBtn" class="btn">send</button>
-    </div>
-
-    <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
-      <input id="nameInput" placeholder="your name" style="flex:1" />
-      <button id="loginBtn" class="btn">set name</button>
-    </div>
+  <!-- LEFT COLUMN -->
+  <div class="players">
+    <h2>Players</h2>
+    <div id="playerList"></div>
   </div>
 
-  <!-- PLAYERS PANEL -->
-  <div class="card players">
-    <div style="display:flex;justify-content:space-between;">
-      <strong>Players</strong>
-      <div id="onlineCount" style="color:var(--muted)">0 online</div>
+  <!-- CHAT COLUMN -->
+  <div class="chat">
+
+    <!-- ONLY THIS SCROLLS -->
+    <div class="messages" id="messages"></div>
+
+    <div class="inputBar">
+      <input id="msgInput" placeholder="Type something...">
+      <button onclick="sendMsg()">Send</button>
     </div>
-    <div id="playerList" class="playerList"></div>
+
   </div>
 
 </div>
 
 <script>
-const WORKER_URL = "https://vixel-chat.mrviktor2426.workers.dev";
+  let username = localStorage.getItem("vixel_name") || "Guest";
 
-let token = localStorage.getItem('vixel_token');
-let username = localStorage.getItem('vixel_user');
-let lastMsgId = 0;
+  // Add user to players list
+  function updatePlayers() {
+    document.getElementById("playerList").innerHTML = `<div>${username}</div>`;
+  }
+  updatePlayers();
 
-const POLL = 2000;
-const PRESENCE = 8000;
+  // SEND MESSAGE
+  function sendMsg() {
+    const input = document.getElementById("msgInput");
+    const text = input.value.trim();
+    if (!text) return;
 
-/* name change cooldown */
-const NAME_LIMIT = 7 * 24 * 60 * 60 * 1000;
-
-const chatEl = document.getElementById("chat");
-const playerListEl = document.getElementById("playerList");
-const statusBadge = document.getElementById("statusBadge");
-const msgInput = document.getElementById("messageInput");
-const nameInput = document.getElementById("nameInput");
-const typingEl = document.getElementById("typing");
-
-/* escape */
-function escapeHtml(t){
-  return t.replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));
-}
-
-function setStatus(t){
-  statusBadge.textContent = t;
-}
-
-async function API(path, method="GET", body=null){
-  const h = {"Accept":"application/json"};
-  if(token) h["Authorization"] = "Bearer "+token;
-  if(body) h["Content-Type"] = "application/json";
-
-  const res = await fetch(WORKER_URL + path,{
-    method,
-    headers:h,
-    body:body ? JSON.stringify(body) : null
-  });
-
-  if(!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-/* NAME SET WITH COOLDOWN */
-async function setName(){
-  const name = nameInput.value.trim();
-  if(!name) return alert("enter a name bro");
-
-  const last = localStorage.getItem("vixel_last_name_change");
-  if(last && (Date.now() - Number(last)) < NAME_LIMIT){
-    const daysLeft = Math.ceil((NAME_LIMIT - (Date.now()-last)) / (1000*60*60*24));
-    return alert("you can change your name again in "+daysLeft+" day(s)");
+    addMessage(text, "right");
+    input.value = "";
   }
 
-  try{
-    const r = await API("/register","POST",{name});
-    token = r.token;
-    username = name;
+  // ADD MESSAGE TO CHAT
+  function addMessage(text, side) {
+    const box = document.getElementById("messages");
+    const div = document.createElement("div");
 
-    localStorage.setItem("vixel_token",token);
-    localStorage.setItem("vixel_user",name);
-    localStorage.setItem("vixel_last_name_change", Date.now());
+    div.className = side === "right" ? "msg msg-right" : "msg msg-left";
+    div.textContent = text;
 
-    setStatus("connected as "+name);
-    nameInput.value = "";
-  }catch(e){
-    alert("name issue: "+e.message);
+    box.appendChild(div);
+
+    // Auto scroll to bottom
+    box.scrollTop = box.scrollHeight;
   }
-}
 
-async function sendMessage(){
-  const t = msgInput.value.trim();
-  if(!t) return;
-
-  try{
-    await API("/send","POST",{text:t});
-    msgInput.value = "";
-    typingEl.style.opacity = 0;
-    fetchMessages();
-  }catch(e){
-    alert("send fail: "+e.message);
-  }
-}
-
-async function fetchMessages(){
-  try{
-    const r = await API("/messages?after="+lastMsgId);
-    if(r.messages?.length){
-      lastMsgId = r.messages[r.messages.length-1].id;
-
-      chatEl.innerHTML = r.all.map(m => `
-        <div class="msg">
-          <div class="avatar">${m.user[0].toUpperCase()}</div>
-          <div>
-            <div class="who">${escapeHtml(m.user)}</div>
-            <div>${escapeHtml(m.text)}</div>
-          </div>
-        </div>
-      `).join("");
-
-      chatEl.scrollTop = chatEl.scrollHeight;
-    }
-  }catch(e){}
-}
-
-async function fetchPlayers(){
-  try{
-    const r = await API("/players");
-    const now = Date.now();
-    let onlineCount = 0;
-
-    playerListEl.innerHTML = r.players.map(p=>{
-      const isOnline = (now - p.lastSeen) < 20000;
-      if(isOnline) onlineCount++;
-
-      return `
-        <div class="player">
-          <div class="dot ${isOnline ? "online" : "offline"}"></div>
-          <div class="avatar">${p.name[0].toUpperCase()}</div>
-          <strong>${escapeHtml(p.name)}</strong>
-        </div>
-      `;
-    }).join("");
-
-    document.getElementById("onlineCount").textContent = onlineCount + " online";
-  }catch(e){
-    playerListEl.innerHTML = "<div style='color:red;'>Failed to load players</div>";
-  }
-}
-
-async function heartbeat(){
-  try{ await API("/presence","POST"); }catch(e){}
-}
-
-/* typing indicator */
-msgInput.addEventListener("input", () => {
-  typingEl.style.opacity = msgInput.value.trim() ? 1 : 0;
-});
-
-document.getElementById("loginBtn").onclick = setName;
-document.getElementById("sendBtn").onclick = sendMessage;
-msgInput.addEventListener("keydown",e=>{
-  if(e.key==="Enter") sendMessage();
-});
-
-setInterval(fetchMessages,POLL);
-setInterval(()=>{heartbeat();fetchPlayers();},PRESENCE);
-
-(async ()=>{
-  if(token && username){
-    setStatus("connected as "+username);
-    await heartbeat();
-    fetchMessages();
-    fetchPlayers();
-  }
-})();
+  // Example incoming message after 2s
+  setTimeout(() => {
+    addMessage("Welcome to Vixel Chat!", "left");
+  }, 1500);
 </script>
+
 </body>
 </html>
