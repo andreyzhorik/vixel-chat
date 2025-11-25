@@ -8,8 +8,7 @@
 <style>
   :root{
     --bg:#000000;
-    --panel:#160000;
-    --panel2:#1d0000;
+    --panel:#150000;
     --accent1:#5A0000;
     --accent2:#C00000;
     --accent3:#FF2A2A;
@@ -17,21 +16,24 @@
     --muted:#bbbbbb;
   }
 
-  html,body{
+  /* Prevent whole page from scrolling */
+  html, body{
     height:100%;
     margin:0;
-    background:linear-gradient(180deg,var(--bg),#300000);
+    overflow:hidden;
+    background:linear-gradient(180deg,var(--bg),#1b0000);
+    font-family:Inter,system-ui;
+    color:var(--text);
   }
 
   body{
-    font-family:Inter,system-ui;
-    color:var(--text);
     display:flex;
     align-items:center;
     justify-content:center;
     padding:18px;
   }
 
+  /* App grid */
   .app{
     width:100%;
     max-width:1100px;
@@ -42,34 +44,24 @@
   }
 
   .card{
-    background:linear-gradient(180deg,var(--panel),var(--panel2));
-    border-radius:16px;
-    padding:14px;
-    box-shadow:0 10px 40px rgba(0,0,0,0.7);
+    background:linear-gradient(180deg,var(--panel),#220000);
+    border-radius:14px;
+    padding:12px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.7);
     display:flex;
     flex-direction:column;
-    border:1px solid #3a0000;
   }
 
-  /* HEADER */
-  .header{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    margin-bottom:12px;
-    padding-bottom:10px;
-    border-bottom:1px solid rgba(255,255,255,0.1);
-  }
-
+  /* logo image */
   .logo{
-    width:60px;
-    height:60px;
-    border-radius:12px;
-    background:#300;
-    overflow:hidden;
+    width:52px;
+    height:52px;
+    border-radius:10px;
     display:flex;
     align-items:center;
     justify-content:center;
+    overflow:hidden;
+    animation:glow 3s infinite ease-in-out;
   }
 
   .logo img{
@@ -78,39 +70,40 @@
     object-fit:contain;
   }
 
-  .title{font-size:22px;font-weight:700;}
+  @keyframes glow{
+    0%{ box-shadow:0 0 8px var(--accent3); }
+    50%{ box-shadow:0 0 18px var(--accent3); }
+    100%{ box-shadow:0 0 8px var(--accent3); }
+  }
 
-  /* CHAT */
+  .title{font-size:20px;}
+
+  /* ONLY chat scrolls */
   .chat{
     flex:1;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-
-  .chatMessages{
-    flex:1;
     overflow-y:auto;
-    padding:10px;
-    border-radius:10px;
-    background:rgba(0,0,0,0.22);
-    backdrop-filter:blur(6px);
+    overflow-x:hidden;
+    padding:8px;
+    border-radius:8px;
+    background:rgba(0,0,0,0.25);
   }
 
+  /* messages */
   .msg{
-    margin:10px 0;
-    padding:10px 12px;
-    border-radius:12px;
-    max-width:75%;
-    background:#240000;
-    box-shadow:0 0 8px rgba(255,0,0,0.2);
+    margin:6px 0;
+    padding:8px;
+    border-radius:8px;
+    background:rgba(255,255,255,0.05);
+    max-width:84%;
     display:flex;
-    gap:10px;
+    gap:8px;
+    align-items:center;
+    animation:pop .15s ease-out;
   }
 
-  .own{
-    background:#4a0000;
-    margin-left:auto;
+  @keyframes pop{
+    from{transform:scale(.96);opacity:0;}
+    to{transform:scale(1);opacity:1;}
   }
 
   .avatar{
@@ -131,56 +124,42 @@
     color:var(--accent3);
   }
 
-  /* INPUTS */
   .inputRow{
     display:flex;
-    gap:10px;
-    padding-top:12px;
+    gap:8px;
+    padding-top:10px;
   }
 
   input{
-    background:rgba(255,255,255,0.05);
+    background:transparent;
     border:1px solid rgba(255,255,255,0.15);
     color:var(--text);
-    padding:10px;
+    padding:8px;
     border-radius:8px;
-    flex:1;
+    outline:none;
   }
 
-  .btn{
-    background:linear-gradient(90deg,var(--accent2),var(--accent3));
-    padding:10px 14px;
-    border-radius:8px;
-    border:none;
-    cursor:pointer;
-    color:white;
-    font-weight:600;
-    box-shadow:0 0 8px rgba(255,0,0,0.4);
-  }
-
-  /* PLAYERS */
   .players{
     display:flex;
     flex-direction:column;
-    gap:12px;
+    gap:8px;
+    height:100%;
   }
 
   .playerList{
     overflow:auto;
     flex:1;
-    padding:8px;
-    background:rgba(0,0,0,0.22);
-    border-radius:10px;
+    padding:6px;
+    background:rgba(0,0,0,0.18);
+    border-radius:8px;
   }
 
   .player{
     display:flex;
     align-items:center;
-    gap:10px;
-    padding:8px;
-    border-radius:10px;
-    background:rgba(255,255,255,0.04);
-    margin-bottom:6px;
+    gap:8px;
+    padding:6px;
+    border-radius:8px;
   }
 
   .player .avatar{
@@ -193,8 +172,51 @@
     border-radius:50%;
   }
 
-  .online{background:var(--accent3);}
-  .offline{background:#555;}
+  .online{background:var(--accent2);}
+  .offline{background:#444;}
+
+  .btn{
+    background:linear-gradient(90deg,var(--accent2),var(--accent3));
+    padding:8px 10px;
+    border-radius:8px;
+    border:none;
+    color:white;
+    cursor:pointer;
+    transition:.2s;
+  }
+
+  .btn:hover{
+    transform:scale(1.05);
+  }
+
+  /* Typing indicator */
+  #typing{
+    height:20px;
+    padding-left:8px;
+    color:var(--muted);
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    gap:4px;
+    opacity:0;
+    transition:.2s;
+  }
+
+  .dotT{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--muted);
+    animation:bounce 1s infinite;
+  }
+
+  .dotT:nth-child(2){ animation-delay:.2s; }
+  .dotT:nth-child(3){ animation-delay:.4s; }
+
+  @keyframes bounce{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-4px);}
+  }
 </style>
 </head>
 
@@ -204,31 +226,34 @@
   <!-- CHAT PANEL -->
   <div class="card">
 
-    <div class="header">
+    <div class="header" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
       <div class="logo">
         <img src="https://raw.githubusercontent.com/andreyzhorik/VIXEL/main/logonobg.png">
       </div>
-
       <div>
         <div class="title">Vixel Chat</div>
-        <div class="small" style="color:var(--muted)">brighter red theme</div>
+        <div style="color:var(--muted)">cleaner ui + red glow</div>
       </div>
-
       <div style="margin-left:auto;color:var(--muted)" id="statusBadge">not connected</div>
     </div>
 
-    <div class="chat">
-      <div id="chatMessages" class="chatMessages"></div>
+    <div id="chat" class="chat"></div>
+
+    <!-- typing indicator -->
+    <div id="typing">
+      <div class="dotT"></div>
+      <div class="dotT"></div>
+      <div class="dotT"></div>
     </div>
 
     <div class="inputRow">
       <input id="messageInput" type="text" placeholder="Type a message..." />
-      <button id="sendBtn" class="btn">Send</button>
+      <button id="sendBtn" class="btn">send</button>
     </div>
 
-    <div style="margin-top:10px;display:flex;gap:10px;align-items:center;">
-      <input id="nameInput" placeholder="your name" />
-      <button id="loginBtn" class="btn">Set Name</button>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+      <input id="nameInput" placeholder="your name" style="flex:1" />
+      <button id="loginBtn" class="btn">set name</button>
     </div>
   </div>
 
@@ -253,14 +278,19 @@ let lastMsgId = 0;
 const POLL = 2000;
 const PRESENCE = 8000;
 
-const chatBox = document.getElementById("chatMessages");
+/* name change cooldown */
+const NAME_LIMIT = 7 * 24 * 60 * 60 * 1000;
+
+const chatEl = document.getElementById("chat");
 const playerListEl = document.getElementById("playerList");
 const statusBadge = document.getElementById("statusBadge");
 const msgInput = document.getElementById("messageInput");
 const nameInput = document.getElementById("nameInput");
+const typingEl = document.getElementById("typing");
 
+/* escape */
 function escapeHtml(t){
-  return t.replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]) );
+  return t.replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));
 }
 
 function setStatus(t){
@@ -282,16 +312,26 @@ async function API(path, method="GET", body=null){
   return res.json();
 }
 
+/* NAME SET WITH COOLDOWN */
 async function setName(){
   const name = nameInput.value.trim();
   if(!name) return alert("enter a name bro");
+
+  const last = localStorage.getItem("vixel_last_name_change");
+  if(last && (Date.now() - Number(last)) < NAME_LIMIT){
+    const daysLeft = Math.ceil((NAME_LIMIT - (Date.now()-last)) / (1000*60*60*24));
+    return alert("you can change your name again in "+daysLeft+" day(s)");
+  }
 
   try{
     const r = await API("/register","POST",{name});
     token = r.token;
     username = name;
+
     localStorage.setItem("vixel_token",token);
     localStorage.setItem("vixel_user",name);
+    localStorage.setItem("vixel_last_name_change", Date.now());
+
     setStatus("connected as "+name);
     nameInput.value = "";
   }catch(e){
@@ -306,6 +346,7 @@ async function sendMessage(){
   try{
     await API("/send","POST",{text:t});
     msgInput.value = "";
+    typingEl.style.opacity = 0;
     fetchMessages();
   }catch(e){
     alert("send fail: "+e.message);
@@ -315,12 +356,11 @@ async function sendMessage(){
 async function fetchMessages(){
   try{
     const r = await API("/messages?after="+lastMsgId);
-
     if(r.messages?.length){
       lastMsgId = r.messages[r.messages.length-1].id;
 
-      chatBox.innerHTML = r.all.map(m => `
-        <div class="msg ${m.user === username ? "own" : ""}">
+      chatEl.innerHTML = r.all.map(m => `
+        <div class="msg">
           <div class="avatar">${m.user[0].toUpperCase()}</div>
           <div>
             <div class="who">${escapeHtml(m.user)}</div>
@@ -329,7 +369,7 @@ async function fetchMessages(){
         </div>
       `).join("");
 
-      chatBox.scrollTop = chatBox.scrollHeight;
+      chatEl.scrollTop = chatEl.scrollHeight;
     }
   }catch(e){}
 }
@@ -362,6 +402,11 @@ async function fetchPlayers(){
 async function heartbeat(){
   try{ await API("/presence","POST"); }catch(e){}
 }
+
+/* typing indicator */
+msgInput.addEventListener("input", () => {
+  typingEl.style.opacity = msgInput.value.trim() ? 1 : 0;
+});
 
 document.getElementById("loginBtn").onclick = setName;
 document.getElementById("sendBtn").onclick = sendMessage;
