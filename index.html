@@ -8,7 +8,8 @@
 <style>
   :root{
     --bg:#000000;
-    --panel:#150000;
+    --panel:#160000;
+    --panel2:#1d0000;
     --accent1:#5A0000;
     --accent2:#C00000;
     --accent3:#FF2A2A;
@@ -17,8 +18,9 @@
   }
 
   html,body{
-    height:100%;margin:0;
-    background:linear-gradient(180deg,var(--bg),#1b0000);
+    height:100%;
+    margin:0;
+    background:linear-gradient(180deg,var(--bg),#300000);
   }
 
   body{
@@ -40,58 +42,80 @@
   }
 
   .card{
-    background:linear-gradient(180deg,var(--panel),#220000);
-    border-radius:14px;
-    padding:12px;
-    box-shadow:0 8px 30px rgba(0,0,0,0.7);
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border-radius:16px;
+    padding:14px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.7);
     display:flex;
     flex-direction:column;
+    border:1px solid #3a0000;
   }
 
+  /* HEADER */
   .header{
     display:flex;
     align-items:center;
-    gap:10px;
-    margin-bottom:8px;
+    gap:14px;
+    margin-bottom:12px;
+    padding-bottom:10px;
+    border-bottom:1px solid rgba(255,255,255,0.1);
   }
 
   .logo{
-    width:52px;
-    height:52px;
-    border-radius:10px;
+    width:60px;
+    height:60px;
+    border-radius:12px;
+    background:#300;
+    overflow:hidden;
     display:flex;
     align-items:center;
     justify-content:center;
-    background:var(--accent3);
-    font-weight:bold;
-    font-size:28px;
-    color:white;
   }
 
-  .title{font-size:20px;}
+  .logo img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+  }
 
+  .title{font-size:22px;font-weight:700;}
+
+  /* CHAT */
   .chat{
     flex:1;
-    overflow:auto;
-    padding:8px;
-    border-radius:8px;
-    background:rgba(0,0,0,0.25);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .chatMessages{
+    flex:1;
+    overflow-y:auto;
+    padding:10px;
+    border-radius:10px;
+    background:rgba(0,0,0,0.22);
+    backdrop-filter:blur(6px);
   }
 
   .msg{
-    margin:6px 0;
-    padding:8px;
-    border-radius:8px;
-    background:rgba(255,255,255,0.05);
-    max-width:84%;
+    margin:10px 0;
+    padding:10px 12px;
+    border-radius:12px;
+    max-width:75%;
+    background:#240000;
+    box-shadow:0 0 8px rgba(255,0,0,0.2);
     display:flex;
-    gap:8px;
-    align-items:center;
+    gap:10px;
+  }
+
+  .own{
+    background:#4a0000;
+    margin-left:auto;
   }
 
   .avatar{
-    width:24px;
-    height:24px;
+    width:26px;
+    height:26px;
     border-radius:6px;
     background:var(--accent3);
     display:flex;
@@ -107,55 +131,60 @@
     color:var(--accent3);
   }
 
+  /* INPUTS */
   .inputRow{
     display:flex;
-    gap:8px;
-    padding-top:10px;
+    gap:10px;
+    padding-top:12px;
   }
 
-  input, textarea{
-    background:transparent;
+  input{
+    background:rgba(255,255,255,0.05);
     border:1px solid rgba(255,255,255,0.15);
     color:var(--text);
-    padding:8px;
+    padding:10px;
     border-radius:8px;
-    outline:none;
+    flex:1;
   }
 
+  .btn{
+    background:linear-gradient(90deg,var(--accent2),var(--accent3));
+    padding:10px 14px;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    color:white;
+    font-weight:600;
+    box-shadow:0 0 8px rgba(255,0,0,0.4);
+  }
+
+  /* PLAYERS */
   .players{
     display:flex;
     flex-direction:column;
-    gap:8px;
-    height:100%;
+    gap:12px;
   }
 
   .playerList{
     overflow:auto;
     flex:1;
-    padding:6px;
-    background:rgba(0,0,0,0.18);
-    border-radius:8px;
+    padding:8px;
+    background:rgba(0,0,0,0.22);
+    border-radius:10px;
   }
 
   .player{
     display:flex;
     align-items:center;
-    gap:8px;
-    padding:6px;
-    border-radius:8px;
+    gap:10px;
+    padding:8px;
+    border-radius:10px;
+    background:rgba(255,255,255,0.04);
+    margin-bottom:6px;
   }
 
   .player .avatar{
-    width:24px;
-    height:24px;
-    border-radius:6px;
     background:var(--accent2);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:bold;
-    color:white;
-    flex-shrink:0;
   }
 
   .dot{
@@ -164,17 +193,8 @@
     border-radius:50%;
   }
 
-  .online{background:var(--accent2);}
-  .offline{background:#444;}
-
-  .btn{
-    background:linear-gradient(90deg,var(--accent2),var(--accent3));
-    padding:8px 10px;
-    border-radius:8px;
-    border:none;
-    color:white;
-    cursor:pointer;
-  }
+  .online{background:var(--accent3);}
+  .offline{background:#555;}
 </style>
 </head>
 
@@ -185,24 +205,30 @@
   <div class="card">
 
     <div class="header">
-      <div class="logo" id="logoLetter">V</div>
+      <div class="logo">
+        <img src="https://raw.githubusercontent.com/andreyzhorik/VIXEL/main/logonobg.png">
+      </div>
+
       <div>
         <div class="title">Vixel Chat</div>
         <div class="small" style="color:var(--muted)">brighter red theme</div>
       </div>
+
       <div style="margin-left:auto;color:var(--muted)" id="statusBadge">not connected</div>
     </div>
 
-    <div id="chat" class="chat"></div>
+    <div class="chat">
+      <div id="chatMessages" class="chatMessages"></div>
+    </div>
 
     <div class="inputRow">
       <input id="messageInput" type="text" placeholder="Type a message..." />
-      <button id="sendBtn" class="btn">send</button>
+      <button id="sendBtn" class="btn">Send</button>
     </div>
 
-    <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
-      <input id="nameInput" placeholder="your name" style="flex:1" />
-      <button id="loginBtn" class="btn">set name</button>
+    <div style="margin-top:10px;display:flex;gap:10px;align-items:center;">
+      <input id="nameInput" placeholder="your name" />
+      <button id="loginBtn" class="btn">Set Name</button>
     </div>
   </div>
 
@@ -227,14 +253,14 @@ let lastMsgId = 0;
 const POLL = 2000;
 const PRESENCE = 8000;
 
-const chatEl = document.getElementById("chat");
+const chatBox = document.getElementById("chatMessages");
 const playerListEl = document.getElementById("playerList");
 const statusBadge = document.getElementById("statusBadge");
 const msgInput = document.getElementById("messageInput");
 const nameInput = document.getElementById("nameInput");
 
 function escapeHtml(t){
-  return t.replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));
+  return t.replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]) );
 }
 
 function setStatus(t){
@@ -289,10 +315,12 @@ async function sendMessage(){
 async function fetchMessages(){
   try{
     const r = await API("/messages?after="+lastMsgId);
+
     if(r.messages?.length){
       lastMsgId = r.messages[r.messages.length-1].id;
-      chatEl.innerHTML = r.all.map(m => `
-        <div class="msg">
+
+      chatBox.innerHTML = r.all.map(m => `
+        <div class="msg ${m.user === username ? "own" : ""}">
           <div class="avatar">${m.user[0].toUpperCase()}</div>
           <div>
             <div class="who">${escapeHtml(m.user)}</div>
@@ -301,7 +329,7 @@ async function fetchMessages(){
         </div>
       `).join("");
 
-      chatEl.scrollTop = chatEl.scrollHeight;
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
   }catch(e){}
 }
@@ -327,7 +355,6 @@ async function fetchPlayers(){
 
     document.getElementById("onlineCount").textContent = onlineCount + " online";
   }catch(e){
-    console.error("fetchPlayers error:", e);
     playerListEl.innerHTML = "<div style='color:red;'>Failed to load players</div>";
   }
 }
@@ -347,7 +374,6 @@ setInterval(()=>{heartbeat();fetchPlayers();},PRESENCE);
 
 (async ()=>{
   if(token && username){
-    document.getElementById("logoLetter").textContent = username[0].toUpperCase();
     setStatus("connected as "+username);
     await heartbeat();
     fetchMessages();
