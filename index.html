@@ -19,7 +19,7 @@
   html,body{
     height:100%;
     margin:0;
-    overflow:hidden; /* prevent page scroll; only messages scroll */
+    overflow:hidden;
     background:linear-gradient(180deg,var(--bg),#1b0000);
     font-family:Inter,system-ui,Arial;
     color:var(--text);
@@ -52,32 +52,9 @@
     display:flex;
     flex-direction:column;
     border:1px solid rgba(255,0,0,0.04);
-    min-height:0; /* important for flex children to scroll */
+    min-height:0;
   }
 
-  .header{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:8px;
-  }
-
-  .logo{
-    width:52px;
-    height:52px;
-    border-radius:10px;
-    overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:transparent;
-  }
-  .logo img{ width:100%; height:100%; object-fit:contain; }
-
-  .title{font-size:20px;}
-  .sub{color:var(--muted);font-size:13px;}
-
-  /* ONLY messages scroll */
   .messages {
     flex:1;
     overflow-y:auto;
@@ -87,32 +64,20 @@
     display:flex;
     flex-direction:column;
     gap:8px;
-    min-height:0; /* crucial */
+    min-height:0;
     scroll-behavior:smooth;
   }
 
   .msg{
-    max-width:78%;
     padding:10px 12px;
     border-radius:12px;
-    display:flex;
-    gap:10px;
-    align-items:flex-start;
-    background:rgba(255,255,255,0.03);
-    box-shadow:0 6px 18px rgba(0,0,0,0.45);
-    word-break:break-word;
+    background:rgba(255,255,255,0.06);
+    font-size:15px;
+    line-height:1.35;
     animation:pop .12s ease;
+    max-width:80%;
   }
-  @keyframes pop { from{opacity:0; transform:translateY(6px) scale(.99);} to{opacity:1; transform:none;} }
-
-  .avatar{ width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; background:var(--accent3); flex-shrink:0; }
-  .meta{ font-weight:700; color:var(--muted); margin-bottom:4px; font-size:13px; }
-  .text{ font-size:15px; color:#fff; line-height:1.35; }
-
-  .msg.own{ margin-left:auto; background:linear-gradient(180deg, rgba(255,30,30,0.12), rgba(255,0,0,0.04)); border:1px solid rgba(255,0,0,0.08); }
-  .msg.other{ margin-right:auto; background:linear-gradient(180deg, rgba(80,0,0,0.10), rgba(40,0,0,0.03)); border:1px solid rgba(255,255,255,0.02); }
-
-  .time{ font-size:12px; color:var(--muted); margin-left:8px; align-self:flex-end; }
+  @keyframes pop { from{opacity:0; transform:translateY(6px) scale(.99);} to{opacity:1;} }
 
   .inputRow{
     display:flex;
@@ -139,58 +104,18 @@
     cursor:pointer;
     font-weight:700;
   }
-
-  .players{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    height:100%;
-  }
-
-  .playerList{
-    overflow:hidden; /* no scroll here; only messages scroll */
-    flex:1;
-    padding:6px;
-    background:rgba(0,0,0,0.18);
-    border-radius:8px;
-  }
-
-  .player{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:6px;
-    border-radius:8px;
-    background:rgba(255,255,255,0.02);
-  }
-
-  .dot{ width:10px; height:10px; border-radius:50%; }
-  .dot.online{ background:var(--accent2); box-shadow:0 0 6px rgba(255,0,0,0.12); }
-  .dot.offline{ background:#444; }
-
-  .small{ color:var(--muted); font-size:13px; }
-
-  @media(min-width:1100px){
-    .logo{ width:64px; height:64px; border-radius:12px; }
-    .avatar{ width:40px; height:40px; border-radius:10px; }
-  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="app">
 
-    <!-- CHAT PANEL -->
-    <div class="card" id="chatCard">
+    <div class="card">
       <div class="header">
-        <div class="logo"><img src="https://raw.githubusercontent.com/andreyzhorik/VIXEL/main/logonobg.png" alt="vixel"></div>
-        <div>
-          <div class="title">Vixel Chat</div>
-          <div class="sub">server-backed — everyone sees messages</div>
-        </div>
-        <div style="margin-left:auto;" id="statusBadge" class="small">not connected</div>
+        <div class="title">Vixel Chat</div>
       </div>
 
+      <!-- FIXED ID -->
       <div id="messages" class="messages"></div>
 
       <div class="inputRow">
@@ -204,14 +129,7 @@
       </div>
     </div>
 
-    <!-- PLAYERS PANEL -->
-    <div class="card players">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <strong>Players</strong>
-        <div id="onlineCount" class="small">0 online</div>
-      </div>
-      <div id="playerList" class="playerList"></div>
-    </div>
+    <div></div>
 
   </div>
 </div>
@@ -220,64 +138,49 @@
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
   const supabaseUrl = "https://ehciyxvbasqiiiurjuwu.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
-
+  const supabaseKey = "YOUR_KEY_HERE"; // replace if needed
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // Test query
-  const { data, error } = await supabase
-    .from("messages")
-    .select("*")
-    .limit(1);
-
-  console.log("TEST RESULT:", { data, error });
-  
-  // Elements
-  const chatEl = document.getElementById("chat");
+  // ELEMENTS — FIXED IDs
+  const messagesEl = document.getElementById("messages");
   const msgInput = document.getElementById("messageInput");
   const sendBtn = document.getElementById("sendBtn");
   const nameInput = document.getElementById("nameInput");
   const loginBtn = document.getElementById("loginBtn");
 
-  // Username saved locally
   let username = localStorage.getItem("vixel_user") || "";
 
-  // Add a message to DOM
-  function addMessage(msg) {
-    const div = document.createElement("div");
-    div.className = "msg";
-    div.innerHTML = `<strong>${msg.user}:</strong> ${msg.text}`;
-    chatEl.appendChild(div);
-    chatEl.scrollTop = chatEl.scrollHeight;
+  // render message
+  function addMessage(msg){
+    const el = document.createElement("div");
+    el.className = "msg";
+    el.innerHTML = `<strong>${msg.user}:</strong> ${msg.text}`;
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  // Fetch existing messages
-  async function loadMessages() {
-    const { data, error } = await supabase
+  // load old messages
+  async function loadMessages(){
+    const { data } = await supabase
       .from("messages")
       .select("*")
       .order("ts", { ascending: true });
 
-    if (!data) return;
-
-    chatEl.innerHTML = "";
-    data.forEach(addMessage);
+    messagesEl.innerHTML = "";
+    data?.forEach(addMessage);
   }
 
-  // Send a message
-  async function sendMessage() {
+  // send
+  async function sendMessage(){
     const text = msgInput.value.trim();
-    if (!username) return alert("Enter your name first");
+    if (!username) return alert("set a name first");
     if (!text) return;
 
-    await supabase.from("messages").insert([
-      { user: username, text }
-    ]);
-
+    await supabase.from("messages").insert([{ user: username, text }]);
     msgInput.value = "";
   }
 
-  // Login / set name
+  // set name
   loginBtn.onclick = () => {
     const name = nameInput.value.trim();
     if (!name) return;
@@ -286,23 +189,19 @@
     nameInput.value = "";
   };
 
-  // Send on click or Enter
   sendBtn.onclick = sendMessage;
   msgInput.addEventListener("keydown", e => {
     if (e.key === "Enter") sendMessage();
   });
 
-  // Realtime updates
   supabase
     .channel("realtime:messages")
-    .on(
-      "postgres_changes",
-      { event: "INSERT", schema: "public", table: "messages" },
+    .on("postgres_changes",
+      { event:"INSERT", schema:"public", table:"messages" },
       (payload) => addMessage(payload.new)
     )
     .subscribe();
 
-  // Load old messages on page load
   loadMessages();
 </script>
 </body>
