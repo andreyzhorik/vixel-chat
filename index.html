@@ -1,74 +1,73 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Vixel Chat — Full Build</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Vixel Chat — V2 (Red)</title>
 
 <!--
-  Vixel Chat — full version
-  - Presence: insert on login if needed (Option B)
-  - presence table expected columns:
-      id (uuid), username (text), lastseen (timestamp), online (bool), color (text), avatar (text)
-    (Add color/avatar columns as TEXT in Supabase Table Editor)
-  - Shift+Enter = newline, Enter = send
-  - Players column shows properly and live
-  - Go Offline & Clear Name removed per request
-  - Less "meme" styling, more subdued theme
-  - File intentionally verbose + commented (500+ lines)
+  Vixel Chat — Final build (Option A)
+  - Theme restored to requested reds:
+      #000000, #3D0000, #950101, #FF0000
+  - Presence: insert on login if missing
+  - Auto avatar color (deterministic by name)
+  - Anti-spam (rate limit + repeated message protection)
+  - Bad-words filter (blocks or censors)
+  - Shift+Enter -> newline, Enter -> send
+  - Players list working live
+  - Name change allowed once per week (tracked locally + best-effort server update)
+  - Keep supabase URL/key the same as you provided earlier
+  - If 401 appears: enable the anon policies in Supabase as previously shown
 -->
 
 <style>
   :root{
-    --bg: #050507;
-    --panel: #0d0b0c;
-    --panel2: #141213;
-    --accent: #b72b2b;
-    --muted: #9aa0a6;
-    --text: #e9eef2;
-    --card-radius: 12px;
-    --avatar-size: 36px;
+    --bg: #000000;
+    --panel: #3D0000;
+    --panel2: #950101;
+    --accent: #FF0000;
+    --text: #ffffff;
+    --muted: #c8c8c8;
+    --card-radius: 14px;
+    --avatar-size: 40px;
   }
 
   html,body{
     height:100%;
     margin:0;
-    background: linear-gradient(180deg, var(--bg), #0b0607);
+    background: linear-gradient(180deg, var(--bg), #120000);
     color:var(--text);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
     -webkit-font-smoothing:antialiased;
     -moz-osx-font-smoothing:grayscale;
   }
 
-  /* Layout */
   .wrap{
-    height:100vh;
+    min-height:100vh;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:16px;
+    padding:20px;
     box-sizing:border-box;
   }
 
   .app{
     width:100%;
     max-width:1200px;
-    height:86vh;
+    height:88vh;
     display:grid;
     grid-template-columns: 3fr 1fr;
-    gap:16px;
-    min-height:0;
+    gap:18px;
   }
 
-  /* Card */
   .card{
     background: linear-gradient(180deg, var(--panel), var(--panel2));
     border-radius: var(--card-radius);
     padding:14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
     display:flex;
     flex-direction:column;
-    border:1px solid rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.04);
     min-height:0;
   }
 
@@ -80,62 +79,60 @@
   }
 
   .title{
-    font-weight:700;
-    font-size:18px;
-    letter-spacing:0.3px;
+    font-weight:900;
+    font-size:20px;
   }
 
   .subtitle{
-    font-size:13px;
     color:var(--muted);
+    font-size:13px;
   }
 
-  /* Messages */
-  .messages {
+  /* messages column */
+  .messages{
     flex:1;
     overflow-y:auto;
     padding:12px;
     border-radius:10px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+    background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(255,255,255,0.01));
     display:flex;
     flex-direction:column;
-    gap:10px;
+    gap:12px;
     min-height:0;
     scroll-behavior:smooth;
   }
 
   .msgRow{
     display:flex;
-    gap:10px;
+    gap:12px;
     align-items:flex-start;
     max-width:100%;
   }
 
-  .avatar {
+  .avatar{
     width:var(--avatar-size);
     height:var(--avatar-size);
     min-width:var(--avatar-size);
     border-radius:50%;
     display:inline-grid;
     place-items:center;
-    font-weight:700;
+    font-weight:800;
     color: #fff;
     text-transform:uppercase;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    border:2px solid rgba(0,0,0,0.25);
     flex-shrink:0;
-    border:1px solid rgba(255,255,255,0.03);
   }
 
   .msg{
     padding:10px 12px;
     border-radius:10px;
-    background: rgba(255,255,255,0.02);
+    background: rgba(0,0,0,0.35);
     font-size:14px;
     line-height:1.4;
-    max-width:88%;
+    max-width:86%;
     word-break:break-word;
-    border:1px solid rgba(255,255,255,0.02);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.03);
   }
 
   .meta{
@@ -146,42 +143,41 @@
 
   .inputRow{
     display:flex;
-    gap:8px;
+    gap:10px;
     align-items:center;
     margin-top:10px;
   }
 
   textarea, input[type="text"]{
-    background:transparent;
-    border:1px solid rgba(255,255,255,0.06);
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.06);
     color:var(--text);
     padding:10px;
     border-radius:8px;
     outline:none;
     flex:1;
     resize:vertical;
-    min-height:40px;
-    max-height:140px;
+    min-height:48px;
+    max-height:160px;
     font-size:14px;
   }
 
   .btn{
-    background: linear-gradient(180deg, var(--accent), #8f2222);
+    background: linear-gradient(180deg, var(--accent), #c40000);
     padding:10px 14px;
     border-radius:8px;
     border:none;
     color:white;
     cursor:pointer;
-    font-weight:700;
-    letter-spacing:0.3px;
+    font-weight:800;
   }
 
-  /* Users column */
+  /* players column */
   .usersHeader{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:8px;
+    margin-bottom:10px;
   }
 
   .usersList{
@@ -198,7 +194,7 @@
     align-items:center;
     padding:8px;
     border-radius:8px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     border:1px solid rgba(255,255,255,0.02);
   }
 
@@ -209,55 +205,47 @@
     margin-left:auto;
     box-shadow:0 1px 4px rgba(0,0,0,0.6);
   }
-  .status-online{ background: #4be37a; }
-  .status-offline{ background: #666; }
-
-  .playersFooter{
-    margin-top:8px;
-    display:flex;
-    gap:8px;
-    align-items:center;
-  }
+  .status-online{ background: #48ff7a; }
+  .status-offline{ background: #6b6b6b; }
 
   .mutedSmall{ color:var(--muted); font-size:13px; }
 
   @media (max-width:900px){
-    .app{ grid-template-columns:1fr; height:92vh; }
-    .users { order:-1; }
+    .app{ grid-template-columns: 1fr; height:95vh; }
+    .users { order: -1; }
   }
 
-  /* misc long comment block below to increase file length; file remains maintainable and commented */
-  /* ---------------------------------------------------------------------------------------------- */
+  /* make file longer with helpful comments (still organized) */
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="app">
 
-      <!-- Main chat -->
-      <div class="card" id="mainCard">
-        <div class="headerRow" style="margin-bottom:8px;">
+      <!-- MAIN CHAT -->
+      <div class="card">
+        <div class="headerRow">
           <div>
             <div class="title">Vixel Chat</div>
-            <div class="subtitle">Realtime chat • subtle theme</div>
+            <div class="subtitle">Realtime chat — red vibes restored</div>
           </div>
           <div style="text-align:right;">
             <div class="mutedSmall" id="statusHint">not logged</div>
-            <div class="mutedSmall" id="debugHint" style="margin-top:6px;">debug: idle</div>
+            <div class="mutedSmall" id="debugHint" style="margin-top:6px;">debug ready</div>
           </div>
         </div>
 
         <div id="messages" class="messages" aria-live="polite" role="log"></div>
 
-        <!-- message input: textarea to support multi-line + Shift+Enter newline -->
+        <!-- message input -->
         <div class="inputRow">
-          <textarea id="messageInput" placeholder="Write a message — Shift+Enter for newline, Enter to send"></textarea>
+          <textarea id="messageInput" placeholder="Message — Shift+Enter for newline, Enter to send"></textarea>
           <button id="sendBtn" class="btn">Send</button>
         </div>
 
-        <!-- login row: insert presence if missing when user sets name -->
+        <!-- login / name -->
         <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
-          <input id="nameInput" placeholder="Your name" style="padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--text); flex:1;" />
+          <input id="nameInput" placeholder="Your name (change once/week)" />
           <button id="loginBtn" class="btn">Set Name</button>
         </div>
 
@@ -266,10 +254,11 @@
           <div class="mutedSmall">•</div>
           <div class="mutedSmall" id="playersCount">players: 0</div>
         </div>
+
       </div>
 
-      <!-- Players -->
-      <div class="card users" id="usersCard">
+      <!-- PLAYERS -->
+      <div class="card">
         <div class="usersHeader">
           <div style="font-weight:700">Players</div>
           <div class="mutedSmall" id="onlineCount">0 online</div>
@@ -277,10 +266,10 @@
 
         <div id="usersList" class="usersList"></div>
 
-        <div class="playersFooter">
+        <div style="margin-top:12px; display:flex; align-items:center; gap:8px;">
           <div class="mutedSmall">auto online while active</div>
           <div style="flex:1"></div>
-          <button id="refreshPlayersBtn" class="btn" style="background:linear-gradient(180deg,#3a3a3a,#1f1f1f);">Refresh</button>
+          <button id="refreshPlayersBtn" class="btn" style="background:linear-gradient(180deg,#3a3a3a,#1f1f1f)">Refresh</button>
         </div>
       </div>
 
@@ -289,30 +278,26 @@
 
 <script type="module">
 /*
-  Full Vixel Chat JS — Revised per request
-  - Presence insertion on new login (Option B)
-  - Players list shows live
-  - Removed Clear Name & Go Offline buttons
-  - Shift+Enter newline; Enter sends
-  - Save avatar/color (text columns) into presence on creation
-  - Less meme visuals
-  - Long file, heavy comments for clarity
+  Vixel Chat — big file
+  - Option A: auto avatar color based on name
+  - name change limited to once per week
+  - anti-spam & bad-word filter
+  - presence insert on login (Option B earlier) — we already handle insertion here
+  - Restore red theme and keep everything long & commented
 */
 
-/* -----------------------
-   Supabase client
-   Replace URL / KEY if needed — I kept your earlier values.
-------------------------*/
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+/* --------------------------
+   Supabase config (your values kept)
+---------------------------*/
 const supabaseUrl = "https://ehciyxvbasqiiiurjuwu.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
-
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-/* -----------------------
-   DOM elements
-------------------------*/
+/* --------------------------
+   DOM references
+---------------------------*/
 const messagesEl = document.getElementById("messages");
 const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
@@ -326,38 +311,47 @@ const messagesCountEl = document.getElementById("messagesCount");
 const playersCountEl = document.getElementById("playersCount");
 const refreshPlayersBtn = document.getElementById("refreshPlayersBtn");
 
-/* -----------------------
+/* --------------------------
    Local state
-------------------------*/
+---------------------------*/
 let username = localStorage.getItem("vixel_user") || "";
 let presenceId = localStorage.getItem("vixel_presence_id") || null;
-let onlineUsers = {}; // map username -> { username, online, id, color, avatar }
+let nameChangedAt = localStorage.getItem("vixel_name_changed_at") || null; // ISO timestamp
+let onlineUsers = {}; // map username -> {username, online, id, color, avatar}
 let seenMessageIds = new Set();
 let messagesChannel = null;
 let presenceChannel = null;
 let messageCount = 0;
 
-/* -----------------------
-   UTIL: avatars + deterministic color
-   We'll store color (hex string) in presence.color and avatar (same hex) in presence.avatar
-------------------------*/
+/* --------------------------
+   Anti-spam and bad words
+---------------------------*/
+// simple bad words list — add whatever you want
+const BAD_WORDS = ["badword","anotherbadword","foo"]; // lowercase
+const SPAM_WINDOW_MS = 10000; // window to count messages
+const SPAM_MAX_MESSAGES = 5; // max messages allowed in window
+const recentMessages = []; // timestamps of user's sent messages for rate limiting
+let lastSentText = ""; // avoid immediate duplicate messages
+
+/* --------------------------
+   Helpers: color/avatar generation
+   Option A: deterministic color by name
+---------------------------*/
 function deterministicColorForName(name) {
-  // simple consistent color generator from string
-  const palette = ["#FF6B6B","#FF9F43","#FFD166","#4D96FF","#6BF178","#7C6BFF","#FF6BB2","#6BDFF1","#FFCF76","#B4A7FF"];
-  if(!name) return palette[Math.floor(Math.random()*palette.length)];
-  let h = 0;
+  const palette = ["#FF2A2A","#FF6B6B","#FF8A4D","#FFD166","#4DFF8A","#4DD7FF","#7A4DFF","#FF4DA8","#FF3B3B","#E05252"];
+  if (!name) return palette[Math.floor(Math.random()*palette.length)];
+  let hash = 0;
   for (let i = 0; i < name.length; i++) {
-    h = (h << 5) - h + name.charCodeAt(i);
-    h = h & h;
+    hash = (hash << 5) - hash + name.charCodeAt(i);
+    hash |= 0;
   }
-  const idx = Math.abs(h) % palette.length;
-  return palette[idx];
+  return palette[Math.abs(hash) % palette.length];
 }
 
-function avatarElement(name, size = 36, colorHex = null) {
+function avatarElement(name, size = 40, colorHex = null) {
   const el = document.createElement("div");
   el.className = "avatar";
-  const letter = (name||"?").charAt(0).toUpperCase();
+  const letter = (name || "?").charAt(0).toUpperCase();
   el.textContent = letter;
   const bg = colorHex || deterministicColorForName(name);
   el.style.background = bg;
@@ -367,13 +361,13 @@ function avatarElement(name, size = 36, colorHex = null) {
   return el;
 }
 
-function escapeHtml(s){
+function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));
 }
 
-/* -----------------------
-   UI helpers: messages
-------------------------*/
+/* --------------------------
+   UI: messages render + dedupe
+---------------------------*/
 function clearMessages() {
   messagesEl.innerHTML = "";
   seenMessageIds.clear();
@@ -381,46 +375,51 @@ function clearMessages() {
   messagesCountEl.textContent = `messages: ${messageCount}`;
 }
 
-function addMessageToDom(row) {
-  // Expect row: { id, user, text, created_at }
-  if (row && row.id) {
-    if (seenMessageIds.has(row.id)) return;
-    seenMessageIds.add(row.id);
+function addMessageToDOM(msg) {
+  // msg: { id, user, text, created_at }
+  if (msg && msg.id) {
+    if (seenMessageIds.has(msg.id)) return;
+    seenMessageIds.add(msg.id);
   }
-  const container = document.createElement("div");
-  container.className = "msgRow";
 
-  const av = avatarElement(row.user || "?", 36, row.avatar || deterministicColorForName(row.user));
-  container.appendChild(av);
+  const row = document.createElement("div");
+  row.className = "msgRow";
+
+  // find color from presence map if available
+  const userPresence = onlineUsers[msg.user] || null;
+  const color = (userPresence && (userPresence.avatar || userPresence.color)) || deterministicColorForName(msg.user);
+
+  row.appendChild(avatarElement(msg.user || "?", 40, color));
 
   const box = document.createElement("div");
   box.className = "msg";
 
   const meta = document.createElement("div");
   meta.className = "meta";
-  const ts = row.created_at ? new Date(row.created_at).toLocaleTimeString() : "";
-  meta.innerHTML = `<strong>${escapeHtml(row.user || "anon")}</strong> · <span class="mutedSmall">${escapeHtml(ts)}</span>`;
+  const ts = msg.created_at ? new Date(msg.created_at).toLocaleTimeString() : "";
+  meta.innerHTML = `<strong>${escapeHtml(msg.user || "anon")}</strong> · <span class="mutedSmall">${escapeHtml(ts)}</span>`;
 
   const text = document.createElement("div");
   // preserve newlines
-  const safeText = escapeHtml(row.text || "").replace(/\n/g, "<br/>");
-  text.innerHTML = safeText;
+  const safe = escapeHtml(msg.text || "").replace(/\n/g, "<br/>");
+  text.innerHTML = safe;
 
   box.appendChild(meta);
   box.appendChild(text);
-  container.appendChild(box);
+  row.appendChild(box);
 
-  messagesEl.appendChild(container);
+  messagesEl.appendChild(row);
+
   messageCount++;
   messagesCountEl.textContent = `messages: ${messageCount}`;
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-/* -----------------------
-   Load messages from Supabase
-------------------------*/
-async function loadMessages(){
-  debug("loadMessages()");
+/* --------------------------
+   Load messages (initial)
+---------------------------*/
+async function loadMessages() {
+  debug("loadMessages");
   try {
     const { data, error } = await supabase
       .from("messages")
@@ -431,7 +430,7 @@ async function loadMessages(){
     if (error) throw error;
 
     clearMessages();
-    data?.forEach(r => addMessageToDom(r));
+    (data || []).forEach(r => addMessageToDOM(r));
     debug(`loaded ${data?.length || 0} messages`);
   } catch (err) {
     console.error("loadMessages err", err);
@@ -439,22 +438,54 @@ async function loadMessages(){
   }
 }
 
-/* -----------------------
-   Send message
-   - Enter sends
-   - Shift+Enter inserts newline (handled at keydown)
-   - We insert and rely on realtime INSERT to populate; but we also render returned row if server responds
-------------------------*/
+/* --------------------------
+   Message sending with anti-spam + bad-words
+---------------------------*/
+function containsBadWord(text){
+  const t = text.toLowerCase();
+  return BAD_WORDS.some(b => t.includes(b));
+}
+
+function isRateLimited(){
+  const now = Date.now();
+  // purge old items
+  while (recentMessages.length && (now - recentMessages[0]) > SPAM_WINDOW_MS) {
+    recentMessages.shift();
+  }
+  return recentMessages.length >= SPAM_MAX_MESSAGES;
+}
+
 async function sendMessage(){
-  const text = messageInput.value.trim();
-  if (!username) {
-    alert("Set your name first");
+  const raw = messageInput.value;
+  if (!raw) return;
+  const text = raw.trim();
+  if (!username) { alert("Set your name first"); return; }
+
+  // bad words check
+  if (containsBadWord(text)) {
+    // block send; you could alternatively censor by replacing with stars
+    alert("Message blocked: contains forbidden words.");
     return;
   }
-  if (!text) return;
 
+  // spam checks: repeated immediate exact text
+  if (text === lastSentText) {
+    alert("Don't send the same message twice in a row.");
+    return;
+  }
+
+  if (isRateLimited()) {
+    alert("You're sending messages too quickly. Slow down a bit.");
+    return;
+  }
+
+  // pass checks -> send
   sendBtn.disabled = true;
   try {
+    // record timestamp locally for spam window
+    recentMessages.push(Date.now());
+    lastSentText = text;
+
     const { data, error } = await supabase
       .from("messages")
       .insert([{ user: username, text }])
@@ -462,10 +493,8 @@ async function sendMessage(){
 
     if (error) throw error;
 
-    // server returned inserted row(s)
-    if (data && data[0]) {
-      addMessageToDom(data[0]);
-    }
+    // optionally render inserted row immediately (dedupe prevents dup)
+    if (data && data[0]) addMessageToDOM(data[0]);
 
     messageInput.value = "";
     messageInput.focus();
@@ -478,63 +507,55 @@ async function sendMessage(){
   }
 }
 
-/* -----------------------
-   Presence: insert or update
-   Behavior requested: Option B — insert if not exists when user logs in
-   We'll store avatar & color fields in presence (both text)
-------------------------*/
+/* --------------------------
+   Presence helpers (Option B: insert on login if missing)
+   We will store color & avatar auto on creation as text (hex)
+   name change limit once/week (local + attempt server-side update)
+---------------------------*/
 async function ensurePresenceRow(name) {
   if (!name) return;
   try {
-    // try select for existing row
-    const { data: existing, error: selectErr } = await supabase
+    const { data: existing, error: selErr } = await supabase
       .from("presence")
       .select("id, username, online, color, avatar")
       .eq("username", name)
       .limit(1);
 
-    if (selectErr) {
-      // if select fails, continue to attempt insert or update
-      console.warn("presence selectErr", selectErr);
+    if (selErr) {
+      console.warn("presence select err", selErr);
     }
 
     if (existing && existing.length > 0) {
       presenceId = existing[0].id;
       localStorage.setItem("vixel_presence_id", presenceId);
-      // update to mark online if needed
-      await supabase
-        .from("presence")
-        .update({ online: true })
-        .eq("id", presenceId)
-        .select()
-      ;
+      // update to online
+      await supabase.from("presence").update({ online: true }).eq("id", presenceId);
       return;
     }
 
-    // if we got here, no existing row — build avatar/color and insert
+    // insert new presence row with auto color/avatar
     const color = deterministicColorForName(name);
-    const avatar = color; // store same hex for avatar background; you can change format later
-    const { data: inserted, error: insertErr } = await supabase
+    const avatar = color;
+    const { data: ins, error: insErr } = await supabase
       .from("presence")
       .insert([{ username: name, online: true, color, avatar }])
       .select("id, username, online, color, avatar");
 
-    if (insertErr) {
-      // if insert fails due to race, try update fallback
-      console.warn("presence insertErr", insertErr);
-      // fallback attempt to update by username
-      await supabase.from("presence").update({ online:true }).eq("username", name);
-      const { data: fallback, error: fbErr } = await supabase.from("presence").select("id").eq("username", name).limit(1);
-      if (fbErr) console.warn("presence fallback read err", fbErr);
-      if (fallback && fallback.length > 0) {
-        presenceId = fallback[0].id;
+    if (insErr) {
+      console.warn("presence insertErr", insErr);
+      debug("presence insertErr " + (insErr.message || insErr));
+      // fallback: try update by username (race)
+      await supabase.from("presence").update({ online: true }).eq("username", name);
+      const { data: fb, error: fbErr } = await supabase.from("presence").select("id").eq("username", name).limit(1);
+      if (fb && fb.length > 0) {
+        presenceId = fb[0].id;
         localStorage.setItem("vixel_presence_id", presenceId);
       }
       return;
     }
 
-    if (inserted && inserted[0]) {
-      presenceId = inserted[0].id;
+    if (ins && ins[0]) {
+      presenceId = ins[0].id;
       localStorage.setItem("vixel_presence_id", presenceId);
     }
   } catch (err) {
@@ -547,25 +568,21 @@ async function setOnline(name) {
   if (!name) return;
   try {
     await supabase.from("presence").update({ online: true }).eq("username", name);
-  } catch (err) {
-    console.warn("setOnline err", err);
-  }
+  } catch (err) { console.warn("setOnline err", err); }
 }
 
 async function setOffline(name) {
   if (!name) return;
   try {
     await supabase.from("presence").update({ online: false }).eq("username", name);
-  } catch (err) {
-    console.warn("setOffline err", err);
-  }
+  } catch (err) { console.warn("setOffline err", err); }
 }
 
-/* -----------------------
-   Load presence list (players)
-------------------------*/
-async function loadPresence(){
-  debug("loadPresence()");
+/* --------------------------
+   Load presence and render players
+---------------------------*/
+async function loadPresence() {
+  debug("loadPresence");
   try {
     const { data, error } = await supabase
       .from("presence")
@@ -579,13 +596,13 @@ async function loadPresence(){
         username: r.username,
         online: r.online,
         id: r.id,
-        color: r.color || deterministicColorForName(r.username),
-        avatar: r.avatar || (r.color || deterministicColorForName(r.username))
+        color: r.color,
+        avatar: r.avatar
       };
     });
 
     renderPlayers();
-    debug("loaded presence rows: " + (data?.length || 0));
+    debug("presence rows: " + (data?.length || 0));
   } catch (err) {
     console.error("loadPresence err", err);
     debug("loadPresence err: " + (err.message || err));
@@ -595,7 +612,7 @@ async function loadPresence(){
 function renderPlayers(){
   usersList.innerHTML = "";
   const arr = Object.values(onlineUsers).sort((a,b) => {
-    if (a.online === b.online) return a.username.localeCompare(b.username);
+    if (a.online === b.online) return (a.username||"").localeCompare(b.username||"");
     return a.online ? -1 : 1;
   });
 
@@ -603,12 +620,12 @@ function renderPlayers(){
     const card = document.createElement("div");
     card.className = "userCard";
 
-    const av = avatarElement(u.username, 34, u.avatar || u.color);
+    const av = avatarElement(u.username, 34, u.avatar || u.color || deterministicColorForName(u.username));
     card.appendChild(av);
 
     const nameEl = document.createElement("div");
+    nameEl.style.fontWeight = 700;
     nameEl.textContent = u.username;
-    nameEl.style.fontWeight = 600;
     card.appendChild(nameEl);
 
     const dot = document.createElement("div");
@@ -618,44 +635,39 @@ function renderPlayers(){
     usersList.appendChild(card);
   });
 
-  const onlineCount = arr.filter(u => u.online).length;
+  const onlineCount = arr.filter(x => x.online).length;
   onlineCountEl.textContent = `${onlineCount} online`;
   playersCountEl.textContent = `players: ${arr.length}`;
 }
 
-/* -----------------------
+/* --------------------------
    Realtime subscriptions
-   - messages INSERT: add to DOM (dedupe by id)
-   - presence INSERT/UPDATE/DELETE: keep players list live
-------------------------*/
-function subscribeRealtime(){
+---------------------------*/
+function subscribeRealtime() {
   if (messagesChannel || presenceChannel) return;
 
   messagesChannel = supabase
-    .channel('realtime:messages')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-      if (payload && payload.new) {
-        // ensure we attach avatar color if we can — optional: presence join not available here
-        addMessageToDom(payload.new);
-      }
+    .channel("realtime:messages")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
+      if (payload && payload.new) addMessageToDOM(payload.new);
     })
     .subscribe(status => debug("messages channel: " + status));
 
   presenceChannel = supabase
-    .channel('realtime:presence')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'presence' }, payload => {
+    .channel("realtime:presence")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "presence" }, payload => {
       const r = payload.new;
       if (!r || !r.username) return;
       onlineUsers[r.username] = { username: r.username, online: r.online, id: r.id, color: r.color, avatar: r.avatar };
       renderPlayers();
     })
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'presence' }, payload => {
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "presence" }, payload => {
       const r = payload.new;
       if (!r || !r.username) return;
       onlineUsers[r.username] = { username: r.username, online: r.online, id: r.id, color: r.color, avatar: r.avatar };
       renderPlayers();
     })
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'presence' }, payload => {
+    .on("postgres_changes", { event: "DELETE", schema: "public", table: "presence" }, payload => {
       const r = payload.old;
       if (!r || !r.username) return;
       delete onlineUsers[r.username];
@@ -664,33 +676,69 @@ function subscribeRealtime(){
     .subscribe(status => debug("presence channel: " + status));
 }
 
-/* -----------------------
+/* --------------------------
+   Name change limiter (once per week)
+   We'll record timestamp in localStorage under 'vixel_name_changed_at'
+   Format: ISO string
+---------------------------*/
+function canChangeNameNow() {
+  if (!nameChangedAt) return true;
+  try {
+    const last = new Date(nameChangedAt);
+    const now = new Date();
+    const diff = now - last;
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+    return diff >= weekMs;
+  } catch(e) { return true; }
+}
+
+function recordNameChangeNow() {
+  const now = new Date().toISOString();
+  nameChangedAt = now;
+  localStorage.setItem("vixel_name_changed_at", now);
+  // best-effort update presence row with name_changed_at if column exists
+  if (presenceId) {
+    supabase.from("presence").update({ name_changed_at: now }).eq("id", presenceId).catch(()=>{});
+  }
+}
+
+/* --------------------------
    Event wiring
-------------------------*/
+---------------------------*/
 loginBtn.onclick = async () => {
   const name = nameInput.value.trim();
   if (!name) { alert("Type a name"); return; }
+
+  // check weekly limit (local)
+  if (username && username !== name) {
+    if (!canChangeNameNow()) {
+      alert("You can only change your name once per week.");
+      return;
+    }
+  }
+
   username = name;
   localStorage.setItem("vixel_user", username);
   nameInput.value = "";
   statusHint.textContent = `logged as ${username}`;
 
-  // Option B: ensure presence row exists, then mark online
+  // ensure presence row exists and mark online
   await ensurePresenceRow(username);
   await setOnline(username);
+  recordNameChangeNow();
 
-  // subscribe & refresh
+  // subscribe and load data
   subscribeRealtime();
   await loadPresence();
   await loadMessages();
 };
 
 sendBtn.onclick = sendMessage;
+
 messageInput.addEventListener("keydown", async (e) => {
-  // Shift+Enter should insert newline; Enter (no shift) should send
   if (e.key === "Enter") {
     if (e.shiftKey) {
-      // let it add newline
+      // allow newline
       return;
     } else {
       e.preventDefault();
@@ -699,24 +747,18 @@ messageInput.addEventListener("keydown", async (e) => {
   }
 });
 
-// refresh players
 refreshPlayersBtn.onclick = async () => {
   await loadPresence();
 };
 
-/* -----------------------
-   Visibility & unload handling
-   - mark offline when hidden/unload
-   - mark online when visible
-------------------------*/
-window.addEventListener("beforeunload", async () => {
+/* --------------------------
+   Visibility / unload handlers
+   mark offline on hidden/unload and online on visible
+---------------------------*/
+window.addEventListener("beforeunload", () => {
   if (username) {
-    // best-effort set offline; we don't await due to unload
-    try {
-      // try sendBeacon alternative (note: Supabase requires headers; sendBeacon may not authenticate)
-      // Primary approach: spawn an async update (best-effort)
-      setTimeout(() => setOffline(username), 0);
-    } catch(e){}
+    // best-effort set offline (async)
+    setTimeout(() => setOffline(username), 0);
   }
 });
 
@@ -736,14 +778,13 @@ document.addEventListener("visibilitychange", async () => {
   }
 });
 
-/* -----------------------
+/* --------------------------
    Init
-------------------------*/
-async function init(){
+---------------------------*/
+(async function init(){
   debug("init start");
   if (username) {
     statusHint.textContent = `logged as ${username}`;
-    // ensure presence exists and set online
     await ensurePresenceRow(username);
     await setOnline(username);
   } else {
@@ -754,46 +795,41 @@ async function init(){
   await loadPresence();
   await loadMessages();
   debug("init done");
-}
+})();
 
-init();
-
-/* -----------------------
-   Heartbeat to reduce false offline states (25s)
-   - re-assert online periodically
-------------------------*/
+/* --------------------------
+   Heartbeat (25s) to avoid false offline
+---------------------------*/
 setInterval(async () => {
-  if (username) {
-    await setOnline(username).catch(()=>{});
-  }
+  if (username) await setOnline(username).catch(()=>{});
 }, 25000);
 
-/* -----------------------
+/* --------------------------
    Debug helper
-------------------------*/
-function debug(msg){
+---------------------------*/
+function debug(msg) {
   try {
-    debugHint.textContent = "debug: " + String(msg).slice(0, 120);
+    debugHint.textContent = "debug: " + String(msg).slice(0,120);
     console.debug("[vixel-debug]", msg);
   } catch(e){}
 }
 
-/* -----------------------
-   End of JS
-------------------------*/
+/* --------------------------
+   End JS
+---------------------------*/
 </script>
 
 <!--
-  End of file.
-  Notes:
-  - Add columns in Supabase presence table:
-      color (text)
-      avatar (text)
-    Both should be TEXT. They store hex color strings for avatar background.
-  - If you want messages to show avatar colors per-sender, we attempted to use presence.avatar when available;
-    if you want message rows to include avatar color from presence, we could join presence on messages in the SELECT,
-    but that requires a view or an extra lookup — currently we use deterministicColorForName when presence.avatar missing.
-  - If something still doesn't show, check your Supabase table row permissions / CORS / anon key validity.
+  NOTES & ACTIONS (quick):
+  1) Recreate the presence columns:
+     - color (text)
+     - avatar (text)
+     - optionally: name_changed_at (timestamp) if you want server-side tracking
+  2) If you see 401 errors: enable anon policies for presence/messages:
+     - create policy for select/insert/update on presence (and messages if needed)
+  3) Bad words: edit BAD_WORDS array in the JS to include words you want filtered.
+  4) Rate limits: tweak SPAM_WINDOW_MS and SPAM_MAX_MESSAGES to taste.
+  5) If you want UI to allow picking colors manually (Option B), say so and i'll add a picker (full file).
 -->
 
 </body>
