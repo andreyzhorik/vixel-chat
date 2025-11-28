@@ -6,46 +6,47 @@
 <title>Vixel Chat — Full Build</title>
 
 <!--
-  Vixel Chat
-  - Full working single-file app
-  - Realtime messages + presence + avatars + players list
-  - Keeps "Go Offline" button (per request "don't remove anything")
-  - No duplicate messages (dedup by id)
-  - Uses your Supabase project URL + anon key from earlier messages
-  - Option B presence behaviour (online true while on site; offline when leaving)
+  Vixel Chat — full version
+  - Presence: insert on login if needed (Option B)
+  - presence table expected columns:
+      id (uuid), username (text), lastseen (timestamp), online (bool), color (text), avatar (text)
+    (Add color/avatar columns as TEXT in Supabase Table Editor)
+  - Shift+Enter = newline, Enter = send
+  - Players column shows properly and live
+  - Go Offline & Clear Name removed per request
+  - Less "meme" styling, more subdued theme
+  - File intentionally verbose + commented (500+ lines)
 -->
 
 <style>
   :root{
-    --bg:#000000;
-    --panel:#150000;
-    --panel2:#1b0000;
-    --accent1:#5A0000;
-    --accent2:#C00000;
-    --accent3:#FF2A2A;
-    --text:#ffffff;
-    --muted:#bbbbbb;
-    --avatar-size:36px;
-    --card-radius:14px;
+    --bg: #050507;
+    --panel: #0d0b0c;
+    --panel2: #141213;
+    --accent: #b72b2b;
+    --muted: #9aa0a6;
+    --text: #e9eef2;
+    --card-radius: 12px;
+    --avatar-size: 36px;
   }
 
   html,body{
     height:100%;
     margin:0;
-    background:linear-gradient(180deg,var(--bg),#1b0000);
-    font-family:Inter,system-ui,Arial,Helvetica,sans-serif;
+    background: linear-gradient(180deg, var(--bg), #0b0607);
     color:var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     -webkit-font-smoothing:antialiased;
     -moz-osx-font-smoothing:grayscale;
   }
 
-  /* outer layout */
+  /* Layout */
   .wrap{
     height:100vh;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:18px;
+    padding:16px;
     box-sizing:border-box;
   }
 
@@ -54,20 +55,20 @@
     max-width:1200px;
     height:86vh;
     display:grid;
-    grid-template-columns:3fr 1fr;
-    gap:18px;
+    grid-template-columns: 3fr 1fr;
+    gap:16px;
     min-height:0;
   }
 
-  /* cards */
+  /* Card */
   .card{
-    background:linear-gradient(180deg,var(--panel),var(--panel2));
-    border-radius:var(--card-radius);
+    background: linear-gradient(180deg, var(--panel), var(--panel2));
+    border-radius: var(--card-radius);
     padding:14px;
-    box-shadow:0 8px 30px rgba(0,0,0,0.7);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     display:flex;
     flex-direction:column;
-    border:1px solid rgba(255,0,0,0.04);
+    border:1px solid rgba(255,255,255,0.03);
     min-height:0;
   }
 
@@ -79,23 +80,23 @@
   }
 
   .title{
-    font-weight:900;
+    font-weight:700;
     font-size:18px;
-    letter-spacing:0.4px;
+    letter-spacing:0.3px;
   }
 
-  .small{
+  .subtitle{
     font-size:13px;
     color:var(--muted);
   }
 
-  /* messages panel */
+  /* Messages */
   .messages {
     flex:1;
     overflow-y:auto;
     padding:12px;
-    border-radius:8px;
-    background:linear-gradient(180deg, rgba(0,0,0,0.20), rgba(255,255,255,0.01));
+    border-radius:10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
     display:flex;
     flex-direction:column;
     gap:10px;
@@ -117,24 +118,24 @@
     border-radius:50%;
     display:inline-grid;
     place-items:center;
-    font-weight:800;
-    border:2px solid rgba(255,255,255,0.04);
-    color:white;
+    font-weight:700;
+    color: #fff;
     text-transform:uppercase;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.45);
     flex-shrink:0;
-    box-shadow:0 6px 18px rgba(0,0,0,0.45);
+    border:1px solid rgba(255,255,255,0.03);
   }
 
   .msg{
     padding:10px 12px;
-    border-radius:12px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:10px;
+    background: rgba(255,255,255,0.02);
     font-size:14px;
-    line-height:1.35;
-    animation:pop .12s ease;
-    max-width:90%;
+    line-height:1.4;
+    max-width:88%;
     word-break:break-word;
     border:1px solid rgba(255,255,255,0.02);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
   }
 
   .meta{
@@ -143,60 +144,49 @@
     margin-bottom:6px;
   }
 
-  @keyframes pop { from{opacity:0; transform:translateY(6px) scale(.99);} to{opacity:1;} }
-
   .inputRow{
     display:flex;
     gap:8px;
-    padding-top:10px;
     align-items:center;
+    margin-top:10px;
   }
 
-  input[type="text"], input[type="search"]{
+  textarea, input[type="text"]{
     background:transparent;
-    border:1px solid rgba(255,255,255,0.10);
+    border:1px solid rgba(255,255,255,0.06);
     color:var(--text);
     padding:10px;
     border-radius:8px;
     outline:none;
     flex:1;
-    box-sizing:border-box;
-  }
-
-  input[type="text"]::placeholder, input[type="search"]::placeholder{
-    color:rgba(255,255,255,0.45);
+    resize:vertical;
+    min-height:40px;
+    max-height:140px;
+    font-size:14px;
   }
 
   .btn{
-    background:linear-gradient(90deg,var(--accent2),var(--accent3));
+    background: linear-gradient(180deg, var(--accent), #8f2222);
     padding:10px 14px;
     border-radius:8px;
     border:none;
     color:white;
     cursor:pointer;
-    font-weight:800;
-    box-shadow:0 6px 18px rgba(0,0,0,0.45);
+    font-weight:700;
+    letter-spacing:0.3px;
   }
 
-  /* users column */
-  .users {
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-
+  /* Users column */
   .usersHeader{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:6px;
-    color:var(--muted);
+    margin-bottom:8px;
   }
 
   .usersList{
     overflow:auto;
     flex:1;
-    padding-right:6px;
     display:flex;
     flex-direction:column;
     gap:8px;
@@ -207,10 +197,9 @@
     gap:10px;
     align-items:center;
     padding:8px;
-    border-radius:10px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border:1px solid rgba(255,255,255,0.03);
-    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.2);
+    border-radius:8px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+    border:1px solid rgba(255,255,255,0.02);
   }
 
   .statusDot{
@@ -220,93 +209,78 @@
     margin-left:auto;
     box-shadow:0 1px 4px rgba(0,0,0,0.6);
   }
-  .status-online{ background: #3be86b; }
-  .status-offline{ background: #555; }
+  .status-online{ background: #4be37a; }
+  .status-offline{ background: #666; }
 
-  .searchBox{
+  .playersFooter{
+    margin-top:8px;
     display:flex;
     gap:8px;
-    margin-bottom:8px;
     align-items:center;
   }
 
-  .mutedSmall{
-    color:var(--muted);
-    font-size:12px;
-  }
+  .mutedSmall{ color:var(--muted); font-size:13px; }
 
-  /* responsive */
   @media (max-width:900px){
-    .app{ grid-template-columns:1fr; height:94vh; }
-    .users { order: -1; }
+    .app{ grid-template-columns:1fr; height:92vh; }
+    .users { order:-1; }
   }
 
-  /* long comment so file is beefy › (we'll still add many helpful comments in JS) */
+  /* misc long comment block below to increase file length; file remains maintainable and commented */
+  /* ---------------------------------------------------------------------------------------------- */
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="app">
 
-      <!-- MAIN CHAT CARD -->
+      <!-- Main chat -->
       <div class="card" id="mainCard">
         <div class="headerRow" style="margin-bottom:8px;">
           <div>
             <div class="title">Vixel Chat</div>
-            <div class="small mutedSmall">Realtime chat — powered by Supabase</div>
+            <div class="subtitle">Realtime chat • subtle theme</div>
           </div>
           <div style="text-align:right;">
-            <div class="small" id="statusHint">not logged</div>
-            <div class="small mutedSmall" id="debugHint" style="margin-top:6px;">debug: ready</div>
+            <div class="mutedSmall" id="statusHint">not logged</div>
+            <div class="mutedSmall" id="debugHint" style="margin-top:6px;">debug: idle</div>
           </div>
         </div>
 
-        <!-- MESSAGES -->
         <div id="messages" class="messages" aria-live="polite" role="log"></div>
 
-        <!-- INPUT -->
-        <div class="inputRow" style="margin-top:8px;">
-          <input id="messageInput" type="text" placeholder="Type a message..." autocomplete="off" />
+        <!-- message input: textarea to support multi-line + Shift+Enter newline -->
+        <div class="inputRow">
+          <textarea id="messageInput" placeholder="Write a message — Shift+Enter for newline, Enter to send"></textarea>
           <button id="sendBtn" class="btn">Send</button>
         </div>
 
-        <!-- LOGIN ROW -->
-        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
-          <input id="nameInput" placeholder="your name" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:var(--text)" />
+        <!-- login row: insert presence if missing when user sets name -->
+        <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+          <input id="nameInput" placeholder="Your name" style="padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--text); flex:1;" />
           <button id="loginBtn" class="btn">Set Name</button>
-          <!-- Per your "don't remove anything" request we KEEP the Go Offline button visible in the UI -->
-          <button id="goOfflineBtn" class="btn" style="background:linear-gradient(90deg,#666,#444);margin-left:6px">Go Offline</button>
         </div>
 
-        <!-- EXTRA INFO AREA -->
-        <div style="margin-top:12px; display:flex; gap:12px; align-items:center;">
-          <div class="small mutedSmall">Tip: press Enter to send</div>
-          <div class="small mutedSmall"> • </div>
-          <div class="small mutedSmall" id="messagesCount">messages: 0</div>
+        <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+          <div class="mutedSmall" id="messagesCount">messages: 0</div>
+          <div class="mutedSmall">•</div>
+          <div class="mutedSmall" id="playersCount">players: 0</div>
         </div>
-
       </div>
 
-      <!-- USERS / PLAYERS CARD -->
+      <!-- Players -->
       <div class="card users" id="usersCard">
         <div class="usersHeader">
-          <div style="font-weight:800">Players</div>
-          <div class="small" id="onlineCount">0 online</div>
+          <div style="font-weight:700">Players</div>
+          <div class="mutedSmall" id="onlineCount">0 online</div>
         </div>
 
-        <!-- search -->
-        <div class="searchBox">
-          <input id="playerSearch" type="search" placeholder="Search players..." />
-          <div class="mutedSmall" id="playersFilterInfo">showing all</div>
-        </div>
+        <div id="usersList" class="usersList"></div>
 
-        <!-- list -->
-        <div id="usersList" class="usersList" aria-live="polite"></div>
-
-        <!-- little footer actions -->
-        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
-          <button id="refreshPlayersBtn" class="btn" style="flex:1;background:linear-gradient(90deg,#222,#111)">Refresh Players</button>
-          <button id="clearLocalBtn" class="btn" style="flex:1;background:linear-gradient(90deg,#3b3,#173)">Clear Name</button>
+        <div class="playersFooter">
+          <div class="mutedSmall">auto online while active</div>
+          <div style="flex:1"></div>
+          <button id="refreshPlayersBtn" class="btn" style="background:linear-gradient(180deg,#3a3a3a,#1f1f1f);">Refresh</button>
         </div>
       </div>
 
@@ -315,20 +289,20 @@
 
 <script type="module">
 /*
-  Full Vixel Chat JS
-  - Uses @supabase/supabase-js (esm) for channels + restful convenience
-  - Avoids duplicate messages (dedup by id)
-  - Presence: online true while page/tab is active; offline on unload/hidden
-  - Keeps Go Offline button (manual override)
-  - Players searchable
-  - Letter avatars + deterministic colors
-  - Lots of comments for clarity
+  Full Vixel Chat JS — Revised per request
+  - Presence insertion on new login (Option B)
+  - Players list shows live
+  - Removed Clear Name & Go Offline buttons
+  - Shift+Enter newline; Enter sends
+  - Save avatar/color (text columns) into presence on creation
+  - Less meme visuals
+  - Long file, heavy comments for clarity
 */
 
-/* --------------------------
-   IMPORTANT: Supabase config
-   Keep these exactly as in your project (I used the ones you previously provided)
---------------------------- */
+/* -----------------------
+   Supabase client
+   Replace URL / KEY if needed — I kept your earlier values.
+------------------------*/
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const supabaseUrl = "https://ehciyxvbasqiiiurjuwu.supabase.co";
@@ -336,122 +310,118 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-/* --------------------------
-   DOM ELEMENTS
---------------------------- */
+/* -----------------------
+   DOM elements
+------------------------*/
 const messagesEl = document.getElementById("messages");
-const msgInput = document.getElementById("messageInput");
+const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 const nameInput = document.getElementById("nameInput");
 const loginBtn = document.getElementById("loginBtn");
 const usersList = document.getElementById("usersList");
 const onlineCountEl = document.getElementById("onlineCount");
 const statusHint = document.getElementById("statusHint");
-const goOfflineBtn = document.getElementById("goOfflineBtn");
-const messagesCountEl = document.getElementById("messagesCount");
-const refreshPlayersBtn = document.getElementById("refreshPlayersBtn");
-const clearLocalBtn = document.getElementById("clearLocalBtn");
-const playerSearch = document.getElementById("playerSearch");
-const playersFilterInfo = document.getElementById("playersFilterInfo");
 const debugHint = document.getElementById("debugHint");
+const messagesCountEl = document.getElementById("messagesCount");
+const playersCountEl = document.getElementById("playersCount");
+const refreshPlayersBtn = document.getElementById("refreshPlayersBtn");
 
-/* --------------------------
+/* -----------------------
    Local state
---------------------------- */
+------------------------*/
 let username = localStorage.getItem("vixel_user") || "";
 let presenceId = localStorage.getItem("vixel_presence_id") || null;
+let onlineUsers = {}; // map username -> { username, online, id, color, avatar }
+let seenMessageIds = new Set();
 let messagesChannel = null;
 let presenceChannel = null;
-let onlineUsers = {}; // map username -> {username, online, id}
-let seenMessageIds = new Set(); // dedupe inserted messages
 let messageCount = 0;
 
-/* --------------------------
-   Helpers: avatars, escaping
---------------------------- */
-function createAvatarColor(letter){
-  const colors = ["#FF4D4D","#FF8A4D","#FFDF4D","#4DFF8A","#4DD7FF","#7A4DFF","#FF4DA8","#4DFFB2","#FFE06C","#7CE6FF","#DDA0FF"];
-  const code = letter ? letter.toUpperCase().charCodeAt(0) : Math.floor(Math.random()*100);
-  return colors[code % colors.length];
+/* -----------------------
+   UTIL: avatars + deterministic color
+   We'll store color (hex string) in presence.color and avatar (same hex) in presence.avatar
+------------------------*/
+function deterministicColorForName(name) {
+  // simple consistent color generator from string
+  const palette = ["#FF6B6B","#FF9F43","#FFD166","#4D96FF","#6BF178","#7C6BFF","#FF6BB2","#6BDFF1","#FFCF76","#B4A7FF"];
+  if(!name) return palette[Math.floor(Math.random()*palette.length)];
+  let h = 0;
+  for (let i = 0; i < name.length; i++) {
+    h = (h << 5) - h + name.charCodeAt(i);
+    h = h & h;
+  }
+  const idx = Math.abs(h) % palette.length;
+  return palette[idx];
 }
 
-function avatarEl(name, size = 36){
-  const letter = (name||"?").charAt(0).toUpperCase();
-  const bg = createAvatarColor(letter);
+function avatarElement(name, size = 36, colorHex = null) {
   const el = document.createElement("div");
   el.className = "avatar";
+  const letter = (name||"?").charAt(0).toUpperCase();
+  el.textContent = letter;
+  const bg = colorHex || deterministicColorForName(name);
   el.style.background = bg;
   el.style.width = `${size}px`;
   el.style.height = `${size}px`;
   el.style.minWidth = `${size}px`;
-  el.textContent = letter;
   return el;
 }
 
-function escapeHtml(str){
-  return String(str || "").replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[s]));
+function escapeHtml(s){
+  return String(s || "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));
 }
 
-/* --------------------------
-   UI render helpers
---------------------------- */
-function addMessageToDOM(msg, opts = {}){
-  // msg: { id, user, text, created_at }
-  // opts: {prepend: false}
-  if (!msg || !msg.id) {
-    // if there's no id, we still render but avoid dedupe logic
-  } else {
-    if (seenMessageIds.has(msg.id)) return;
-    seenMessageIds.add(msg.id);
-  }
-
-  const row = document.createElement("div");
-  row.className = "msgRow";
-
-  const av = avatarEl(msg.user || "?", 36);
-  row.appendChild(av);
-
-  const box = document.createElement("div");
-  box.className = "msg";
-
-  const meta = document.createElement("div");
-  meta.className = "meta";
-  let timeString = "";
-  try{ timeString = msg.created_at ? new Date(msg.created_at).toLocaleTimeString() : ""; }catch(e){ timeString = ""; }
-  meta.innerHTML = `<strong>${escapeHtml(msg.user || "anon")}</strong> · <span class="small">${escapeHtml(timeString)}</span>`;
-
-  const text = document.createElement("div");
-  text.innerHTML = escapeHtml(msg.text || "");
-
-  box.appendChild(meta);
-  box.appendChild(text);
-  row.appendChild(box);
-
-  if (opts.prepend) messagesEl.prepend(row);
-  else messagesEl.appendChild(row);
-
-  messageCount++;
-  messagesCountEl.textContent = `messages: ${messageCount}`;
-
-  // scroll to bottom unless user scrolled up
-  // we choose to always auto-scroll for now
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-}
-
-function clearMessagesDOM(){
+/* -----------------------
+   UI helpers: messages
+------------------------*/
+function clearMessages() {
   messagesEl.innerHTML = "";
   seenMessageIds.clear();
   messageCount = 0;
   messagesCountEl.textContent = `messages: ${messageCount}`;
 }
 
-/* --------------------------
-   Load initial messages
---------------------------- */
+function addMessageToDom(row) {
+  // Expect row: { id, user, text, created_at }
+  if (row && row.id) {
+    if (seenMessageIds.has(row.id)) return;
+    seenMessageIds.add(row.id);
+  }
+  const container = document.createElement("div");
+  container.className = "msgRow";
+
+  const av = avatarElement(row.user || "?", 36, row.avatar || deterministicColorForName(row.user));
+  container.appendChild(av);
+
+  const box = document.createElement("div");
+  box.className = "msg";
+
+  const meta = document.createElement("div");
+  meta.className = "meta";
+  const ts = row.created_at ? new Date(row.created_at).toLocaleTimeString() : "";
+  meta.innerHTML = `<strong>${escapeHtml(row.user || "anon")}</strong> · <span class="mutedSmall">${escapeHtml(ts)}</span>`;
+
+  const text = document.createElement("div");
+  // preserve newlines
+  const safeText = escapeHtml(row.text || "").replace(/\n/g, "<br/>");
+  text.innerHTML = safeText;
+
+  box.appendChild(meta);
+  box.appendChild(text);
+  container.appendChild(box);
+
+  messagesEl.appendChild(container);
+  messageCount++;
+  messagesCountEl.textContent = `messages: ${messageCount}`;
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+/* -----------------------
+   Load messages from Supabase
+------------------------*/
 async function loadMessages(){
   debug("loadMessages()");
-  try{
-    // load last 200 messages ordered asc
+  try {
     const { data, error } = await supabase
       .from("messages")
       .select("id, user, text, created_at")
@@ -459,27 +429,32 @@ async function loadMessages(){
       .limit(500);
 
     if (error) throw error;
-    clearMessagesDOM();
-    data?.forEach(row => addMessageToDOM(row));
-    debug("loaded messages: " + (data?.length || 0));
-  } catch (err){
+
+    clearMessages();
+    data?.forEach(r => addMessageToDom(r));
+    debug(`loaded ${data?.length || 0} messages`);
+  } catch (err) {
     console.error("loadMessages err", err);
     debug("loadMessages err: " + (err.message || err));
   }
 }
 
-/* --------------------------
-   Send message (no local double-echo)
-   We will not locally add message before insert — rely on realtime INSERT event
-   However for UX we will optimistically add if insert returns row (rarely necessary)
---------------------------- */
+/* -----------------------
+   Send message
+   - Enter sends
+   - Shift+Enter inserts newline (handled at keydown)
+   - We insert and rely on realtime INSERT to populate; but we also render returned row if server responds
+------------------------*/
 async function sendMessage(){
-  const text = msgInput.value.trim();
-  if (!username) return alert("Set a name first");
+  const text = messageInput.value.trim();
+  if (!username) {
+    alert("Set your name first");
+    return;
+  }
   if (!text) return;
 
   sendBtn.disabled = true;
-  try{
+  try {
     const { data, error } = await supabase
       .from("messages")
       .insert([{ user: username, text }])
@@ -487,14 +462,14 @@ async function sendMessage(){
 
     if (error) throw error;
 
-    // if returned data, render the returned row manually to avoid waiting for realtime event
-    // but only render if realtime hasn't already done it (dedupe handles it)
-    const inserted = (data && data[0]);
-    if (inserted) addMessageToDOM(inserted);
+    // server returned inserted row(s)
+    if (data && data[0]) {
+      addMessageToDom(data[0]);
+    }
 
-    msgInput.value = "";
-    msgInput.focus();
-  } catch (err){
+    messageInput.value = "";
+    messageInput.focus();
+  } catch (err) {
     console.error("sendMessage err", err);
     debug("sendMessage err: " + (err.message || err));
     alert("Failed to send message");
@@ -503,124 +478,137 @@ async function sendMessage(){
   }
 }
 
-/* --------------------------
-   Presence: set online/offline
-   Option B behavior: set online when on site; set offline when leave/hidden
-   We will try both update and insert semantics so we don't rely on presence row existing
---------------------------- */
-async function setOnlineFor(name){
+/* -----------------------
+   Presence: insert or update
+   Behavior requested: Option B — insert if not exists when user logs in
+   We'll store avatar & color fields in presence (both text)
+------------------------*/
+async function ensurePresenceRow(name) {
   if (!name) return;
-  try{
-    // try update first (if row exists)
-    const { data: updated, error: updateErr } = await supabase
+  try {
+    // try select for existing row
+    const { data: existing, error: selectErr } = await supabase
       .from("presence")
-      .update({ online: true })
+      .select("id, username, online, color, avatar")
       .eq("username", name)
-      .select("id, username, online");
+      .limit(1);
 
-    if (updateErr) {
-      // update may fail if row doesn't exist or RLS - log and continue
-      // console.info("presence updateErr", updateErr);
+    if (selectErr) {
+      // if select fails, continue to attempt insert or update
+      console.warn("presence selectErr", selectErr);
     }
 
-    if (updated && updated.length > 0){
-      presenceId = updated[0].id;
+    if (existing && existing.length > 0) {
+      presenceId = existing[0].id;
       localStorage.setItem("vixel_presence_id", presenceId);
-    } else {
-      // insert if not updated
-      const { data: inserted, error: insertErr } = await supabase
+      // update to mark online if needed
+      await supabase
         .from("presence")
-        .insert([{ username: name, online: true }])
-        .select("id, username, online");
-
-      if (insertErr) {
-        // sometimes insert may conflict - swallow but log
-        // console.warn("presence insertErr", insertErr);
-      } else {
-        presenceId = inserted && inserted[0] && inserted[0].id;
-        if (presenceId) localStorage.setItem("vixel_presence_id", presenceId);
-      }
+        .update({ online: true })
+        .eq("id", presenceId)
+        .select()
+      ;
+      return;
     }
-  } catch (err){
-    console.error("setOnlineFor err", err);
-    debug("setOnlineFor err: " + (err.message || err));
-  }
-}
 
-async function setOfflineFor(name){
-  if (!name) return;
-  try{
-    const { data, error } = await supabase
+    // if we got here, no existing row — build avatar/color and insert
+    const color = deterministicColorForName(name);
+    const avatar = color; // store same hex for avatar background; you can change format later
+    const { data: inserted, error: insertErr } = await supabase
       .from("presence")
-      .update({ online: false })
-      .eq("username", name)
-      .select("id, username, online");
+      .insert([{ username: name, online: true, color, avatar }])
+      .select("id, username, online, color, avatar");
 
-    if (error) {
-      // log but don't block
-      // console.warn("setOfflineFor error", error);
-      debug("setOfflineFor error: " + (error.message || error));
+    if (insertErr) {
+      // if insert fails due to race, try update fallback
+      console.warn("presence insertErr", insertErr);
+      // fallback attempt to update by username
+      await supabase.from("presence").update({ online:true }).eq("username", name);
+      const { data: fallback, error: fbErr } = await supabase.from("presence").select("id").eq("username", name).limit(1);
+      if (fbErr) console.warn("presence fallback read err", fbErr);
+      if (fallback && fallback.length > 0) {
+        presenceId = fallback[0].id;
+        localStorage.setItem("vixel_presence_id", presenceId);
+      }
+      return;
     }
-  } catch (err){
-    console.error("setOfflineFor err", err);
-    debug("setOfflineFor err: " + (err.message || err));
+
+    if (inserted && inserted[0]) {
+      presenceId = inserted[0].id;
+      localStorage.setItem("vixel_presence_id", presenceId);
+    }
+  } catch (err) {
+    console.error("ensurePresenceRow err", err);
+    debug("ensurePresenceRow err: " + (err.message || err));
   }
 }
 
-/* --------------------------
-   Load presence list
---------------------------- */
+async function setOnline(name) {
+  if (!name) return;
+  try {
+    await supabase.from("presence").update({ online: true }).eq("username", name);
+  } catch (err) {
+    console.warn("setOnline err", err);
+  }
+}
+
+async function setOffline(name) {
+  if (!name) return;
+  try {
+    await supabase.from("presence").update({ online: false }).eq("username", name);
+  } catch (err) {
+    console.warn("setOffline err", err);
+  }
+}
+
+/* -----------------------
+   Load presence list (players)
+------------------------*/
 async function loadPresence(){
   debug("loadPresence()");
-  try{
+  try {
     const { data, error } = await supabase
       .from("presence")
-      .select("id, username, online");
+      .select("id, username, online, color, avatar");
 
     if (error) throw error;
 
     onlineUsers = {};
-    data?.forEach(row => {
-      onlineUsers[row.username] = { username: row.username, online: row.online, id: row.id };
+    (data || []).forEach(r => {
+      onlineUsers[r.username] = {
+        username: r.username,
+        online: r.online,
+        id: r.id,
+        color: r.color || deterministicColorForName(r.username),
+        avatar: r.avatar || (r.color || deterministicColorForName(r.username))
+      };
     });
 
-    renderUsers();
-    debug("loaded presence: " + (data?.length || 0));
-  } catch (err){
+    renderPlayers();
+    debug("loaded presence rows: " + (data?.length || 0));
+  } catch (err) {
     console.error("loadPresence err", err);
     debug("loadPresence err: " + (err.message || err));
   }
 }
 
-/* --------------------------
-   Render users (players list)
-   Supports search filter from playerSearch input
---------------------------- */
-function renderUsers(){
+function renderPlayers(){
   usersList.innerHTML = "";
-  const filter = (playerSearch?.value || "").trim().toLowerCase();
-
   const arr = Object.values(onlineUsers).sort((a,b) => {
-    // online first then name
     if (a.online === b.online) return a.username.localeCompare(b.username);
     return a.online ? -1 : 1;
   });
 
-  const filtered = arr.filter(u => {
-    if (!filter) return true;
-    return u.username.toLowerCase().includes(filter);
-  });
-
-  filtered.forEach(u => {
+  arr.forEach(u => {
     const card = document.createElement("div");
     card.className = "userCard";
 
-    const av = avatarEl(u.username, 30);
+    const av = avatarElement(u.username, 34, u.avatar || u.color);
     card.appendChild(av);
 
     const nameEl = document.createElement("div");
-    nameEl.style.fontWeight = 700;
     nameEl.textContent = u.username;
+    nameEl.style.fontWeight = 600;
     card.appendChild(nameEl);
 
     const dot = document.createElement("div");
@@ -632,218 +620,180 @@ function renderUsers(){
 
   const onlineCount = arr.filter(u => u.online).length;
   onlineCountEl.textContent = `${onlineCount} online`;
-
-  playersFilterInfo.textContent = filter ? `filter: "${filter}"` : "showing all";
+  playersCountEl.textContent = `players: ${arr.length}`;
 }
 
-/* --------------------------
+/* -----------------------
    Realtime subscriptions
-   - messagesChannel listens for INSERT on messages
-   - presenceChannel listens for INSERT/UPDATE/DELETE on presence
---------------------------- */
+   - messages INSERT: add to DOM (dedupe by id)
+   - presence INSERT/UPDATE/DELETE: keep players list live
+------------------------*/
 function subscribeRealtime(){
-  // avoid double-subscribe
   if (messagesChannel || presenceChannel) return;
 
-  // messages channel
   messagesChannel = supabase
-    .channel("realtime:messages")
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
+    .channel('realtime:messages')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
       if (payload && payload.new) {
-        addMessageToDOM(payload.new);
+        // ensure we attach avatar color if we can — optional: presence join not available here
+        addMessageToDom(payload.new);
       }
     })
-    .subscribe(status => {
-      debug("messages channel status: " + status);
-    });
+    .subscribe(status => debug("messages channel: " + status));
 
-  // presence channel
   presenceChannel = supabase
-    .channel("realtime:presence")
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "presence" }, payload => {
-      const row = payload.new;
-      if (row && row.username) {
-        onlineUsers[row.username] = { username: row.username, online: row.online, id: row.id };
-        renderUsers();
-      }
+    .channel('realtime:presence')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'presence' }, payload => {
+      const r = payload.new;
+      if (!r || !r.username) return;
+      onlineUsers[r.username] = { username: r.username, online: r.online, id: r.id, color: r.color, avatar: r.avatar };
+      renderPlayers();
     })
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "presence" }, payload => {
-      const row = payload.new;
-      if (row && row.username) {
-        onlineUsers[row.username] = { username: row.username, online: row.online, id: row.id };
-        renderUsers();
-      }
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'presence' }, payload => {
+      const r = payload.new;
+      if (!r || !r.username) return;
+      onlineUsers[r.username] = { username: r.username, online: r.online, id: r.id, color: r.color, avatar: r.avatar };
+      renderPlayers();
     })
-    .on("postgres_changes", { event: "DELETE", schema: "public", table: "presence" }, payload => {
-      const row = payload.old;
-      if (row && row.username && onlineUsers[row.username]) {
-        delete onlineUsers[row.username];
-        renderUsers();
-      }
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'presence' }, payload => {
+      const r = payload.old;
+      if (!r || !r.username) return;
+      delete onlineUsers[r.username];
+      renderPlayers();
     })
-    .subscribe(status => {
-      debug("presence channel status: " + status);
-    });
+    .subscribe(status => debug("presence channel: " + status));
 }
 
-/* --------------------------
-   UI events wiring
---------------------------- */
+/* -----------------------
+   Event wiring
+------------------------*/
 loginBtn.onclick = async () => {
   const name = nameInput.value.trim();
-  if (!name) return;
+  if (!name) { alert("Type a name"); return; }
   username = name;
   localStorage.setItem("vixel_user", username);
   nameInput.value = "";
   statusHint.textContent = `logged as ${username}`;
-  await setOnlineFor(username);
+
+  // Option B: ensure presence row exists, then mark online
+  await ensurePresenceRow(username);
+  await setOnline(username);
+
+  // subscribe & refresh
   subscribeRealtime();
   await loadPresence();
   await loadMessages();
 };
 
 sendBtn.onclick = sendMessage;
-msgInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") sendMessage();
+messageInput.addEventListener("keydown", async (e) => {
+  // Shift+Enter should insert newline; Enter (no shift) should send
+  if (e.key === "Enter") {
+    if (e.shiftKey) {
+      // let it add newline
+      return;
+    } else {
+      e.preventDefault();
+      await sendMessage();
+    }
+  }
 });
 
-goOfflineBtn.onclick = async () => {
-  if (!username) return;
-  await setOfflineFor(username);
-  statusHint.textContent = `offline (you)`;
-};
-
+// refresh players
 refreshPlayersBtn.onclick = async () => {
   await loadPresence();
 };
 
-clearLocalBtn.onclick = () => {
-  localStorage.removeItem("vixel_user");
-  localStorage.removeItem("vixel_presence_id");
-  username = "";
-  statusHint.textContent = "not logged";
-  alert("local name cleared. reload or set a new name.");
-};
-
-playerSearch.addEventListener("input", () => {
-  renderUsers();
-});
-
-/* --------------------------
-   Visibility/unload handlers for presence
-   - When page is hidden/unloaded, set offline (best-effort).
-   - When page becomes visible, set online again.
---------------------------- */
-window.addEventListener("beforeunload", async (e) => {
+/* -----------------------
+   Visibility & unload handling
+   - mark offline when hidden/unload
+   - mark online when visible
+------------------------*/
+window.addEventListener("beforeunload", async () => {
   if (username) {
-    // try sendBeacon first (best-effort)
+    // best-effort set offline; we don't await due to unload
     try {
-      // sendBeacon requires a URL and body (can't set headers), Supabase REST expects headers so sendBeacon won't authenticate.
-      // We'll still call it for attempts on simple endpoints (rare). Primary method is a synchronous update via fetch though fetch won't be awaited.
-      if (navigator.sendBeacon) {
-        try {
-          // best-effort: construct REST URL; may not work due to CORS or auth, but attempt anyway
-          const url = `${supabaseUrl}/rest/v1/presence?username=eq.${encodeURIComponent(username)}`;
-          const body = JSON.stringify({ online: false });
-          navigator.sendBeacon(url, body);
-        } catch (e) {
-          /* ignore sendBeacon errors */
-        }
-      }
-      // Fire a quick update via fetch but don't block unload
-      setTimeout(() => setOfflineFor(username), 0);
-    } catch (err) {
-      /* ignore */
-    }
+      // try sendBeacon alternative (note: Supabase requires headers; sendBeacon may not authenticate)
+      // Primary approach: spawn an async update (best-effort)
+      setTimeout(() => setOffline(username), 0);
+    } catch(e){}
   }
 });
 
-// visibility
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "hidden") {
+    if (username) await setOffline(username).catch(()=>{});
+    statusHint.textContent = username ? `hidden` : `not logged`;
+  } else {
     if (username) {
-      await setOfflineFor(username).catch(()=>{});
-      statusHint.textContent = `hidden (offline)`;
+      await ensurePresenceRow(username).catch(()=>{});
+      await setOnline(username).catch(()=>{});
     }
-  } else if (document.visibilityState === "visible") {
-    if (username) {
-      await setOnlineFor(username).catch(()=>{});
-      statusHint.textContent = `logged as ${username}`;
-    }
-    // resubscribe & reload presence/messages for fresh UI
     subscribeRealtime();
     await loadPresence();
     await loadMessages();
+    statusHint.textContent = username ? `logged as ${username}` : `not logged`;
   }
 });
 
-/* --------------------------
-   Simple debug logger that writes to debugHint
---------------------------- */
-function debug(msg){
-  try{
-    debugHint.textContent = "debug: " + msg;
-    // also console log
-    console.debug("[vixel-debug]", msg);
-  } catch(e){}
-}
-
-/* --------------------------
-   INIT: if username saved -> auto set online and subscribe
-   Also load data once.
---------------------------- */
-(async function init(){
+/* -----------------------
+   Init
+------------------------*/
+async function init(){
   debug("init start");
-  if (username){
+  if (username) {
     statusHint.textContent = `logged as ${username}`;
-    await setOnlineFor(username);
-    debug("set online for saved user");
+    // ensure presence exists and set online
+    await ensurePresenceRow(username);
+    await setOnline(username);
   } else {
     statusHint.textContent = "not logged";
   }
 
   subscribeRealtime();
-
-  // initial loads
   await loadPresence();
   await loadMessages();
-
   debug("init done");
-})();
+}
 
-/* --------------------------
-   EXTRA: Periodic heartbeat for presence correctness
-   (Optional: to reduce false offline we ping server periodically)
-   We'll keep heartbeat infrequent (every 25s) to reduce writes.
---------------------------- */
+init();
+
+/* -----------------------
+   Heartbeat to reduce false offline states (25s)
+   - re-assert online periodically
+------------------------*/
 setInterval(async () => {
   if (username) {
-    // mark online again to avoid false offline
-    await setOnlineFor(username).catch(()=>{});
+    await setOnline(username).catch(()=>{});
   }
 }, 25000);
 
-/* --------------------------
-   Defensive: prevent double-subscribe when redeploying hot
---------------------------- */
-window.addEventListener("unload", () => {
-  // cleanup subscriptions on page leave (best-effort)
+/* -----------------------
+   Debug helper
+------------------------*/
+function debug(msg){
   try {
-    if (messagesChannel) messagesChannel.unsubscribe();
-    if (presenceChannel) presenceChannel.unsubscribe();
+    debugHint.textContent = "debug: " + String(msg).slice(0, 120);
+    console.debug("[vixel-debug]", msg);
   } catch(e){}
-});
+}
 
-/* --------------------------
-   END JS
---------------------------- */
-
+/* -----------------------
+   End of JS
+------------------------*/
 </script>
 
 <!--
-  End of full Vixel Chat file.
-  This file intentionally includes verbose comments and some defensive code so it's long, readable, and tweakable.
-  If you want styling tweaks, animations, or additional features (typing indicator, message edits, file uploads), say "option A/B" and i'll drop another full file like you asked.
+  End of file.
+  Notes:
+  - Add columns in Supabase presence table:
+      color (text)
+      avatar (text)
+    Both should be TEXT. They store hex color strings for avatar background.
+  - If you want messages to show avatar colors per-sender, we attempted to use presence.avatar when available;
+    if you want message rows to include avatar color from presence, we could join presence on messages in the SELECT,
+    but that requires a view or an extra lookup — currently we use deterministicColorForName when presence.avatar missing.
+  - If something still doesn't show, check your Supabase table row permissions / CORS / anon key validity.
 -->
 
 </body>
