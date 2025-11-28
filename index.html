@@ -1,429 +1,1377 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vixel Chat 2.0</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500&display=swap" rel="stylesheet">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Vixel Chat — Clean Red</title>
+
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+
 <style>
-/* ================================
-   ROOT VARIABLES & BASIC STYLES
-================================ */
+/* ==========================
+   DESIGN TOKENS (RED THEME)
+   ========================== */
+
 :root{
-  --bg:#0f0f0f;
-  --panel:#1c1c1c;
-  --accent:#e63946;
-  --text:#f5f5f5;
-  --secondary:#2c2c2c;
-  --hover:#333;
-  --scrollbar:#444;
-  --online:#43d9ad;
-  --offline:#777;
-  --transition:0.2s;
+  --bg: #0b0b0b;
+  --container: #120101;
+  --panel: #1b0404;
+  --muted: #2b2020;
+  --accent: #ff2b2b;        /* main red */
+  --accent-2: #ff7a7a;
+  --text: #f6f6f6;
+  --subtle: #b7b1b1;
+  --online: #4fe1a6;
+  --shadow: 0 6px 18px rgba(0,0,0,0.6);
+  --glass: rgba(255,255,255,0.02);
+  --radius: 12px;
+  --glass-2: rgba(255,255,255,0.01);
+  --transition: 160ms;
 }
 
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif;}
-body{background:var(--bg);color:var(--text);display:flex;justify-content:center;align-items:center;height:100vh;}
+/* Basic reset */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background: linear-gradient(180deg, #070707 0%, #0c0c0c 100%);
+  color:var(--text);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
 
-/* ================================
-   CHAT CONTAINER
-================================ */
-#chat-container{
-  width:1000px;
-  height:700px;
-  display:grid;
-  grid-template-columns:3fr 1fr;
-  grid-template-rows:auto 1fr auto;
-  gap:10px;
-  padding:15px;
-  background:var(--panel);
-  border-radius:15px;
-  box-shadow:0 0 15px rgba(0,0,0,0.5);
+/* Outer container */
+.app {
+  width:1060px;
+  height:720px;
+  border-radius:16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.04));
+  padding:18px;
+  box-shadow: var(--shadow);
   position:relative;
+  overflow:hidden;
 }
 
-/* ================================
-   HEADER
-================================ */
-#header{
-  grid-column:1/3;
+/* subtle particle-like background (CSS only) */
+.particles {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:0.06;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255,80,80,0.12) 0 2px, transparent 3px),
+    radial-gradient(circle at 30% 80%, rgba(255,80,80,0.08) 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 40%, rgba(255,80,80,0.06) 0 2px, transparent 3px),
+    radial-gradient(circle at 90% 75%, rgba(255,80,80,0.06) 0 2px, transparent 3px);
+  mix-blend-mode:screen;
+  transform: translateZ(0);
+}
+
+/* Layout: header, main grid (chat + users), footer input */
+.header{
   display:flex;
+  align-items:center;
   justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.brand {
+  display:flex;
+  gap:12px;
   align-items:center;
 }
-#header img{
-  height:60px;
+.logo {
+  width:56px;
+  height:56px;
+  border-radius:10px;
+  background: linear-gradient(180deg, rgba(255,0,0,0.14), rgba(0,0,0,0.2));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family: "Orbitron", monospace;
+  font-weight:700;
+  color:var(--accent);
+  letter-spacing:1px;
+  font-size:18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
 }
-#header button{
-  padding:8px 18px;
-  border-radius:8px;
-  cursor:pointer;
-  background:var(--accent);
-  border:none;
-  color:#fff;
-  transition:var(--transition);
+.brand h1{
+  font-size:18px;
+  letter-spacing:0.6px;
+  margin:0;
 }
-#header button:hover{
-  background:#d62839;
+.controls{
+  display:flex;
+  gap:8px;
+  align-items:center;
 }
 
-/* ================================
-   MESSAGES PANEL
-================================ */
-#messages-panel{
-  grid-column:1/2;
-  grid-row:2;
-  background:var(--secondary);
-  border-radius:10px;
-  padding:15px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  overflow-y:auto;
-}
-.message{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
+/* Buttons (subtle red glow on hover, not obnoxious) */
+.button {
+  background:linear-gradient(180deg,var(--accent),var(--accent-2));
+  color:white;
+  border:none;
   padding:8px 12px;
-  border-radius:8px;
-  background:var(--panel);
-  transition:var(--transition);
-}
-.message:hover{background:var(--hover);}
-.message-header{display:flex;justify-content:space-between;align-items:center;}
-.message .username{font-weight:500;}
-.message .text{white-space:pre-wrap;}
-.message .timestamp{font-size:0.7em;color:#aaa;}
-
-/* ================================
-   USERS PANEL
-================================ */
-#users-panel{
-  grid-column:2/3;
-  grid-row:2;
-  background:var(--secondary);
   border-radius:10px;
-  padding:15px;
+  cursor:pointer;
+  font-weight:600;
+  transition: transform var(--transition), box-shadow var(--transition);
+  box-shadow: 0 6px 18px rgba(255,43,43,0.12);
+}
+.button:active{ transform:translateY(1px) }
+.button.ghost{
+  background:transparent;
+  color:var(--subtle);
+  border:1px solid rgba(255,255,255,0.03);
+  box-shadow:none;
+}
+
+/* Main grid */
+.grid {
+  display:grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: 1fr;
+  gap:14px;
+  height: calc(100% - 126px); /* header + footer accounted */
+}
+
+/* Chat panel */
+.chat-panel {
+  background: linear-gradient(180deg,var(--panel), rgba(255,10,10,0.02) 120%);
+  border-radius:var(--radius);
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  border:1px solid rgba(255,255,255,0.03);
+  overflow:hidden;
+}
+
+/* Messages container */
+.messages {
+  flex:1;
+  overflow:auto;
+  padding:8px;
   display:flex;
   flex-direction:column;
   gap:10px;
-  overflow-y:auto;
+  scroll-behavior:smooth;
 }
-.user{
+
+/* Sticky bottom helper: ensures last item visible */
+.messages .bottom-spacer{
+  height: 8px;
+}
+
+/* Message bubble (two columns: avatar + bubble) */
+.message-row {
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  animation: slideUp 260ms ease;
+  max-width: 880px;
+}
+@keyframes slideUp {
+  from{opacity:0; transform:translateY(8px)}
+  to{opacity:1; transform:translateY(0)}
+}
+
+/* Avatar (first letter) */
+.avatar-circle{
+  width:44px;
+  height:44px;
+  min-width:44px;
+  border-radius:50%;
   display:flex;
   align-items:center;
-  gap:10px;
-  padding:5px 10px;
-  border-radius:6px;
-  background:var(--panel);
-  cursor:pointer;
-  transition:var(--transition);
+  justify-content:center;
+  font-weight:700;
+  color:white;
+  background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.12));
+  border: 2px solid rgba(255,255,255,0.03);
+  position:relative;
+  flex-shrink:0;
+  font-size:16px;
 }
-.user:hover{background:var(--hover);}
-.user .avatar{
-  width:30px;
-  height:30px;
-  border-radius:50%;
-  background:red;
-}
-.user.online .avatar{border:2px solid var(--online);}
-.user.offline .avatar{border:2px solid var(--offline);}
-.user .name{flex:1; font-weight:500;}
 
-/* ================================
-   INPUT AREA
-================================ */
-#input-area{
-  grid-column:1/3;
+/* online pulse (subtle) */
+.avatar-circle.online::after{
+  content:"";
+  position:absolute;
+  right:-2px;
+  bottom:-2px;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:var(--online);
+  box-shadow:0 6px 14px rgba(79,225,166,0.12);
+  border:2px solid #0b0b0b;
+  animation: pulseSmall 1600ms infinite;
+}
+@keyframes pulseSmall {
+  0%{transform:scale(0.9); opacity:0.9}
+  50%{transform:scale(1.28); opacity:0.6}
+  100%{transform:scale(0.9); opacity:0.9}
+}
+
+/* Bubble itself */
+.bubble {
+  background: linear-gradient(180deg, rgba(255,255,255,0.012), rgba(0,0,0,0.02));
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.02);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  position:relative;
+  transition: transform var(--transition);
+}
+.message-row:hover .bubble{
+  transform: translateY(-3px);
+}
+/* colored shadow based on username color */
+.bubble.color-shadow{
+  box-shadow: 0 8px 22px rgba(255,43,43,0.06), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+/* header inside bubble */
+.bubble-header{
   display:flex;
   gap:10px;
+  align-items:center;
+  justify-content:space-between;
 }
-#message-input{
-  flex:1;
-  padding:10px;
+.name {
+  font-weight:700;
+  letter-spacing:0.2px;
+}
+.small {
+  color:var(--subtle);
+  font-size:13px;
+}
+
+/* message content — supports code blocks, markdown-ish */
+.msg-content{
+  color:var(--text);
+  font-size:14px;
+  line-height:1.35;
+  word-break:break-word;
+}
+/* inline code and code blocks */
+.msg-content code{
+  background: rgba(0,0,0,0.18);
+  padding:2px 6px;
+  border-radius:6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  font-size:13px;
+}
+.msg-content pre{
+  background: rgba(0,0,0,0.12);
+  padding:8px;
   border-radius:8px;
-  border:none;
-  background:var(--secondary);
+  overflow:auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  font-size:13px;
+}
+
+/* reactions row */
+.reactions {
+  display:flex;
+  gap:6px;
+  margin-top:6px;
+}
+.react {
+  padding:4px 8px;
+  background:rgba(255,255,255,0.02);
+  border-radius:999px;
+  font-size:13px;
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+  cursor:pointer;
+  transition: all var(--transition);
+  border:1px solid rgba(255,255,255,0.02);
+}
+.react:hover{
+  transform:translateY(-2px);
+  background: rgba(255,43,43,0.06);
+}
+
+/* Sidebar / users */
+.sidebar{
+  background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(255,0,0,0.01));
+  border-radius:var(--radius);
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  border:1px solid rgba(255,255,255,0.02);
+  min-height:100%;
+}
+.sidebar h3{margin:0;font-size:15px}
+.user-row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  padding:6px;
+  border-radius:8px;
+  transition: background var(--transition);
+}
+.user-row:hover{
+  background: rgba(255,255,255,0.02);
+}
+.user-name{
+  font-weight:600;
+  font-size:14px;
+  color:var(--text);
+}
+.user-meta{
+  font-size:12px;
+  color:var(--subtle);
+}
+
+/* Input footer */
+.footer {
+  margin-top:12px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+}
+.input-wrapper{
+  display:flex;
+  gap:8px;
+  align-items:flex-end;
+  flex:1;
+}
+.textarea{
+  flex:1;
+  min-height:58px;
+  border-radius:12px;
+  background:var(--glass);
+  border:1px solid rgba(255,255,255,0.02);
+  padding:10px;
   color:var(--text);
   resize:none;
+  font-size:14px;
 }
-#input-area button{
-  border-radius:8px;
-}
-
-/* ================================
-   COLOR PICKER MODAL
-================================ */
-#color-picker{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background:var(--secondary);
-  padding:20px;
-  border-radius:15px;
-  display:none;
-  flex-direction:column;
-  gap:15px;
-  box-shadow:0 0 20px rgba(0,0,0,0.5);
-}
-#color-picker label{font-size:0.9em;}
-#color-picker input[type=color]{width:100%;height:35px;border:none;border-radius:6px;cursor:pointer;}
-#color-picker button{align-self:flex-end;}
-#color-picker select{padding:6px;border-radius:6px;border:none;cursor:pointer;width:100%;}
-
-/* ================================
-   SCROLLBARS
-================================ */
-#messages-panel::-webkit-scrollbar,
-#users-panel::-webkit-scrollbar{
-  width:8px;
-}
-#messages-panel::-webkit-scrollbar-thumb,
-#users-panel::-webkit-scrollbar-thumb{
-  background:var(--scrollbar);
-  border-radius:4px;
+.tools{
+  display:flex;
+  gap:8px;
+  align-items:center;
 }
 
-/* ================================
-   TYPING INDICATOR
-================================ */
-#typing-indicator{
-  position:absolute;
-  bottom:75px;
-  left:30px;
-  font-size:0.85em;
-  color:#aaa;
+/* emoji picker basic */
+.emoji-picker{
+  background:var(--panel);
+  border-radius:10px;
+  padding:8px;
+  display:grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap:6px;
+  width:260px;
+  max-height:160px;
+  overflow:auto;
+  border:1px solid rgba(255,255,255,0.02);
 }
 
-/* ================================
-   ANIMATIONS
-================================ */
-@keyframes fadeInUp{
-  from{opacity:0;transform:translateY(10px);}
-  to{opacity:1;transform:translateY(0);}
+/* small helpers */
+.hint{font-size:12px; color:var(--subtle)}
+.loading {
+  height:34px;
+  width:34px;
+  border-radius:10px;
+  display:inline-block;
+  border:3px solid rgba(255,255,255,0.03);
+  border-top-color:var(--accent-2);
+  animation: spin 900ms linear infinite;
 }
-.message{animation:fadeInUp 0.3s ease;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* fullscreen */
+.fullscreen {
+  position: fixed !important;
+  inset: 8px !important;
+  width: auto !important;
+  height: auto !important;
+  z-index: 9999;
+  background: linear-gradient(180deg, #0b0b0b, #0b0b0b);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+/* responsive-ish (desktop-first) */
+@media (max-width:1200px){
+  .app{ width:940px }
+}
+@media (max-width:980px){
+  .grid{ grid-template-columns: 1fr }
+  .sidebar{ order:2 }
+  .chat-panel{ order:1 }
+}
+
+/* END OF CSS */
 </style>
 </head>
 <body>
 
-<div id="chat-container">
-  <div id="header">
-    <img src="https://raw.githubusercontent.com/andreyzhorik/VIXEL/main/logonobg.png" alt="Logo">
-    <button id="color-btn">Colors & Theme</button>
+<div class="app" id="appRoot">
+  <div class="particles" aria-hidden="true"></div>
+
+  <!-- HEADER -->
+  <div class="header" role="banner">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">V</div>
+      <div>
+        <h1>Vixel Chat</h1>
+        <div style="font-size:12px;color:var(--subtle);margin-top:4px">Clean red theme — desktop first</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="button ghost" id="btn-full">Fullscreen</button>
+      <button class="button ghost" id="btn-clear-cache">Clear Cache</button>
+      <button class="button" id="btn-theme">Colors & Theme</button>
+    </div>
   </div>
 
-  <div id="messages-panel"></div>
-  <div id="users-panel"></div>
+  <!-- GRID (CHAT + SIDEBAR) -->
+  <div class="grid">
+    <!-- Chat panel -->
+    <div class="chat-panel" role="main">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="hint">Logged in as</div>
+            <div style="font-weight:700" id="display-username">Guest</div>
+            <div id="color-preview" style="width:14px;height:14px;border-radius:6px;border:1px solid rgba(0,0,0,0.2)"></div>
+          </div>
+        </div>
 
-  <div id="input-area">
-    <textarea id="message-input" rows="2" placeholder="Shift+Enter = new line"></textarea>
-    <button id="send-btn">Send</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="hint" id="status-lastseen">Last seen: —</div>
+          <div class="hint" id="net-status">• online</div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="messages" id="messages" aria-live="polite">
+        <!-- messages appended here -->
+        <div class="bottom-spacer" aria-hidden="true"></div>
+      </div>
+
+      <!-- footer area (input + tools) -->
+      <div class="footer">
+        <div class="input-wrapper">
+          <textarea class="textarea" id="input" placeholder="Shift+Enter for newline — :emoji: or click emoji"></textarea>
+
+          <div class="tools" style="flex-direction:column;align-items:flex-end">
+            <div style="display:flex;gap:8px">
+              <button class="button ghost" id="btn-emoji" title="Open emoji picker">😀</button>
+              <button class="button ghost" id="btn-markdown" title="Markdown help">MD</button>
+              <button class="button" id="btn-send">Send</button>
+            </div>
+            <div style="margin-top:6px" class="hint">Tip: type <code>:smile:</code> or click emoji</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" role="complementary">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3>Players</h3>
+        <div class="hint" id="players-count">0</div>
+      </div>
+
+      <div id="players-list" style="display:flex;flex-direction:column;gap:8px;overflow:auto;padding-right:6px"></div>
+
+      <hr style="border:none;height:1px;background:rgba(255,255,255,0.02);margin:6px 0;border-radius:2px">
+
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3>Settings</h3>
+        <div class="hint">persisted</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <label style="font-size:13px;color:var(--subtle)">Name</label>
+          <input id="input-username" style="flex:1;background:var(--glass-2);border-radius:8px;padding:6px;border:1px solid rgba(255,255,255,0.02);color:var(--text)" />
+          <button class="button ghost" id="btn-save-name">Save</button>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center">
+          <label style="font-size:13px;color:var(--subtle)">Name color</label>
+          <input type="color" id="set-name-color" value="#ff2b2b" />
+          <label style="font-size:13px;color:var(--subtle)">Avatar color</label>
+          <input type="color" id="set-avatar-color" value="#ff2b2b" />
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+          <button class="button ghost" id="btn-toggle-theme">Toggle Accent</button>
+          <button class="button ghost" id="btn-debounce">Debounce: on</button>
+        </div>
+      </div>
+    </aside>
   </div>
 
-  <div id="typing-indicator"></div>
 </div>
 
-<div id="color-picker">
-  <label>Name Color:</label>
-  <input type="color" id="name-color" value="#e63946">
-  <label>Avatar Color:</label>
-  <input type="color" id="avatar-color" value="#e63946">
-  <label>Theme:</label>
-  <select id="theme-selector">
-    <option value="dark">Dark</option>
-    <option value="gray">Gray</option>
-    <option value="blue">Blue</option>
-  </select>
-  <button id="save-colors">Save</button>
+<!-- Color & theme modal (lighter UI) -->
+<div id="modal-theme" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--panel);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.02);display:none;z-index:999">
+  <div style="display:flex;gap:12px;align-items:center">
+    <div style="width:46px;height:46px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700">V</div>
+    <div>
+      <div style="font-weight:700">Customize colors</div>
+      <div class="hint">Name / avatar / background</div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label class="hint">Name color</label>
+      <input type="color" id="modal-name-color" value="#ff2b2b" />
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label class="hint">Avatar color</label>
+      <input type="color" id="modal-avatar-color" value="#ff2b2b" />
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label class="hint">Accent</label>
+      <input type="color" id="modal-accent-color" value="#ff2b2b" />
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px">
+    <button class="button ghost" id="modal-cancel">Cancel</button>
+    <button class="button" id="modal-save">Save</button>
+  </div>
 </div>
+
+<!-- Emoji picker (hidden by default) -->
+<div id="emoji-panel" style="position:fixed;left:50%;bottom:110px;transform:translateX(-50%);display:none;z-index:999">
+  <div class="emoji-picker" id="emoji-grid"></div>
+</div>
+
+<!-- tiny confetti canvas -->
+<canvas id="confetti" style="position:fixed;left:0;top:0;pointer-events:none;z-index:10000" width="200" height="200"></canvas>
 
 <script>
-// =====================================
-// BASIC SETUP & LOCALSTORAGE
-// =====================================
-let username = localStorage.getItem("vixel-username");
-if(!username){
-  username = prompt("Enter your username:")||"Guest";
-  localStorage.setItem("vixel-username", username);
-}
+/* ==================================================
+   Vixel Chat — Clean Red (All-in-one JS)
+   Features included (short):
+   - LocalStorage username + colors
+   - Avatar first-letter + online pulse
+   - Message bubbles, markdown-ish & code blocks
+   - Emoji picker & shortcodes
+   - Reactions + click-to-react
+   - Debounced polling + caching
+   - Presence upsert to supabase
+   - Message caching (in-memory)
+   - Confetti trigger on special keywords
+   - Fullscreen toggle
+   - No audio
+   ================================================== */
 
-let nameColor = "#e63946";
-let avatarColor = "#e63946";
-
-// DOM
-const messagesPanel = document.getElementById("messages-panel");
-const usersPanel = document.getElementById("users-panel");
-const messageInput = document.getElementById("message-input");
-const sendBtn = document.getElementById("send-btn");
-const colorBtn = document.getElementById("color-btn");
-const colorPicker = document.getElementById("color-picker");
-const saveColorsBtn = document.getElementById("save-colors");
-const nameInput = document.getElementById("name-color");
-const avatarInput = document.getElementById("avatar-color");
-const themeSelector = document.getElementById("theme-selector");
-const typingIndicator = document.getElementById("typing-indicator");
-
-// Badwords filter
-const badWords = ["badword1","badword2"];
-function cleanText(text){badWords.forEach(bw=>text=text.replaceAll(bw,"***"));return text;}
-
-// =====================================
-// COLOR PICKER EVENTS
-// =====================================
-colorBtn.onclick = ()=>{colorPicker.style.display="flex";}
-saveColorsBtn.onclick = ()=>{
-  nameColor = nameInput.value;
-  avatarColor = avatarInput.value;
-  applyTheme(themeSelector.value);
-  colorPicker.style.display="none";
-  savePresence();
-}
-
-// =====================================
-// THEME SWITCHING
-// =====================================
-function applyTheme(theme){
-  switch(theme){
-    case"dark":
-      document.documentElement.style.setProperty("--panel","#1c1c1c");
-      document.documentElement.style.setProperty("--secondary","#2c2c2c");
-      document.documentElement.style.setProperty("--accent","#e63946");
-      break;
-    case"gray":
-      document.documentElement.style.setProperty("--panel","#2a2a2a");
-      document.documentElement.style.setProperty("--secondary","#3a3a3a");
-      document.documentElement.style.setProperty("--accent","#aaaaaa");
-      break;
-    case"blue":
-      document.documentElement.style.setProperty("--panel","#1a1f2b");
-      document.documentElement.style.setProperty("--secondary","#273347");
-      document.documentElement.style.setProperty("--accent","#4ea8de");
-      break;
-  }
-}
-
-// =====================================
-// SUPABASE CONFIG
-// =====================================
+/* -------------------------
+   CONFIG - EDIT THIS IF NEEDED
+   ------------------------- */
 const SUPABASE_URL = "https://ehciyxvbasqiiiurjuwu.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
 
-// =====================================
-// FETCH & SAVE PRESENCE
-// =====================================
-async function fetchPresence(){
-  try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/presence?select=*`,{
-      headers: {"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`}
-    });
-    return await res.json();
-  }catch(e){console.error(e);return[];}
+/* -------------------------
+   DOM ELEMENTS
+   ------------------------- */
+const root = document.getElementById('appRoot');
+const messagesEl = document.getElementById('messages');
+const playersListEl = document.getElementById('players-list');
+const playersCountEl = document.getElementById('players-count');
+const displayUsernameEl = document.getElementById('display-username');
+const colorPreviewEl = document.getElementById('color-preview');
+const netStatusEl = document.getElementById('net-status');
+const lastSeenEl = document.getElementById('status-lastseen');
+
+const inputEl = document.getElementById('input');
+const sendBtn = document.getElementById('btn-send');
+const emojiBtn = document.getElementById('btn-emoji');
+const emojiGridEl = document.getElementById('emoji-grid');
+const emojiPanel = document.getElementById('emoji-panel');
+const btnTheme = document.getElementById('btn-theme');
+const modalTheme = document.getElementById('modal-theme');
+const modalSave = document.getElementById('modal-save');
+const modalCancel = document.getElementById('modal-cancel');
+const modalNameColor = document.getElementById('modal-name-color');
+const modalAvatarColor = document.getElementById('modal-avatar-color');
+const modalAccentColor = document.getElementById('modal-accent-color');
+
+const inputUsername = document.getElementById('input-username');
+const btnSaveName = document.getElementById('btn-save-name');
+const setNameColor = document.getElementById('set-name-color');
+const setAvatarColor = document.getElementById('set-avatar-color');
+const btnToggleTheme = document.getElementById('btn-toggle-theme');
+const btnDebounce = document.getElementById('btn-debounce');
+const btnClearCache = document.getElementById('btn-clear-cache');
+const btnFullscreen = document.getElementById('btn-full');
+
+const confettiCanvas = document.getElementById('confetti');
+
+/* -------------------------
+   STATE & UTILS
+   ------------------------- */
+let username = localStorage.getItem('vixel-username') || '';
+let nameColor = localStorage.getItem('vixel-name-color') || '#ff2b2b';
+let avatarColor = localStorage.getItem('vixel-avatar-color') || '#ff2b2b';
+let accentColor = localStorage.getItem('vixel-accent') || '#ff2b2b';
+let debounceEnabled = true;  // toggleable
+
+let cache = { messages: [], presence: [] }; // in-memory cache
+let lastMessagesETag = null; // not using ETag here, but placeholder
+let isAtBottom = true;
+let typing = false;
+
+/* -------------------------
+   BASIC STARTUP (username)
+   ------------------------- */
+if(!username){
+  username = prompt('Enter username') || `Guest${Math.floor(Math.random()*999)}`;
+  localStorage.setItem('vixel-username', username);
+}
+displayUsernameEl.textContent = username;
+inputUsername.value = username;
+setNameColor.value = nameColor;
+setAvatarColor.value = avatarColor;
+modalNameColor.value = nameColor;
+modalAvatarColor.value = avatarColor;
+modalAccentColor.value = accentColor;
+colorPreviewEl.style.background = nameColor;
+
+/* set accent color globally */
+document.documentElement.style.setProperty('--accent', accentColor);
+document.documentElement.style.setProperty('--accent-2', accentColor);
+
+/* -------------------------
+   SMALL HELPERS
+   ------------------------- */
+const byId = id => document.getElementById(id);
+const nowISO = ()=> (new Date()).toISOString();
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const clamp = (v,a,b)=> Math.max(a, Math.min(b,v));
+
+/* simple debounce helper (used for polling toggles etc) */
+function debounce(fn, wait){
+  let t;
+  return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn.apply(this,args), wait); };
 }
 
-async function savePresence(){
-  try{
-    await fetch(`${SUPABASE_URL}/rest/v1/presence`,{
-      method:"POST",
-      headers:{
-        "apikey":SUPABASE_KEY,
-        "Authorization":`Bearer ${SUPABASE_KEY}`,
-        "Content-Type":"application/json",
-        "Prefer":"resolution=merge-duplicates"
-      },
-      body:JSON.stringify({username,online:true,name_color:nameColor,avatar_color:avatarColor,lastseen:new Date().toISOString()})
-    });
-  }catch(e){console.error(e);}
+/* sanitize text (basic) */
+function sanitize(text){
+  // escape basic HTML
+  return text.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 }
 
-// =====================================
-// LOAD USERS
-// =====================================
-async function loadUsers(){
-  const data = await fetchPresence();
+/* very small markdown-ish parser:
+   - `**bold**`
+   - `*italic*`
+   - ```code block```
+   - `inline code` */
+function miniMarkdown(raw){
+  if(!raw) return '';
+  // code blocks
+  let text = sanitize(raw);
+  text = text.replace(/```([\s\S]*?)```/g, (m, p1)=> `<pre><code>${p1}</code></pre>`);
+  text = text.replace(/`([^`]+)`/g, (m,p1)=> `<code>${p1}</code>`);
+  text = text.replace(/\*\*([^*]+)\*\*/g, (m,p1)=> `<strong>${p1}</strong>`);
+  text = text.replace(/\*([^*]+)\*/g, (m,p1)=> `<em>${p1}</em>`);
+  // emoji shortcodes like :smile:
+  text = text.replace(/:([a-z0-9_+-]+):/gi, (m, name)=>{
+    let e = emojiMap[name];
+    return e ? e : m;
+  });
+  // line breaks
+  text = text.replace(/\n/g, '<br/>');
+  return text;
+}
+
+/* small emoji set + shortcodes */
+const emojiMap = {
+  smile: "😄", grin: "😁", heart: "❤️", thumbs: "👍", cry: "😢", wink: "😉",
+  clap: "👏", fire: "🔥", star: "⭐", wave: "👋", party: "🥳", rocket: "🚀",
+  ok: "👌", poop: "💩", think: "🤔", kiss: "😚", smile_cat: "😸"
+};
+const emojiList = Object.values(emojiMap);
+
+/* -------------------------
+   DOM MOUNTING HELPERS
+   ------------------------- */
+
+/* create avatar element (first-letter) */
+function createAvatar(name, color, online){
+  const el = document.createElement('div');
+  el.className = 'avatar-circle' + (online ? ' online' : '');
+  el.style.background = color;
+  el.textContent = (name || 'U').trim().charAt(0).toUpperCase();
+  return el;
+}
+
+/* create single message DOM */
+function createMessageDOM(msg){
+  // msg: { id, user, text, name_color, avatar_color, created_at, reactions: {':heart:': 2} }
+  const row = document.createElement('div');
+  row.className = 'message-row';
+  row.dataset.id = msg.id || ('tmp-' + Math.random().toString(36).slice(2,9));
+
+  const avatar = createAvatar(msg.user, msg.avatar_color || avatarColor, true);
+  row.appendChild(avatar);
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble color-shadow';
+  // inline colored shadow: set small CSS variable using name_color
+  bubble.style.boxShadow = `0 10px 30px ${hexToRgba(msg.name_color || nameColor, 0.06)}, inset 0 1px 0 rgba(255,255,255,0.02)`;
+
+  const header = document.createElement('div');
+  header.className = 'bubble-header';
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'name';
+  nameEl.textContent = msg.user;
+  nameEl.style.color = msg.name_color || nameColor;
+  header.appendChild(nameEl);
+
+  const ts = document.createElement('div');
+  ts.className = 'small';
+  ts.textContent = timeAgo(msg.created_at || nowISO());
+  header.appendChild(ts);
+
+  const content = document.createElement('div');
+  content.className = 'msg-content';
+  content.innerHTML = miniMarkdown(msg.text || '');
+
+  // reactions (if any)
+  const reacts = document.createElement('div');
+  reacts.className = 'reactions';
+  const reactions = msg.reactions || {};
+  // render existing reactions
+  for(const code in reactions){
+    const count = reactions[code] || 0;
+    const r = document.createElement('div');
+    r.className = 'react';
+    r.innerHTML = `${renderEmoji(code)} <span style="opacity:0.7;margin-left:6px">${count}</span>`;
+    r.addEventListener('click', ()=> handleReactionClick(msg.id, code));
+    reacts.appendChild(r);
+  }
+
+  // small quick react suggestions
+  const quickRow = document.createElement('div');
+  quickRow.style.marginTop = '6px';
+  const quickList = ['heart','thumbs','fire','clap'];
+  quickList.forEach(k=>{
+    const btn = document.createElement('button');
+    btn.className = 'react';
+    btn.style.padding = '4px 8px';
+    btn.style.fontSize = '13px';
+    btn.innerHTML = `${emojiMap[k] || ''}`;
+    btn.addEventListener('click', ()=> handleReactionClick(msg.id, ':'+k+':', true));
+    quickRow.appendChild(btn);
+  });
+
+  bubble.appendChild(header);
+  bubble.appendChild(content);
+  if(reacts.children.length) bubble.appendChild(reacts);
+  bubble.appendChild(quickRow);
+
+  row.appendChild(bubble);
+
+  // small hover to copy message id / open DM etc
+  row.addEventListener('contextmenu', (ev)=>{
+    ev.preventDefault();
+    // show small native copy prompt (simple)
+    navigator.clipboard?.writeText(msg.text || '').then(()=> {
+      flashHint('message copied');
+    }).catch(()=>{ flashHint('copy failed'); });
+  });
+
+  return row;
+}
+
+/* convert :name: -> emoji string */
+function renderEmoji(code){
+  if(!code) return code;
+  const key = code.replace(/:/g,'');
+  return emojiMap[key] || code;
+}
+
+/* convert hex + alpha */
+function hexToRgba(hex, alpha=1){
+  try{
+    const v = hex.replace('#','');
+    const r = parseInt(v.substring(0,2),16);
+    const g = parseInt(v.substring(2,4),16);
+    const b = parseInt(v.substring(4,6),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }catch(e){ return `rgba(255,43,43,${alpha})`; }
+}
+
+/* time ago */
+function timeAgo(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = Math.floor((now - d) / 1000);
+  if(diff < 5) return 'just now';
+  if(diff < 60) return `${diff}s`;
+  if(diff < 3600) return `${Math.floor(diff/60)}m`;
+  if(diff < 86400) return `${Math.floor(diff/3600)}h`;
+  return d.toLocaleString();
+}
+
+/* flash small hint near bottom */
+function flashHint(msg){
+  const el = document.createElement('div');
+  el.style.position = 'fixed';
+  el.style.left = '50%';
+  el.style.bottom = '24px';
+  el.style.transform = 'translateX(-50%)';
+  el.style.background = 'rgba(0,0,0,0.6)';
+  el.style.color = 'white';
+  el.style.padding = '8px 12px';
+  el.style.borderRadius = '8px';
+  el.style.zIndex = 9999;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=> el.style.transition = '200ms', 10);
+  setTimeout(()=> el.remove(), 1600);
+}
+
+/* -------------------------
+   RENDER & CACHING
+   ------------------------- */
+
+function renderMessages(list, opt = {append:false}){
+  // list: array of messages
+  if(!Array.isArray(list)) return;
+  // dedupe by id
   const seen = new Set();
-  usersPanel.innerHTML="";
-  data.forEach(u=>{
+  const nodes = [];
+  for(const m of list){
+    if(seen.has(m.id)) continue;
+    seen.add(m.id);
+    nodes.push(m);
+  }
+  // optionally append only new
+  if(opt.append){
+    for(const msg of nodes){
+      const el = createMessageDOM(msg);
+      messagesEl.insertBefore(el, messagesEl.querySelector('.bottom-spacer'));
+    }
+  } else {
+    messagesEl.innerHTML = '';
+    for(const msg of nodes){
+      const el = createMessageDOM(msg);
+      messagesEl.appendChild(el);
+    }
+    const spacer = document.createElement('div');
+    spacer.className = 'bottom-spacer';
+    messagesEl.appendChild(spacer);
+  }
+  // maintain cache
+  cache.messages = list.slice();
+  // keep scroll bottom if user is near bottom
+  if(isAtBottom) scrollMessagesToBottom();
+}
+
+/* scroll helper */
+function scrollMessagesToBottom(){
+  try{
+    messagesEl.scrollTop = messagesEl.scrollHeight + 120;
+  }catch(e){}
+}
+
+/* detect user scroll pos */
+messagesEl.addEventListener('scroll', ()=>{
+  const nearBottom = (messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight) < 100;
+  isAtBottom = nearBottom;
+});
+
+/* render players */
+function renderPlayers(list){
+  playersListEl.innerHTML = '';
+  const seen = new Set();
+  let count = 0;
+  list.forEach(u=>{
+    if(!u || !u.username) return;
     if(seen.has(u.username)) return;
     seen.add(u.username);
-    const div = document.createElement("div");
-    div.className = `user ${u.online?"online":"offline"}`;
-    div.innerHTML=`<div class="avatar" style="background:${u.avatar_color}"></div><span class="name" style="color:${u.name_color}">${u.username}</span>`;
-    usersPanel.appendChild(div);
+    count++;
+    const row = document.createElement('div');
+    row.className = 'user-row';
+    const avatar = createAvatar(u.username, u.avatar_color || '#ff2b2b', u.online);
+    avatar.classList.remove('avatar-circle');
+    avatar.style.width = '36px';
+    avatar.style.height = '36px';
+    avatar.style.minWidth = '36px';
+    avatar.style.fontSize = '14px';
+    avatar.style.border = '1px solid rgba(255,255,255,0.03)';
+    const nameWrap = document.createElement('div');
+    nameWrap.style.display = 'flex';
+    nameWrap.style.flexDirection = 'column';
+    nameWrap.style.gap = '2px';
+    const nameEl = document.createElement('div');
+    nameEl.className = 'user-name';
+    nameEl.textContent = u.username;
+    nameEl.style.color = u.name_color || '#ff2b2b';
+    const meta = document.createElement('div');
+    meta.className = 'user-meta';
+    const last = u.lastseen ? new Date(u.lastseen).toLocaleTimeString() : '—';
+    meta.textContent = u.online ? 'online' : `last: ${last}`;
+    nameWrap.appendChild(nameEl);
+    nameWrap.appendChild(meta);
+    row.appendChild(avatar);
+    row.appendChild(nameWrap);
+    playersListEl.appendChild(row);
+  });
+  playersCountEl.textContent = count;
+  cache.presence = list.slice();
+}
+
+/* -------------------------
+   REACTIONS
+   ------------------------- */
+
+/* toggle reaction (local optimistic UI + simple server add) */
+async function handleReactionClick(msgId, code, quick=false){
+  // code maybe ':heart:' or emoji literal. Normalize to :name:
+  if(!msgId) return;
+  const normalized = code.startsWith(':') ? code : (':' + code.replace(/:/g,'') + ':');
+
+  // optimistic: find message in DOM and increase count UI
+  // We maintain server side simple object in "messages" table under `reactions` JSON column (if available).
+  const row = messagesEl.querySelector(`[data-id="${msgId}"]`);
+  if(row){
+    const reactBtn = row.querySelector('.reactions .react');
+    // naive: append a small bubble
+    const r = document.createElement('div');
+    r.className = 'react';
+    r.innerHTML = `${renderEmoji(normalized)} <span style="opacity:0.7;margin-left:6px">+</span>`;
+    row.querySelector('.bubble').appendChild(r);
+    // fade out after quick
+    if(quick) setTimeout(()=> r.remove(), 1200);
+  }
+
+  // Send to server (merge into reactions JSON)
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/messages?id=eq.${encodeURIComponent(msgId)}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ reactions: { [normalized]: 1 } }) // server should upsert/merge-duplicates ideally
+    });
+    // reload after small delay
+    setTimeout(()=> loadMessagesDebounced(), 800);
+  }catch(e){
+    console.error('react err', e);
+  }
+}
+
+/* -------------------------
+   POLLING / DEBOUNCE / NETWORK
+   ------------------------- */
+
+let pollingTimer = null;
+const POLL_INTERVAL = 4500;
+
+function setNetStatus(text, ok=true){
+  netStatusEl.textContent = text;
+  netStatusEl.style.color = ok ? 'var(--accent-2)' : 'var(--subtle)';
+}
+
+/* simple polling function with debounce option */
+async function pollAll(){
+  // skip if offline
+  setNetStatus('syncing…', true);
+  try{
+    await Promise.all([loadPresence(), loadMessages()]);
+    setNetStatus('• online', true);
+  }catch(e){
+    console.error('poll err', e);
+    setNetStatus('offline', false);
+  }
+}
+
+/* toggle poll debounce */
+btnDebounce.addEventListener('click', ()=>{
+  debounceEnabled = !debounceEnabled;
+  btnDebounce.textContent = `Debounce: ${debounceEnabled ? 'on' : 'off'}`;
+});
+
+/* start polling loop */
+function startPolling(){
+  if(pollingTimer) clearInterval(pollingTimer);
+  pollingTimer = setInterval(()=>{
+    if(debounceEnabled){
+      debouncedPoll();
+    } else {
+      pollAll();
+    }
+  }, POLL_INTERVAL);
+}
+const debouncedPoll = debounce(() => pollAll(), 300);
+
+/* -------------------------
+   PRESENCE / USERS
+   ------------------------- */
+
+async function loadPresence(){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/presence?select=*&order=lastseen.desc&limit=200`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const data = await res.json();
+    // dedupe by username later in renderPlayers
+    renderPlayers(data);
+    // update last seen element (self)
+    const me = data.find(u => u.username === username);
+    if(me){
+      lastSeenEl.textContent = `Last seen: ${new Date(me.lastseen).toLocaleString()}`;
+    }
+    return data;
+  }catch(e){
+    console.error('presence load', e);
+    throw e;
+  }
+}
+
+/* upsert presence (merge duplicates) */
+async function savePresence(){
+  try{
+    // Upsert: use POST with Prefer header to merge duplicates (depends on supabase config)
+    await fetch(`${SUPABASE_URL}/rest/v1/presence`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({
+        username,
+        online: true,
+        name_color: nameColor,
+        avatar_color: avatarColor,
+        lastseen: nowISO()
+      })
+    });
+  }catch(e){
+    console.error('save presence', e);
+  }
+}
+
+/* -------------------------
+   MESSAGES LOAD / SEND
+   ------------------------- */
+
+async function loadMessages(){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/messages?select=*&order=created_at.asc&limit=500`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const data = await res.json();
+    // Update cache only if changed length (simple)
+    if(JSON.stringify(data.map(d=>d.id)) !== JSON.stringify(cache.messages.map(m=>m.id))){
+      cache.messages = data;
+      renderMessages(data);
+    }
+    return data;
+  }catch(e){
+    console.error('load messages', e);
+    throw e;
+  }
+}
+
+/* send message */
+async function sendMessage(){
+  const raw = (inputEl.value || '').trim();
+  if(!raw) return;
+  const clean = filterBadWords(raw);
+  // optimistic insert into DOM as temp
+  const tmp = {
+    id: 'tmp-' + Math.random().toString(36).slice(2,9),
+    user: username,
+    text: clean,
+    name_color: nameColor,
+    avatar_color: avatarColor,
+    created_at: new Date().toISOString(),
+    reactions: {}
+  };
+  // append optimistic
+  renderMessages([...cache.messages, tmp], { append: false });
+  inputEl.value = '';
+  scrollMessagesToBottom();
+
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/messages`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user: username,
+        text: clean,
+        name_color: nameColor,
+        avatar_color: avatarColor,
+        created_at: new Date().toISOString(),
+        reactions: {}
+      })
+    });
+    // reload (debounced)
+    setTimeout(()=> loadMessagesDebounced(), 250);
+    // special keywords for confetti
+    if(/(gg|win|victory|rekt|party)/i.test(clean)){
+      confettiBurst();
+    }
+  }catch(e){
+    console.error('send err', e);
+    flashHint('failed to send');
+  }
+}
+
+/* small debounce wrappers for network calls */
+const loadMessagesDebounced = debounce(()=> { loadMessages(); }, 400);
+
+/* filter bad words (simple list, replace with stars) */
+let badWords = ['badword1','badword2'];
+function filterBadWords(text){
+  let t = text;
+  for(const w of badWords){
+    const re = new RegExp(w, 'gi');
+    t = t.replace(re, '***');
+  }
+  return t;
+}
+
+/* -------------------------
+   EMOJI PICKER
+   ------------------------- */
+
+function populateEmojiGrid(){
+  emojiGridEl.innerHTML = '';
+  emojiList.forEach(e=>{
+    const b = document.createElement('button');
+    b.className = 'react';
+    b.style.justifyContent = 'center';
+    b.style.padding = '6px';
+    b.textContent = e;
+    b.addEventListener('click', ()=>{
+      inputEl.value += ' ' + e;
+      inputEl.focus();
+      emojiPanel.style.display = 'none';
+    });
+    emojiGridEl.appendChild(b);
   });
 }
 
-// =====================================
-// MESSAGES
-// =====================================
-async function loadMessages(){
-  try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/messages?select=*&order=created_at.asc&limit=200`,{
-      headers: {"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`}
-    });
-    const data = await res.json();
-    messagesPanel.innerHTML="";
-    data.forEach(m=>{
-      const div = document.createElement("div");
-      div.className="message";
-      const timestamp = new Date(m.created_at).toLocaleTimeString();
-      div.innerHTML=`<div class="message-header"><span class="username" style="color:${m.name_color}">${m.user}</span><span class="timestamp">${timestamp}</span></div>
-                     <div class="text">${m.text}</div>`;
-      messagesPanel.appendChild(div);
-    });
-    messagesPanel.scrollTop = messagesPanel.scrollHeight;
-  }catch(e){console.error(e);}
-}
+emojiBtn.addEventListener('click', ()=>{
+  emojiPanel.style.display = emojiPanel.style.display === 'none' ? 'block' : 'none';
+});
+populateEmojiGrid();
 
-// =====================================
-// SEND MESSAGE
-// =====================================
-async function sendMessage(){
-  let text = cleanText(messageInput.value);
-  if(!text.trim()) return;
-  messageInput.value="";
-  try{
-    await fetch(`${SUPABASE_URL}/rest/v1/messages`,{
-      method:"POST",
-      headers: {"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
-      body: JSON.stringify({user:username,text,name_color:nameColor,avatar_color:avatarColor,created_at:new Date().toISOString()})
-    });
-    loadMessages();
-  }catch(e){console.error(e);}
-}
+/* -------------------------
+   THEME / COLOR MODAL
+   ------------------------- */
 
-// =====================================
-// INPUT EVENTS
-// =====================================
-sendBtn.onclick=sendMessage;
-messageInput.onkeydown = e=>{
-  if(e.shiftKey && e.key==="Enter") return;
-  if(e.key==="Enter"){ e.preventDefault(); sendMessage();}
-}
-
-// =====================================
-// TYPING INDICATOR
-// =====================================
-let typingTimeout;
-messageInput.addEventListener("input",()=>{
-  typingIndicator.textContent = `${username} is typing...`;
-  clearTimeout(typingTimeout);
-  typingTimeout = setTimeout(()=>{typingIndicator.textContent="";},1000);
+btnTheme.addEventListener('click', ()=> {
+  modalTheme.style.display = 'block';
+});
+modalCancel.addEventListener('click', ()=> modalTheme.style.display = 'none');
+modalSave.addEventListener('click', ()=>{
+  nameColor = modalNameColor.value;
+  avatarColor = modalAvatarColor.value;
+  accentColor = modalAccentColor.value;
+  // persist
+  localStorage.setItem('vixel-name-color', nameColor);
+  localStorage.setItem('vixel-avatar-color', avatarColor);
+  localStorage.setItem('vixel-accent', accentColor);
+  // apply
+  document.documentElement.style.setProperty('--accent', accentColor);
+  document.documentElement.style.setProperty('--accent-2', accentColor);
+  colorPreviewEl.style.background = nameColor;
+  modalTheme.style.display = 'none';
+  savePresence();
 });
 
-// =====================================
-// AUTO REFRESH
-// =====================================
-setInterval(()=>{savePresence();loadUsers();loadMessages();},5000);
+/* quick settings */
+btnSaveName.addEventListener('click', ()=>{
+  const v = inputUsername.value.trim();
+  if(v){
+    username = v;
+    localStorage.setItem('vixel-username', username);
+    displayUsernameEl.textContent = username;
+    flashHint('username saved');
+    savePresence();
+  }
+});
+setNameColor.addEventListener('change', (e)=>{
+  nameColor = e.target.value;
+  localStorage.setItem('vixel-name-color', nameColor);
+  displayUsernameEl.style.color = nameColor;
+  colorPreviewEl.style.background = nameColor;
+  savePresence();
+});
+setAvatarColor.addEventListener('change', (e)=>{
+  avatarColor = e.target.value;
+  localStorage.setItem('vixel-avatar-color', avatarColor);
+  savePresence();
+});
+btnToggleTheme.addEventListener('click', ()=>{
+  // toggle accent (subtle AF)
+  if(accentColor === '#ff2b2b'){ accentColor = '#ff7a7a'; }
+  else accentColor = '#ff2b2b';
+  localStorage.setItem('vixel-accent', accentColor);
+  document.documentElement.style.setProperty('--accent', accentColor);
+});
 
-// =====================================
-// INIT
-// =====================================
-savePresence();
-loadUsers();
-loadMessages();
+/* -------------------------
+   INPUT BEHAVIOR
+   ------------------------- */
+
+/* shift+enter for newline, enter to send */
+inputEl.addEventListener('keydown', (ev)=>{
+  if(ev.key === 'Enter' && !ev.shiftKey){
+    ev.preventDefault();
+    sendMessage();
+  }
+});
+
+/* typing indicator local only (server-side typing not implemented) */
+let typingTimer = null;
+inputEl.addEventListener('input', ()=>{
+  typing = true;
+  // show small hint
+  lastSeenEl.textContent = `${username} is typing...`;
+  if(typingTimer) clearTimeout(typingTimer);
+  typingTimer = setTimeout(()=>{
+    typing = false;
+    lastSeenEl.textContent = `Last seen: ${new Date().toLocaleString()}`;
+  }, 900);
+});
+
+/* -------------------------
+   UTIL: CONFETTI (simple)
+   ------------------------- */
+function confettiBurst(){
+  try{
+    const canvas = confettiCanvas;
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const pieces = [];
+    const colors = ['#ff6b6b','#ff2b2b','#ff9b9b','#ffd6d6','#ff7a7a'];
+    for(let i=0;i<80;i++){
+      pieces.push({
+        x: Math.random()*canvas.width,
+        y: -Math.random()*200,
+        vx: (Math.random()-0.5)*4,
+        vy: Math.random()*4+2,
+        size: Math.random()*6+4,
+        c: colors[Math.floor(Math.random()*colors.length)],
+        rot: Math.random()*360,
+        vr: (Math.random()-0.5)*8
+      });
+    }
+    let frame = 0;
+    function draw(){
+      frame++;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(const p of pieces){
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.08;
+        p.rot += p.vr;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot*Math.PI/180);
+        ctx.fillStyle = p.c;
+        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
+        ctx.restore();
+      }
+      if(frame < 140) requestAnimationFrame(draw);
+      else ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
+    draw();
+  }catch(e){ console.error('confetti err', e); }
+}
+
+/* -------------------------
+   FULLSCREEN
+   ------------------------- */
+btnFullscreen.addEventListener('click', ()=>{
+  if(!document.fullscreenElement){
+    document.getElementById('appRoot').requestFullscreen?.();
+    btnFullscreen.textContent = 'Exit Fullscreen';
+  } else {
+    document.exitFullscreen?.();
+    btnFullscreen.textContent = 'Fullscreen';
+  }
+});
+
+/* -------------------------
+   CACHE CLEAR
+   ------------------------- */
+btnClearCache.addEventListener('click', ()=>{
+  cache = { messages: [], presence: [] };
+  localStorage.removeItem('vixel-msg-cache');
+  flashHint('cache cleared');
+});
+
+/* -------------------------
+   STARTUP / POLLING LOOP
+   ------------------------- */
+
+async function init(){
+  // show local data if present
+  const localMsgs = localStorage.getItem('vixel-msg-cache');
+  if(localMsgs){
+    try{
+      const parsed = JSON.parse(localMsgs);
+      cache.messages = parsed;
+      renderMessages(parsed);
+    }catch(e){}
+  }
+  // initial fetches
+  await Promise.all([savePresence(), loadPresence(), loadMessages()]);
+  // persist a copy
+  try{ localStorage.setItem('vixel-msg-cache', JSON.stringify(cache.messages.slice(-200))); }catch(e){}
+  startPolling();
+}
+
+/* run init (no background tasks promised — runs now) */
+init();
+
+/* -------------------------
+   small helper: update messages cache on unload
+   ------------------------- */
+window.addEventListener('beforeunload', ()=>{
+  try{ localStorage.setItem('vixel-msg-cache', JSON.stringify(cache.messages.slice(-200))); }catch(e){}
+});
+
+/* -------------------------
+   utility: loadMessagesDebounced exported earlier
+   ------------------------- */
+
+/* End of big JS */
 </script>
+
 </body>
 </html>
