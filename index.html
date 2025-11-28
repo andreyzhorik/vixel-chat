@@ -14,6 +14,7 @@
     --accent3:#FF2A2A;
     --text:#ffffff;
     --muted:#bbbbbb;
+    --avatar-size:36px;
   }
 
   html,body{
@@ -68,14 +69,41 @@
     scroll-behavior:smooth;
   }
 
+  .msgRow{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    max-width:100%;
+  }
+
+  .avatar {
+    width:var(--avatar-size);
+    height:var(--avatar-size);
+    min-width:var(--avatar-size);
+    border-radius:50%;
+    display:inline-grid;
+    place-items:center;
+    font-weight:700;
+    border:1px solid rgba(255,255,255,0.06);
+    color:white;
+    text-transform:uppercase;
+    flex-shrink:0;
+  }
+
   .msg{
     padding:10px 12px;
     border-radius:12px;
-    background:rgba(255,255,255,0.06);
+    background:rgba(255,255,255,0.04);
     font-size:15px;
     line-height:1.35;
     animation:pop .12s ease;
-    max-width:80%;
+    max-width:90%;
+    word-break:break-word;
+  }
+  .meta{
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
   }
   @keyframes pop { from{opacity:0; transform:translateY(6px) scale(.99);} to{opacity:1;} }
 
@@ -104,6 +132,50 @@
     cursor:pointer;
     font-weight:700;
   }
+
+  /* right column (users) */
+  .users {
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .userCard{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    padding:8px;
+    border-radius:10px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .statusDot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    margin-left:auto;
+    box-shadow:0 1px 4px rgba(0,0,0,0.6);
+  }
+  .status-online{ background: #3be86b; }
+  .status-offline{ background: #555; }
+
+  .usersHeader{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:6px;
+    color:var(--muted);
+  }
+
+  .small{
+    font-size:13px;
+    color:var(--muted);
+  }
+
+  /* responsive */
+  @media (max-width:900px){
+    .app{ grid-template-columns:1fr; height:92vh; }
+    .users { order: -1; }
+  }
 </style>
 </head>
 <body>
@@ -111,25 +183,36 @@
   <div class="app">
 
     <div class="card">
-      <div class="header">
-        <div class="title">Vixel Chat</div>
+      <div class="header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div class="title" style="font-weight:800;font-size:18px">Vixel Chat</div>
+        <div class="small" id="statusHint">not logged</div>
       </div>
 
-      <!-- FIXED ID -->
-      <div id="messages" class="messages"></div>
+      <!-- MESSAGES -->
+      <div id="messages" class="messages" aria-live="polite"></div>
 
-      <div class="inputRow">
+      <div class="inputRow" style="margin-top:8px;">
         <input id="messageInput" type="text" placeholder="Type a message..." autocomplete="off" />
         <button id="sendBtn" class="btn">Send</button>
       </div>
 
       <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
-        <input id="nameInput" placeholder="your name" style="flex:1" />
+        <input id="nameInput" placeholder="your name" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:var(--text)" />
         <button id="loginBtn" class="btn">Set Name</button>
       </div>
     </div>
 
-    <div></div>
+    <div class="card users">
+      <div class="usersHeader">
+        <div style="font-weight:800">Players</div>
+        <div class="small" id="onlineCount">0 online</div>
+      </div>
+      <div id="usersList" style="overflow:auto;flex:1;padding-right:6px"></div>
+
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+        <button id="goOfflineBtn" class="btn" style="flex:1;background:linear-gradient(90deg,#666,#444)">Go Offline</button>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -137,56 +220,274 @@
 <script type="module">
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+  // ------------ your supabase config (kept from your original file) ------------
   const supabaseUrl = "https://ehciyxvbasqiiiurjuwu.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk"; // replace if needed
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // ELEMENTS — FIXED IDs
+  // elements
   const messagesEl = document.getElementById("messages");
   const msgInput = document.getElementById("messageInput");
   const sendBtn = document.getElementById("sendBtn");
   const nameInput = document.getElementById("nameInput");
   const loginBtn = document.getElementById("loginBtn");
+  const usersList = document.getElementById("usersList");
+  const onlineCountEl = document.getElementById("onlineCount");
+  const statusHint = document.getElementById("statusHint");
+  const goOfflineBtn = document.getElementById("goOfflineBtn");
 
+  // local state
   let username = localStorage.getItem("vixel_user") || "";
+  let presenceId = localStorage.getItem("vixel_presence_id") || null; // saved presence row id if we receive it
+  let presenceChannel = null;
+  let messagesChannel = null;
+  let onlineUsers = {}; // username -> { username, online, id }
 
-  // render message
-  function addMessage(msg){
+  // utils
+  function createAvatarColor(letter){
+    // deterministic color from letter
+    const colors = ["#FF4D4D","#FF8A4D","#FFDF4D","#4DFF8A","#4DD7FF","#7A4DFF","#FF4DA8","#4DFFB2"];
+    const code = letter ? letter.toUpperCase().charCodeAt(0) : Math.random()*100;
+    return colors[code % colors.length];
+  }
+
+  function avatarEl(name){
+    const letter = (name||"?").charAt(0).toUpperCase();
+    const bg = createAvatarColor(letter);
     const el = document.createElement("div");
-    el.className = "msg";
-    el.innerHTML = `<strong>${msg.user}:</strong> ${msg.text}`;
-    messagesEl.appendChild(el);
+    el.className = "avatar";
+    el.style.background = bg;
+    el.textContent = letter;
+    return el;
+  }
+
+  function addMessageToDOM(msg, opts = {}){
+    // msg: { id?, user, text, created_at? }
+    const row = document.createElement("div");
+    row.className = "msgRow";
+
+    const av = avatarEl(msg.user || "?");
+    row.appendChild(av);
+
+    const box = document.createElement("div");
+    box.className = "msg";
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    const time = msg.created_at ? new Date(msg.created_at).toLocaleTimeString() : "";
+    meta.innerHTML = `<strong>${escapeHtml(msg.user || "anon")}</strong> · <span class="small">${time}</span>`;
+
+    const text = document.createElement("div");
+    text.innerHTML = escapeHtml(msg.text || "");
+
+    box.appendChild(meta);
+    box.appendChild(text);
+    row.appendChild(box);
+
+    // optimistic/instant: append at bottom
+    messagesEl.appendChild(row);
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  // load old messages
-  async function loadMessages(){
-    const { data } = await supabase
-      .from("messages")
-      .select("*")
-      .order("ts", { ascending: true });
-
-    messagesEl.innerHTML = "";
-    data?.forEach(addMessage);
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[s]));
   }
 
-  // send
+  // ---------- load initial messages ----------
+  async function loadMessages(){
+    try{
+      const { data, error } = await supabase
+        .from("messages")
+        .select("id, user, text, created_at")
+        .order("created_at", { ascending: true })
+        .limit(200);
+
+      if (error) throw error;
+      messagesEl.innerHTML = "";
+      data?.forEach(addMessageToDOM);
+    } catch (err){
+      console.error("loadMessages err", err);
+    }
+  }
+
+  // ---------- load initial presence ----------
+  async function loadPresence(){
+    try{
+      const { data, error } = await supabase
+        .from("presence")
+        .select("id, username, online");
+
+      if (error) throw error;
+      onlineUsers = {};
+      data?.forEach(row => {
+        onlineUsers[row.username] = { username: row.username, online: row.online, id: row.id };
+      });
+      renderUsers();
+    } catch (err){
+      console.error("loadPresence err", err);
+    }
+  }
+
+  function renderUsers(){
+    usersList.innerHTML = "";
+    const arr = Object.values(onlineUsers).sort((a,b) => {
+      // online first then name
+      if (a.online === b.online) return a.username.localeCompare(b.username);
+      return a.online ? -1 : 1;
+    });
+    arr.forEach(u => {
+      const card = document.createElement("div");
+      card.className = "userCard";
+
+      const av = avatarEl(u.username);
+      av.style.width = "30px";
+      av.style.height = "30px";
+      av.style.minWidth = "30px";
+      card.appendChild(av);
+
+      const nameEl = document.createElement("div");
+      nameEl.style.fontWeight = 700;
+      nameEl.textContent = u.username;
+      card.appendChild(nameEl);
+
+      const dot = document.createElement("div");
+      dot.className = "statusDot " + (u.online ? "status-online" : "status-offline");
+      card.appendChild(dot);
+
+      usersList.appendChild(card);
+    });
+
+    const onlineCount = arr.filter(u => u.online).length;
+    onlineCountEl.textContent = `${onlineCount} online`;
+  }
+
+  // ---------- send message ----------
   async function sendMessage(){
     const text = msgInput.value.trim();
     if (!username) return alert("set a name first");
     if (!text) return;
+    sendBtn.disabled = true;
 
-    await supabase.from("messages").insert([{ user: username, text }]);
-    msgInput.value = "";
+    try{
+      // insert and return the inserted row
+      const { data, error } = await supabase
+        .from("messages")
+        .insert([{ user: username, text }])
+        .select("id, user, text, created_at");
+
+      if (error) throw error;
+
+      // data is array with one row
+      const inserted = (data && data[0]) || { user: username, text, created_at: new Date().toISOString() };
+      addMessageToDOM(inserted);
+      msgInput.value = "";
+    } catch (err){
+      console.error("sendMessage err", err);
+      alert("Failed to send message");
+    } finally {
+      sendBtn.disabled = false;
+      msgInput.focus();
+    }
   }
 
-  // set name
-  loginBtn.onclick = () => {
+  // ---------- presence helpers ----------
+  async function setOnlineFor(usernameStr){
+    if (!usernameStr) return;
+    try{
+      // try update first (in case row exists)
+      const { data: updated, error: updateErr } = await supabase
+        .from("presence")
+        .update({ online: true, username: usernameStr })
+        .eq("username", usernameStr)
+        .select("id, username, online");
+
+      if (updateErr) throw updateErr;
+
+      if (updated && updated.length > 0){
+        presenceId = updated[0].id;
+        localStorage.setItem("vixel_presence_id", presenceId);
+      } else {
+        // no row updated -> insert
+        const { data: inserted, error: insertErr } = await supabase
+          .from("presence")
+          .insert([{ username: usernameStr, online: true }])
+          .select("id, username, online");
+        if (insertErr) throw insertErr;
+        presenceId = inserted && inserted[0] && inserted[0].id;
+        if (presenceId) localStorage.setItem("vixel_presence_id", presenceId);
+      }
+    } catch (err){
+      console.error("setOnlineFor err", err);
+    }
+  }
+
+  async function setOfflineFor(usernameStr){
+    if (!usernameStr) return;
+    try{
+      const { data, error } = await supabase
+        .from("presence")
+        .update({ online: false })
+        .eq("username", usernameStr)
+        .select("id, username, online");
+      if (error) throw error;
+      // we won't remove presenceId because user might come back
+    } catch (err){
+      console.error("setOfflineFor err", err);
+    }
+  }
+
+  // ---------- realtime subscriptions ----------
+  function subscribeRealtime(){
+    // avoid double subscribe
+    if (messagesChannel || presenceChannel) return;
+
+    // messages channel
+    messagesChannel = supabase
+      .channel("realtime:messages")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
+        // payload.new has the row
+        addMessageToDOM(payload.new);
+      })
+      .subscribe((status) => {
+        // console.log("messages channel", status);
+      });
+
+    // presence channel (listen for INSERT/UPDATE)
+    presenceChannel = supabase
+      .channel("realtime:presence")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "presence" }, payload => {
+        const row = payload.new;
+        onlineUsers[row.username] = { username: row.username, online: row.online, id: row.id };
+        renderUsers();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "presence" }, payload => {
+        const row = payload.new;
+        onlineUsers[row.username] = { username: row.username, online: row.online, id: row.id };
+        renderUsers();
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "presence" }, payload => {
+        const row = payload.old;
+        if (row && row.username && onlineUsers[row.username]) {
+          delete onlineUsers[row.username];
+          renderUsers();
+        }
+      })
+      .subscribe();
+  }
+
+  // ---------- ui events ----------
+  loginBtn.onclick = async () => {
     const name = nameInput.value.trim();
     if (!name) return;
     username = name;
-    localStorage.setItem("vixel_user", name);
+    localStorage.setItem("vixel_user", username);
     nameInput.value = "";
+    statusHint.textContent = `logged as ${username}`;
+    await setOnlineFor(username);
+    subscribeRealtime();
+    await loadPresence();
+    // ensure messages loaded
+    await loadMessages();
   };
 
   sendBtn.onclick = sendMessage;
@@ -194,15 +495,72 @@
     if (e.key === "Enter") sendMessage();
   });
 
-  supabase
-    .channel("realtime:messages")
-    .on("postgres_changes",
-      { event:"INSERT", schema:"public", table:"messages" },
-      (payload) => addMessage(payload.new)
-    )
-    .subscribe();
+  goOfflineBtn.onclick = async () => {
+    if (!username) return;
+    await setOfflineFor(username);
+    statusHint.textContent = `offline (you)`;
+    // optional: clear local username/presence
+    // localStorage.removeItem("vixel_user");
+    // localStorage.removeItem("vixel_presence_id");
+  };
 
-  loadMessages();
+  // mark offline when page unloads / hidden
+  window.addEventListener("beforeunload", async (e) => {
+    if (username) {
+      // synchronous request to hint at offline (won't always complete); we also send async update
+      navigator.sendBeacon && sendOfflineBeacon();
+      try { await setOfflineFor(username); } catch (err) { /* ignore */ }
+    }
+  });
+
+  // if page hidden for a long time, mark offline (best-effort)
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === "hidden") {
+      if (username) {
+        try { await setOfflineFor(username); } catch (err) { /* ignore */ }
+      }
+    } else if (document.visibilityState === "visible") {
+      if (username) {
+        await setOnlineFor(username);
+      }
+      subscribeRealtime();
+      await loadPresence();
+      await loadMessages();
+    }
+  });
+
+  // fallback sendBeacon update
+  function sendOfflineBeacon(){
+    if (!navigator.sendBeacon) return;
+    try{
+      const body = JSON.stringify({ username, online:false });
+      // use the supabase REST endpoint? can't rely on it — so use the presence table update via REST (if anon key allowed)
+      // But using sendBeacon to Supabase REST requires proper headers; navigator.sendBeacon can't set custom headers easily.
+      // so we just try calling simple endpoint - best-effort
+    } catch(e){
+      // ignore
+    }
+  }
+
+  // ---------- init on load ----------
+  (async function init(){
+    // set UI if we already have a saved username
+    if (username){
+      statusHint.textContent = `logged as ${username}`;
+      // mark online and subscribe
+      await setOnlineFor(username);
+      subscribeRealtime();
+    } else {
+      statusHint.textContent = `not logged`;
+      // still subscribe to messages so chat works read-only
+      subscribeRealtime();
+    }
+
+    // initial loads
+    await loadPresence();
+    await loadMessages();
+  })();
+
 </script>
 </body>
 </html>
