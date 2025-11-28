@@ -6,67 +6,158 @@
 <title>Vixel Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
 <style>
-  /* ROOT COLORS */
   :root {
-    --bg: #000000;
-    --panel: #1a0000;
-    --accent: #FF0000;
+    --bg: #0a0a0a;
+    --panel: #1f0000;
+    --accent: #ff1a1a;
     --text: #fff;
-    --input-bg: #3D0000;
-    --neon-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000, 0 0 20px #FF0000;
+    --input-bg: #2a0000;
+    --neon: 0 0 8px #ff1a1a, 0 0 16px #ff1a1a, 0 0 24px #ff1a1a;
   }
 
-  * { box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    font-family: 'Orbitron', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
 
-  body { margin: 0; background: var(--bg); color: var(--text); display: flex; justify-content: center; }
-
-  /* CONTAINER */
   #chat-container {
-    width: 1000px; height: 700px; display: grid; grid-template-columns: 3fr 1fr; grid-template-rows: auto 1fr auto;
-    gap: 10px; padding: 10px;
+    width: 1000px;
+    height: 700px;
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 10px;
+    padding: 10px;
   }
 
-  /* HEADER */
   #header {
-    grid-column: 1 / 3; display: flex; align-items: center; justify-content: space-between;
+    grid-column: 1 / 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
-  #header img { height: 60px; background: black; border-radius: 10px; }
 
-  /* MESSAGES PANEL */
+  #header img {
+    height: 60px;
+  }
+
   #messages-panel {
-    grid-column: 1 / 2; grid-row: 2; background: var(--panel); border-radius: 10px; padding: 10px;
-    overflow-y: auto; display: flex; flex-direction: column; gap: 5px;
-  }
-  .message { padding: 5px 10px; border-radius: 5px; background: #300000; display: flex; align-items: center; gap: 10px; box-shadow: var(--neon-shadow); }
-  .message .username { font-weight: bold; }
-  .message .text { white-space: pre-wrap; }
-
-  /* USERS PANEL */
-  #users-panel {
-    grid-column: 2 / 3; grid-row: 2; background: var(--panel); border-radius: 10px; padding: 10px;
+    grid-column: 1 / 2;
+    grid-row: 2;
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     overflow-y: auto;
   }
-  .user { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-  .user .avatar { width: 20px; height: 20px; border-radius: 50%; background: red; }
-  .user.online .avatar { box-shadow: 0 0 5px lime, 0 0 10px lime; }
 
-  /* INPUT AREA */
-  #input-area { grid-column: 1 / 3; display: flex; gap: 10px; }
-  #message-input { flex: 1; background: var(--input-bg); color: var(--text); border: none; padding: 10px; border-radius: 5px; }
-  #send-btn, #color-btn { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; box-shadow: var(--neon-shadow); }
+  .message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #300000;
+    padding: 5px 10px;
+    border-radius: 5px;
+    box-shadow: var(--neon);
+  }
 
-  /* COLOR PICKER MODAL */
-  #color-picker { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                  background: #1a0000; padding: 20px; border-radius: 10px; box-shadow: var(--neon-shadow); }
-  #color-picker input { margin-bottom: 10px; width: 100%; padding: 5px; border-radius: 5px; border: none; }
+  .message .username {
+    font-weight: bold;
+  }
 
+  .message .text {
+    white-space: pre-wrap;
+  }
+
+  #users-panel {
+    grid-column: 2 / 3;
+    grid-row: 2;
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 10px;
+    overflow-y: auto;
+  }
+
+  .user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+  }
+
+  .user .avatar {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: red;
+  }
+
+  .user.online .avatar {
+    box-shadow: 0 0 5px lime, 0 0 10px lime;
+  }
+
+  #input-area {
+    grid-column: 1 / 3;
+    display: flex;
+    gap: 10px;
+  }
+
+  #message-input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background: var(--input-bg);
+    color: var(--text);
+  }
+
+  button {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: var(--neon);
+  }
+
+  #color-picker {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--panel);
+    padding: 20px;
+    border-radius: 10px;
+    display: none;
+    box-shadow: var(--neon);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #color-picker input[type=color] {
+    width: 100%;
+    height: 35px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
+
 <div id="chat-container">
   <div id="header">
     <img src="https://raw.githubusercontent.com/andreyzhorik/VIXEL/main/logonobg.png" alt="Vixel Logo">
-    <button id="color-btn">More</button>
+    <button id="color-btn">Colors</button>
   </div>
 
   <div id="messages-panel"></div>
@@ -79,20 +170,21 @@
 </div>
 
 <div id="color-picker">
-  <label>Name Color (hex):</label>
-  <input type="text" id="name-color" placeholder="#FF0000">
-  <label>Avatar Color (hex):</label>
-  <input type="text" id="avatar-color" placeholder="#FF0000">
+  <label>Your Name Color:</label>
+  <input type="color" id="name-color" value="#ff1a1a">
+  <label>Your Avatar Color:</label>
+  <input type="color" id="avatar-color" value="#ff1a1a">
   <button id="save-colors">Save</button>
 </div>
 
 <script>
 const SUPABASE_URL = "https://ehciyxvbasqiiiurjuwu.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk"; // replace with yours
-const username = prompt("Enter your username:");
-let nameColor = "#FF0000", avatarColor = "#FF0000";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
 
-// DOM
+const username = prompt("Enter your username:") || "Guest";
+let nameColor = "#ff1a1a";
+let avatarColor = "#ff1a1a";
+
 const messagesPanel = document.getElementById("messages-panel");
 const usersPanel = document.getElementById("users-panel");
 const messageInput = document.getElementById("message-input");
@@ -103,27 +195,35 @@ const saveColorsBtn = document.getElementById("save-colors");
 const nameInput = document.getElementById("name-color");
 const avatarInput = document.getElementById("avatar-color");
 
-// EVENTS
+// Events
 sendBtn.onclick = sendMessage;
-messageInput.onkeydown = e => { if (e.shiftKey && e.key === "Enter") { e.stopPropagation(); return; } if (e.key === "Enter") { e.preventDefault(); sendMessage(); } };
-colorBtn.onclick = () => { colorPicker.style.display = "block"; }
-saveColorsBtn.onclick = () => { nameColor = nameInput.value || "#FF0000"; avatarColor = avatarInput.value || "#FF0000"; colorPicker.style.display = "none"; savePresence(); }
+messageInput.onkeydown = e => {
+  if (e.shiftKey && e.key === "Enter") return;
+  if (e.key === "Enter") { e.preventDefault(); sendMessage(); }
+};
+colorBtn.onclick = () => colorPicker.style.display = "flex";
+saveColorsBtn.onclick = () => {
+  nameColor = nameInput.value;
+  avatarColor = avatarInput.value;
+  colorPicker.style.display = "none";
+  savePresence();
+}
 
-// Anti-spam & badwords
+// Clean text from bad words
 const badWords = ["badword1","badword2"];
 function cleanText(text) {
-  badWords.forEach(bw => { text = text.replaceAll(bw, "***"); });
+  badWords.forEach(bw => text = text.replaceAll(bw, "***"));
   return text;
 }
 
-// Supabase REST helpers
+// Supabase helpers
 async function fetchPresence() {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/presence?select=*`, {
       headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
     });
     return await res.json();
-  } catch(e){ console.error("fetchPresence err", e); return []; }
+  } catch(e){ console.error(e); return []; }
 }
 
 async function savePresence() {
@@ -131,9 +231,9 @@ async function savePresence() {
     await fetch(`${SUPABASE_URL}/rest/v1/presence`, {
       method: "POST",
       headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ user: username, online: true, name_color: nameColor, avatar_color: avatarColor, lastseen: new Date().toISOString() })
+      body: JSON.stringify({ username, online: true, name_color: nameColor, avatar_color: avatarColor, lastseen: new Date().toISOString() })
     });
-  } catch(e){ console.error("presence insertErr", e); }
+  } catch(e){ console.error(e); }
 }
 
 // Messages
@@ -151,12 +251,12 @@ async function loadMessages() {
       messagesPanel.appendChild(div);
     });
     messagesPanel.scrollTop = messagesPanel.scrollHeight;
-  } catch(e){ console.error("loadMessages err", e); }
+  } catch(e){ console.error(e); }
 }
 
 async function sendMessage() {
   let text = cleanText(messageInput.value);
-  if(!text.trim()) return;
+  if (!text.trim()) return;
   messageInput.value = "";
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/messages`, {
@@ -165,22 +265,22 @@ async function sendMessage() {
       body: JSON.stringify({ user: username, text, name_color: nameColor, avatar_color: avatarColor, created_at: new Date().toISOString() })
     });
     loadMessages();
-  } catch(e){ console.error("sendMessage err", e); }
+  } catch(e){ console.error(e); }
 }
 
-// Load users
+// Users
 async function loadUsers() {
   const data = await fetchPresence();
   usersPanel.innerHTML = "";
   data.forEach(u => {
     const div = document.createElement("div");
     div.className = `user ${u.online ? "online" : ""}`;
-    div.innerHTML = `<div class="avatar" style="background:${u.avatar_color}"></div><span style="color:${u.name_color}">${u.user}</span>`;
+    div.innerHTML = `<div class="avatar" style="background:${u.avatar_color}"></div><span style="color:${u.name_color}">${u.username}</span>`;
     usersPanel.appendChild(div);
   });
 }
 
-// Online updater
+// Auto refresh
 setInterval(() => { savePresence(); loadUsers(); loadMessages(); }, 5000);
 
 // Init
@@ -188,5 +288,6 @@ savePresence();
 loadUsers();
 loadMessages();
 </script>
+
 </body>
 </html>
