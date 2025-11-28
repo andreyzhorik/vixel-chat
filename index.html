@@ -1,228 +1,312 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vixel Chat</title>
 <style>
 :root{
---bg:#000000;
---panel:#150000;
---panel2:#1b0000;
---accent1:#5A0000;
---accent2:#C00000;
---accent3:#FF2A2A;
---text:#ffffff;
---muted:#bbbbbb;
---avatar-size:36px;
---badword-bg:#FF2A2A;
+  --bg:#000;
+  --panel:#1a0000;
+  --accent1:#3D0000;
+  --accent2:#950101;
+  --accent3:#FF0000;
+  --text:#fff;
+  --input-bg:#111;
+  --shadow:#FF0000;
 }
-html,body{height:100%;margin:0;overflow:hidden;background:linear-gradient(180deg,var(--bg),#1b0000);font-family:Inter,system-ui,Arial;color:var(--text);}
-.wrap{height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;}
-.app{width:100%;max-width:1100px;height:80vh;display:grid;grid-template-columns:3fr 1fr;gap:18px;min-height:0;}
-.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border-radius:14px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,0.7);display:flex;flex-direction:column;border:1px solid rgba(255,0,0,0.04);min-height:0;}
-.messages{flex:1;overflow-y:auto;padding:12px;border-radius:8px;background:rgba(0,0,0,0.20);display:flex;flex-direction:column;gap:8px;min-height:0;scroll-behavior:smooth;}
-.msgRow{display:flex;gap:10px;align-items:flex-start;max-width:100%;}
-.avatar{width:var(--avatar-size);height:var(--avatar-size);min-width:var(--avatar-size);border-radius:50%;display:inline-grid;place-items:center;font-weight:700;border:1px solid rgba(255,255,255,0.06);text-transform:uppercase;flex-shrink:0;color:white;}
-.msg{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.04);font-size:15px;line-height:1.35;animation:pop .12s ease;max-width:90%;word-break:break-word;}
-.meta{font-size:12px;color:var(--muted);margin-bottom:6px;}
-@keyframes pop{from{opacity:0;transform:translateY(6px) scale(.99);}to{opacity:1;}}
-.inputRow{display:flex;gap:8px;padding-top:10px;}
-input[type="text"],input[type="color"]{background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--text);padding:10px;border-radius:8px;outline:none;flex:1;}
-.btn{background:linear-gradient(90deg,var(--accent2),var(--accent3));padding:10px 14px;border-radius:8px;border:none;color:white;cursor:pointer;font-weight:700;}
-.users{display:flex;flex-direction:column;gap:8px;}
-.userCard{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);}
-.statusDot{width:10px;height:10px;border-radius:50%;margin-left:auto;box-shadow:0 1px 4px rgba(0,0,0,0.6);}
-.status-online{ background: #FF2A2A; }
-.status-offline{ background: #555; }
-.usersHeader{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;color:var(--muted);}
-.small{font-size:13px;color:var(--muted);}
-.colorRow{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
-.colorBtn{width:28px;height:28px;border-radius:50%;cursor:pointer;border:1px solid rgba(255,255,255,0.2);}
-.moreBtn{padding:4px 8px;font-size:12px;background:linear-gradient(90deg,#FF2A2A,#950101);border:none;color:white;border-radius:4px;cursor:pointer;}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif;}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+}
+
+#logo{
+  display:block;
+  margin:10px auto;
+  width:150px;
+  filter: drop-shadow(0 0 5px var(--accent3));
+}
+
+#chat-container{
+  display:flex;
+  flex-direction:column;
+  height:90vh;
+  width:420px;
+  margin:0 auto;
+  background:var(--panel);
+  border:3px solid var(--accent3);
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 0 15px var(--shadow);
+}
+
+#messages{
+  flex:1;
+  overflow-y:auto;
+  padding:10px;
+  display:flex;
+  flex-direction:column-reverse;
+  border-bottom:2px solid var(--accent3);
+}
+
+.message{
+  margin:4px 0;
+  padding:6px 8px;
+  border-radius:8px;
+  background:rgba(255,0,0,0.15);
+  animation:fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn{
+  0%{opacity:0;transform:translateY(10px);}
+  100%{opacity:1;transform:translateY(0);}
+}
+
+.message .username{
+  font-weight:bold;
+  margin-right:5px;
+  text-shadow:0 0 3px var(--accent3);
+}
+
+.message .text{
+  white-space:pre-wrap;
+  word-wrap:break-word;
+  text-shadow:0 0 2px var(--accent3);
+}
+
+#input-container{
+  display:flex;
+  padding:5px;
+  background:var(--panel);
+  border-top:3px solid var(--accent3);
+}
+
+#msg{
+  flex:1;
+  padding:6px;
+  border-radius:8px;
+  border:none;
+  background:var(--input-bg);
+  color:#fff;
+  resize:none;
+  box-shadow:0 0 5px var(--accent3) inset;
+}
+
+#msg:focus{outline:none;}
+
+#send{
+  padding:6px 12px;
+  margin-left:5px;
+  background:var(--accent3);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  box-shadow:0 0 5px var(--accent3);
+  transition:0.2s;
+}
+
+#send:hover{
+  background:var(--accent2);
+  box-shadow:0 0 10px var(--accent3);
+}
+
+#users{
+  background:#150000;
+  color:#fff;
+  padding:5px;
+  overflow-y:auto;
+  max-height:120px;
+  border-bottom:2px solid var(--accent3);
+}
+
+.user{
+  margin:3px 0;
+  font-weight:bold;
+  text-shadow:0 0 2px var(--accent3);
+}
+
+.color-btn{
+  width:22px;
+  height:22px;
+  display:inline-block;
+  margin-right:3px;
+  cursor:pointer;
+  border:2px solid #fff;
+  border-radius:4px;
+  box-shadow:0 0 5px var(--accent3);
+}
+
+#moreName,#moreAvatar{
+  cursor:pointer;
+  margin-left:5px;
+  color:var(--accent3);
+  font-weight:bold;
+  text-decoration:underline;
+}
+
+#settings{
+  padding:10px;
+  color:#fff;
+  border-top:2px solid var(--accent3);
+  width:420px;
+  margin:0 auto;
+  border-radius:0 0 15px 15px;
+  box-shadow:0 0 15px var(--shadow);
+}
+
+#settings span{margin-right:5px;}
 </style>
 </head>
 <body>
-<div class="wrap">
-<div class="app">
 
-<!-- CHAT -->
-<div class="card">
-<div class="header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-<div class="title" style="font-weight:800;font-size:18px">Vixel Chat</div>
-<div class="small" id="statusHint">not logged</div>
+<img id="logo" src="https://raw.githubusercontent.com/andreyzhorik/VIXEL/main/logonobg.png" alt="Vixel Logo">
+
+<div id="chat-container">
+  <div id="messages"></div>
+  <div id="users"></div>
+  <div id="input-container">
+    <textarea id="msg" rows="1" placeholder="Type a message..."></textarea>
+    <button id="send">Send</button>
+  </div>
 </div>
 
-<div id="messages" class="messages" aria-live="polite"></div>
-
-<div class="inputRow" style="margin-top:8px;">
-<textarea id="messageInput" placeholder="Type a message..." style="flex:1;resize:none;height:40px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:var(--text)"></textarea>
-<button id="sendBtn" class="btn">Send</button>
+<div id="settings">
+  <div>
+    Name color: 
+    <span class="color-btn" style="background:red" data-type="name" data-color="#FF0000"></span>
+    <span class="color-btn" style="background:yellow" data-type="name" data-color="#FFFF00"></span>
+    <span class="color-btn" style="background:green" data-type="name" data-color="#00FF00"></span>
+    <span class="color-btn" style="background:blue" data-type="name" data-color="#00FFFF"></span>
+    <span id="moreName">More</span>
+  </div>
+  <div style="margin-top:5px;">
+    Avatar color:
+    <span class="color-btn" style="background:red" data-type="avatar" data-color="#FF0000"></span>
+    <span class="color-btn" style="background:yellow" data-type="avatar" data-color="#FFFF00"></span>
+    <span class="color-btn" style="background:green" data-type="avatar" data-color="#00FF00"></span>
+    <span class="color-btn" style="background:blue" data-type="avatar" data-color="#00FFFF"></span>
+    <span id="moreAvatar">More</span>
+  </div>
 </div>
 
-<div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
-<input id="nameInput" placeholder="your name" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:var(--text)" />
-<button id="loginBtn" class="btn">Set Name</button>
-</div>
-
-<div style="margin-top:6px;">
-<div>Name Color:</div>
-<div class="colorRow" id="nameColorRow"></div>
-<div>Avatar Color:</div>
-<div class="colorRow" id="avatarColorRow"></div>
-<button class="moreBtn" id="moreColorsBtn">More</button>
-<input type="color" id="customColorPicker" style="display:none"/>
-</div>
-
-</div>
-
-<!-- USERS -->
-<div class="card users">
-<div class="usersHeader">
-<div style="font-weight:800">Players</div>
-<div class="small" id="onlineCount">0 online</div>
-</div>
-<div id="usersList" style="overflow:auto;flex:1;padding-right:6px"></div>
-</div>
-
-</div>
-</div>
-
-<script type="module">
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const supabaseUrl = "https://ehciyxvbasqiiiurjuwu.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk"; 
-const supabase = createClient(supabaseUrl,supabaseKey);
+<script>
+const API_URL = "https://ehciyxvbasqiiiurjuwu.supabase.co/rest/v1";
+const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
+const USERNAME = prompt("Enter username:").slice(0,20);
+let nameColor = "#FF0000";
+let avatarColor = "#FF0000";
+let lastNameChange = 0;
+const badWords = ["badword1","badword2"];
 
 const messagesEl = document.getElementById("messages");
-const msgInput = document.getElementById("messageInput");
-const sendBtn = document.getElementById("sendBtn");
-const nameInput = document.getElementById("nameInput");
-const loginBtn = document.getElementById("loginBtn");
-const usersList = document.getElementById("usersList");
-const onlineCountEl = document.getElementById("onlineCount");
-const statusHint = document.getElementById("statusHint");
-const nameColorRow = document.getElementById("nameColorRow");
-const avatarColorRow = document.getElementById("avatarColorRow");
-const moreColorsBtn = document.getElementById("moreColorsBtn");
-const customColorPicker = document.getElementById("customColorPicker");
+const usersEl = document.getElementById("users");
+const msgInput = document.getElementById("msg");
 
-let username = localStorage.getItem("vixel_user")||"";
-let presenceId = localStorage.getItem("vixel_presence_id")||null;
-let messagesChannel = null;
-let presenceChannel = null;
-let onlineUsers={};
-let nameColor = "#FF2A2A";
-let avatarColor = "#FF2A2A";
-
-const badwords=["badword1","badword2","xxx","shit","fuck"];
-function filterBadWords(str){return badwords.reduce((s,w)=>s.replace(new RegExp(w,"gi"),"*".repeat(w.length)),str);}
-
-const presetColors=["#FF2A2A","#950101","#3D0000","#000000"];
-
-function avatarEl(name){
-const letter=(name||"?").charAt(0).toUpperCase();
-const el=document.createElement("div");
-el.className="avatar";
-el.style.background=avatarColor||"#FF2A2A";
-el.textContent=letter;
-return el;
+function sanitize(text){
+  badWords.forEach(w => text = text.replace(new RegExp(w,"gi"),"*".repeat(w.length)));
+  return text;
 }
 
-function addMessageToDOM(msg){
-const row=document.createElement("div");
-row.className="msgRow";
-row.appendChild(avatarEl(msg.user));
-const box=document.createElement("div");
-box.className="msg";
-const meta=document.createElement("div");
-meta.className="meta";
-const time=msg.created_at?new Date(msg.created_at).toLocaleTimeString():"";
-meta.innerHTML=`<strong style="color:${nameColor||"#FF2A2A"}">${escapeHtml(msg.user||"anon")}</strong> · <span class="small">${time}</span>`;
-const text=document.createElement("div");
-text.innerHTML=escapeHtml(filterBadWords(msg.text||""));
-box.appendChild(meta);
-box.appendChild(text);
-row.appendChild(box);
-messagesEl.appendChild(row);
-messagesEl.scrollTop=messagesEl.scrollHeight;
+function addMessage(user,text,nameC,avC){
+  const div = document.createElement("div");
+  div.className="message";
+  div.innerHTML=`<span class="username" style="color:${nameC}">${user}</span>: <span class="text" style="color:${avC}">${text}</span>`;
+  if(messagesEl.firstChild && messagesEl.firstChild.innerHTML === div.innerHTML) return;
+  messagesEl.prepend(div);
 }
 
-function escapeHtml(str){return String(str).replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[s]));}
+function addUser(user,nameC,avC,online){
+  if(document.getElementById("user_"+user)) return;
+  const div = document.createElement("div");
+  div.className="user";
+  div.id="user_"+user;
+  div.textContent=user+" "+(online?"🟢":"🔴");
+  div.style.color=nameC;
+  usersEl.appendChild(div);
+}
 
-async function loadMessages(){try{const {data,error}=await supabase.from("messages").select("id,user,text,created_at").order("created_at",{ascending:true}).limit(200);if(error)throw error;messagesEl.innerHTML="";data?.forEach(addMessageToDOM);}catch(err){console.error("loadMessages err",err);}}
+function updateOnline(user,online){
+  const el=document.getElementById("user_"+user);
+  if(el) el.textContent=user+" "+(online?"🟢":"🔴");
+}
 
-async function loadPresence(){try{const {data,error}=await supabase.from("presence").select("id,username,online");if(error)throw error;onlineUsers={};data?.forEach(row=>{onlineUsers[row.username]={username:row.username,online:row.online,id:row.id};});renderUsers();}catch(err){console.error("loadPresence err",err);}}
+async function fetchPresence(){
+  try{
+    const res = await fetch(`${API_URL}/presence?select=username,name_color,avatar_color,online`,{
+      headers:{apikey:API_KEY,"Authorization":"Bearer "+API_KEY}
+    });
+    const data = await res.json();
+    usersEl.innerHTML="";
+    data.forEach(u=>addUser(u.username,u.name_color||"#FF0000",u.avatar_color||"#FF0000",u.online));
+  }catch(e){console.error("presence fetch err",e);}
+}
 
-function renderUsers(){
-usersList.innerHTML="";
-const arr=Object.values(onlineUsers).sort((a,b)=>a.online===b.online?a.username.localeCompare(b.username):a.online?-1:1);
-arr.forEach(u=>{const card=document.createElement("div");card.className="userCard";const av=document.createElement("div");av.className="avatar";av.style.background=avatarColor||"#FF2A2A";av.textContent=u.username.charAt(0).toUpperCase();av.style.width="30px";av.style.height="30px";av.style.minWidth="30px";card.appendChild(av);const nameEl=document.createElement("div");nameEl.style.fontWeight=700;nameEl.style.color=nameColor||"#FF2A2A";nameEl.textContent=u.username;card.appendChild(nameEl);const dot=document.createElement("div");dot.className="statusDot "+(u.online?"status-online":"status-offline");card.appendChild(dot);usersList.appendChild(card);});
-const onlineCount=arr.filter(u=>u.online).length;onlineCountEl.textContent=`${onlineCount} online`;
+async function fetchMessages(){
+  try{
+    const res = await fetch(`${API_URL}/messages?select=user,text,created_at&order=created_at.asc&limit=200`,{
+      headers:{apikey:API_KEY,"Authorization":"Bearer "+API_KEY}
+    });
+    const data = await res.json();
+    messagesEl.innerHTML="";
+    data.forEach(m=>addMessage(m.user,sanitize(m.text),nameColor,avatarColor));
+  }catch(e){console.error("messages fetch err",e);}
+}
+
+async function goOnline(){
+  try{
+    await fetch(`${API_URL}/presence`,{
+      method:"POST",
+      headers:{apikey:API_KEY,"Authorization":"Bearer "+API_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({username:USERNAME,online:true,name_color:nameColor,avatar_color:avatarColor,lastseen:new Date().toISOString()})
+    });
+  }catch(e){console.error("online err",e);}
 }
 
 async function sendMessage(){
-const text=msgInput.value.trim();
-if(!username)return alert("set a name first");
-if(!text)return;
-sendBtn.disabled=true;
-try{const {data,error}=await supabase.from("messages").insert([{user:username,text}]).select("id,user,text,created_at");if(error)throw error;const inserted=(data&&data[0])||{user:username,text,created_at:new Date().toISOString()};addMessageToDOM(inserted);msgInput.value="";}catch(err){console.error("sendMessage err",err);alert("Failed to send message");}finally{sendBtn.disabled=false;msgInput.focus();}
+  let text = sanitize(msgInput.value.trim());
+  if(!text) return;
+  await fetch(`${API_URL}/messages`,{
+    method:"POST",
+    headers:{apikey:API_KEY,"Authorization":"Bearer "+API_KEY,"Content-Type":"application/json"},
+    body:JSON.stringify({user:USERNAME,text})
+  });
+  addMessage(USERNAME,text,nameColor,avatarColor);
+  msgInput.value="";
 }
 
-async function ensurePresenceRow(){
-if(!username)return;
-try{
-const {data,error}=await supabase.from("presence").upsert({username,online:true,name_color:nameColor,avatar_color:avatarColor}).select("id");if(error)throw error;if(data&&data[0]&&data[0].id){presenceId=data[0].id;localStorage.setItem("vixel_presence_id",presenceId);}
-}catch(e){console.error("presence insertErr",e);}
-}
+msgInput.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}
+});
 
-function subscribeRealtime(){
-if(messagesChannel||presenceChannel)return;
-messagesChannel=supabase.channel("realtime:messages").on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{addMessageToDOM(payload.new);}).subscribe();
-presenceChannel=supabase.channel("realtime:presence")
-.on("postgres_changes",{event:"INSERT",schema:"public",table:"presence"},payload=>{const row=payload.new;onlineUsers[row.username]={username:row.username,online:row.online,id:row.id};renderUsers();})
-.on("postgres_changes",{event:"UPDATE",schema:"public",table:"presence"},payload=>{const row=payload.new;onlineUsers[row.username]={username:row.username,online:row.online,id:row.id};renderUsers();})
-.subscribe();
-}
+document.getElementById("send").addEventListener("click",sendMessage);
 
-loginBtn.onclick=async()=>{
-const name=nameInput.value.trim();if(!name)return;
-const lastChange=localStorage.getItem("vixel_name_change")||0;
-const now=Date.now();
-if(now-lastChange<604800000){alert("You can change name once a week");return;}
-username=name;
-localStorage.setItem("vixel_user",username);
-localStorage.setItem("vixel_name_change",now);
-statusHint.textContent=`logged as ${username}`;
-await ensurePresenceRow();
-subscribeRealtime();
-await loadPresence();
-await loadMessages();
-};
+document.querySelectorAll(".color-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    if(btn.dataset.type==="name") nameColor=btn.dataset.color;
+    else avatarColor=btn.dataset.color;
+    goOnline();
+  });
+});
 
-sendBtn.onclick=sendMessage;
-msgInput.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}});
+document.getElementById("moreName").addEventListener("click",()=>{
+  const c=prompt("Enter hex color for name","#FF0000");
+  if(/^#[0-9A-F]{6}$/i.test(c)){nameColor=c;goOnline();}
+});
+document.getElementById("moreAvatar").addEventListener("click",()=>{
+  const c=prompt("Enter hex color for avatar","#FF0000");
+  if(/^#[0-9A-F]{6}$/i.test(c)){avatarColor=c;goOnline();}
+});
 
-window.addEventListener("beforeunload",async()=>{if(username){try{await supabase.from("presence").update({online:false}).eq("username",username);}catch(err){};}});
-
-moreColorsBtn.onclick=()=>{customColorPicker.click();};
-customColorPicker.addEventListener("input",()=>{avatarColor=customColorPicker.value;nameColor=customColorPicker.value;ensurePresenceRow();renderUsers();});
-
-function initColorButtons(row,prop){presetColors.forEach(c=>{const b=document.createElement("div");b.className="colorBtn";b.style.background=c;b.onclick=()=>{if(prop==="name")nameColor=c;else avatarColor=c;ensurePresenceRow();renderUsers();};row.appendChild(b);});}
-
-initColorButtons(nameColorRow,"name");
-initColorButtons(avatarColorRow,"avatar");
-
-(async function init(){
-if(username){
-statusHint.textContent=`logged as ${username}`;
-await ensurePresenceRow();
-subscribeRealtime();
-}
-await loadPresence();
-await loadMessages();
-})();
+fetchPresence();
+fetchMessages();
+goOnline();
+setInterval(fetchPresence,5000);
+setInterval(fetchMessages,3000);
 </script>
+
 </body>
 </html>
