@@ -3,160 +3,165 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vixel Chat 2.0</title>
+<title>Vixel Chat Ultimate</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0a;
-    --panel: #1f0000;
-    --accent: #ff1a1a;
-    --text: #fff;
-    --input-bg: #2a0000;
-    --neon: 0 0 8px #ff1a1a, 0 0 16px #ff1a1a, 0 0 24px #ff1a1a;
-  }
-
-  body {
-    margin: 0;
-    font-family: 'Orbitron', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: var(--bg);
-    height: 100vh;
-  }
-
-  #chat-container {
-    display: grid;
-    grid-template-columns: 3fr 1fr;
-    grid-template-rows: auto 1fr auto;
-    gap: 10px;
-    width: 1000px;
-    height: 700px;
-    padding: 10px;
-  }
-
-  /* HEADER */
-  #header {
-    grid-column: 1 / 3;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  #header img {
-    height: 60px;
-  }
-
-  /* MESSAGES PANEL */
-  #messages-panel {
-    grid-column: 1 / 2;
-    grid-row: 2;
-    background: var(--panel);
-    border-radius: 10px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    overflow-y: auto;
-  }
-
-  .message {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 5px 10px;
-    border-radius: 5px;
-    background: #300000;
-    box-shadow: var(--neon);
-  }
-
-  .message .username {
-    font-weight: bold;
-  }
-
-  .message .text {
-    white-space: pre-wrap;
-  }
-
-  /* USERS PANEL */
-  #users-panel {
-    grid-column: 2 / 3;
-    grid-row: 2;
-    background: var(--panel);
-    border-radius: 10px;
-    padding: 10px;
-    overflow-y: auto;
-  }
-
-  .user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 5px;
-  }
-
-  .user .avatar {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background: red;
-  }
-
-  .user.online .avatar {
-    box-shadow: 0 0 5px lime, 0 0 10px lime;
-  }
-
-  /* INPUT AREA */
-  #input-area {
-    grid-column: 1 / 3;
-    display: flex;
-    gap: 10px;
-  }
-
-  #message-input {
-    flex: 1;
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    background: var(--input-bg);
-    color: var(--text);
-    resize: none;
-  }
-
-  button {
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    background: var(--accent);
-    color: #fff;
-    box-shadow: var(--neon);
-  }
-
-  /* COLOR PICKER */
-  #color-picker {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--panel);
-    padding: 20px;
-    border-radius: 10px;
-    display: none;
-    box-shadow: var(--neon);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  #color-picker input[type=color] {
-    width: 100%;
-    height: 35px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-  }
-
+:root{
+  --bg:#0a0a0a;
+  --panel:#1f0000;
+  --accent:#ff1a1a;
+  --text:#fff;
+  --input-bg:#2a0000;
+  --neon:0 0 8px #ff1a1a,0 0 16px #ff1a1a,0 0 24px #ff1a1a;
+}
+body{
+  margin:0;
+  font-family:'Orbitron',sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:var(--bg);
+  height:100vh;
+  overflow:hidden;
+}
+#chat-container{
+  display:grid;
+  grid-template-columns:3fr 1fr;
+  grid-template-rows:auto 1fr auto;
+  gap:10px;
+  width:1000px;
+  height:700px;
+  padding:10px;
+  position:relative;
+  background: #110000;
+  border-radius:10px;
+  box-shadow:0 0 20px #ff1a1a,0 0 40px #ff1a1a40;
+}
+#header{
+  grid-column:1 / 3;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+#header img{
+  height:60px;
+  filter: drop-shadow(0 0 8px #ff1a1a);
+}
+button{
+  border:none;
+  padding:10px 20px;
+  border-radius:5px;
+  cursor:pointer;
+  background:var(--accent);
+  color:#fff;
+  box-shadow:var(--neon);
+  transition:0.2s;
+}
+button:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 12px #ff1a1a,0 0 24px #ff1a1a,0 0 36px #ff1a1a;
+}
+#messages-panel{
+  grid-column:1 / 2;
+  grid-row:2;
+  background:var(--panel);
+  border-radius:10px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  overflow-y:auto;
+}
+.message{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:5px 10px;
+  border-radius:5px;
+  background:#300000;
+  box-shadow:var(--neon);
+  animation:fadeIn 0.5s ease;
+}
+.message .username{font-weight:bold;}
+.message .text{white-space:pre-wrap;}
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+#users-panel{
+  grid-column:2 / 3;
+  grid-row:2;
+  background:var(--panel);
+  border-radius:10px;
+  padding:10px;
+  overflow-y:auto;
+}
+.user{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:5px;
+  transition:0.2s;
+}
+.user.online .avatar{
+  box-shadow:0 0 5px lime,0 0 10px lime,0 0 15px lime;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.2);}
+}
+.user .avatar{
+  width:25px;
+  height:25px;
+  border-radius:50%;
+  background:red;
+}
+#input-area{
+  grid-column:1 / 3;
+  display:flex;
+  gap:10px;
+}
+#message-input{
+  flex:1;
+  padding:10px;
+  border-radius:5px;
+  border:none;
+  background:var(--input-bg);
+  color:var(--text);
+  resize:none;
+}
+#color-picker{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:var(--panel);
+  padding:20px;
+  border-radius:10px;
+  display:none;
+  box-shadow:var(--neon);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+#color-picker input[type=color]{
+  width:100%;
+  height:35px;
+  border-radius:5px;
+  border:none;
+  cursor:pointer;
+}
+#theme-selector{
+  margin-top:10px;
+}
+#theme-selector select{
+  width:100%;
+  padding:5px;
+  border-radius:5px;
+  border:none;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -181,12 +186,21 @@
   <input type="color" id="name-color" value="#ff1a1a">
   <label>Avatar Color:</label>
   <input type="color" id="avatar-color" value="#ff1a1a">
+  <label>Theme:</label>
+  <select id="theme-selector">
+    <option value="neon">Neon Red</option>
+    <option value="green">Cyber Green</option>
+    <option value="purple">Violet Haze</option>
+  </select>
   <button id="save-colors">Save</button>
 </div>
 
+<audio id="msg-sound" src="https://freesound.org/data/previews/414/414209_5121236-lq.mp3"></audio>
+<audio id="join-sound" src="https://freesound.org/data/previews/331/331912_3248244-lq.mp3"></audio>
+
 <script>
-const SUPABASE_URL = "https://ehciyxvbasqiiiurjuwu.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
+const SUPABASE_URL="https://ehciyxvbasqiiiurjuwu.supabase.co";
+const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
 
 // LocalStorage username
 let username = localStorage.getItem("vixel-username");
@@ -198,118 +212,137 @@ if(!username){
 let nameColor = "#ff1a1a";
 let avatarColor = "#ff1a1a";
 
-const messagesPanel = document.getElementById("messages-panel");
-const usersPanel = document.getElementById("users-panel");
-const messageInput = document.getElementById("message-input");
-const sendBtn = document.getElementById("send-btn");
-const colorBtn = document.getElementById("color-btn");
-const colorPicker = document.getElementById("color-picker");
-const saveColorsBtn = document.getElementById("save-colors");
-const nameInput = document.getElementById("name-color");
-const avatarInput = document.getElementById("avatar-color");
+const messagesPanel=document.getElementById("messages-panel");
+const usersPanel=document.getElementById("users-panel");
+const messageInput=document.getElementById("message-input");
+const sendBtn=document.getElementById("send-btn");
+const colorBtn=document.getElementById("color-btn");
+const colorPicker=document.getElementById("color-picker");
+const saveColorsBtn=document.getElementById("save-colors");
+const nameInput=document.getElementById("name-color");
+const avatarInput=document.getElementById("avatar-color");
+const themeSelector=document.getElementById("theme-selector");
+
+const msgSound=document.getElementById("msg-sound");
+const joinSound=document.getElementById("join-sound");
 
 // EVENTS
-sendBtn.onclick = sendMessage;
-messageInput.onkeydown = e => {
-  if(e.shiftKey && e.key === "Enter") return;
-  if(e.key === "Enter"){ e.preventDefault(); sendMessage(); }
+sendBtn.onclick=sendMessage;
+messageInput.onkeydown=e=>{
+  if(e.shiftKey && e.key==="Enter") return;
+  if(e.key==="Enter"){ e.preventDefault(); sendMessage();}
 };
-colorBtn.onclick = () => colorPicker.style.display = "flex";
-saveColorsBtn.onclick = () => {
-  nameColor = nameInput.value;
-  avatarColor = avatarInput.value;
-  colorPicker.style.display = "none";
+colorBtn.onclick=()=>colorPicker.style.display="flex";
+saveColorsBtn.onclick=()=>{
+  nameColor=nameInput.value;
+  avatarColor=avatarInput.value;
+  applyTheme(themeSelector.value);
+  colorPicker.style.display="none";
   savePresence();
 }
 
-// Anti-spam / badwords
-const badWords = ["badword1","badword2"];
-function cleanText(text){
-  badWords.forEach(bw => text = text.replaceAll(bw, "***"));
-  return text;
+// Themes
+function applyTheme(theme){
+  switch(theme){
+    case"neon":
+      document.documentElement.style.setProperty("--accent","#ff1a1a");
+      document.documentElement.style.setProperty("--neon","0 0 8px #ff1a1a,0 0 16px #ff1a1a,0 0 24px #ff1a1a");
+      break;
+    case"green":
+      document.documentElement.style.setProperty("--accent","#00ff6a");
+      document.documentElement.style.setProperty("--neon","0 0 8px #00ff6a,0 0 16px #00ff6a,0 0 24px #00ff6a");
+      break;
+    case"purple":
+      document.documentElement.style.setProperty("--accent","#9b00ff");
+      document.documentElement.style.setProperty("--neon","0 0 8px #9b00ff,0 0 16px #9b00ff,0 0 24px #9b00ff");
+      break;
+  }
 }
+
+// Anti-spam / badwords
+const badWords=["badword1","badword2"];
+function cleanText(text){badWords.forEach(bw=>text=text.replaceAll(bw,"***")); return text;}
 
 // Fetch presence
 async function fetchPresence(){
   try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/presence?select=*`,{
-      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-    });
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/presence?select=*`,{
+      headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`}});
     return await res.json();
-  }catch(e){ console.error(e); return []; }
+  }catch(e){console.error(e); return[];}
 }
 
-// Save presence (upsert to avoid duplicates)
+// Save presence (upsert)
 async function savePresence(){
   try{
     await fetch(`${SUPABASE_URL}/rest/v1/presence`,{
       method:"POST",
       headers:{
-        "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "apikey":SUPABASE_KEY,
+        "Authorization":`Bearer ${SUPABASE_KEY}`,
         "Content-Type":"application/json",
-        "Prefer": "resolution=merge-duplicates"
+        "Prefer":"resolution=merge-duplicates"
       },
-      body: JSON.stringify({ username, online:true, name_color:nameColor, avatar_color:avatarColor, lastseen: new Date().toISOString() })
+      body:JSON.stringify({username,online:true,name_color:nameColor,avatar_color:avatarColor,lastseen:new Date().toISOString()})
     });
-  }catch(e){ console.error(e); }
+  }catch(e){console.error(e);}
 }
 
 // Messages
 async function loadMessages(){
   try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/messages?select=*&order=created_at.asc&limit=200`,{
-      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-    });
-    const data = await res.json();
-    messagesPanel.innerHTML = "";
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/messages?select=*&order=created_at.asc&limit=200`,{
+      headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`}});
+    const data=await res.json();
+    messagesPanel.innerHTML="";
     data.forEach(m=>{
-      const div = document.createElement("div");
+      const div=document.createElement("div");
       div.className="message";
       div.innerHTML=`<span class="username" style="color:${m.name_color}">${m.user}</span>: <span class="text">${m.text}</span>`;
       messagesPanel.appendChild(div);
     });
-    messagesPanel.scrollTop = messagesPanel.scrollHeight;
-  }catch(e){ console.error(e); }
+    if(data.length>0) msgSound.play();
+    messagesPanel.scrollTop=messagesPanel.scrollHeight;
+  }catch(e){console.error(e);}
 }
 
 async function sendMessage(){
-  let text = cleanText(messageInput.value);
+  let text=cleanText(messageInput.value);
   if(!text.trim()) return;
   messageInput.value="";
   try{
     await fetch(`${SUPABASE_URL}/rest/v1/messages`,{
       method:"POST",
-      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type":"application/json" },
-      body: JSON.stringify({ user: username, text, name_color:nameColor, avatar_color:avatarColor, created_at: new Date().toISOString() })
+      headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
+      body:JSON.stringify({user:username,text,name_color:nameColor,avatar_color:avatarColor,created_at:new Date().toISOString()})
     });
     loadMessages();
-  }catch(e){ console.error(e); }
+  }catch(e){console.error(e);}
 }
 
 // Users
 async function loadUsers(){
-  const data = await fetchPresence();
-  const seen = new Set();
-  usersPanel.innerHTML = "";
+  const data=await fetchPresence();
+  const seen=new Set();
+  usersPanel.innerHTML="";
   data.forEach(u=>{
-    if(seen.has(u.username)) return; // skip duplicates
+    if(seen.has(u.username)) return;
     seen.add(u.username);
-    const div = document.createElement("div");
+    const div=document.createElement("div");
     div.className=`user ${u.online?"online":""}`;
     div.innerHTML=`<div class="avatar" style="background:${u.avatar_color}"></div><span style="color:${u.name_color}">${u.username}</span>`;
     usersPanel.appendChild(div);
   });
+  if(data.length>0) joinSound.play();
 }
 
 // Auto refresh
-setInterval(()=>{ savePresence(); loadUsers(); loadMessages(); }, 5000);
+setInterval(()=>{ savePresence(); loadUsers(); loadMessages(); },5000);
 
 // Init
 savePresence();
 loadUsers();
 loadMessages();
 </script>
-
 </body>
 </html>
