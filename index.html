@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vixel Chat</title>
+<title>Vixel Chat 2.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -17,24 +17,25 @@
 
   body {
     margin: 0;
-    background: var(--bg);
     font-family: 'Orbitron', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
+    background: var(--bg);
     height: 100vh;
   }
 
   #chat-container {
-    width: 1000px;
-    height: 700px;
     display: grid;
     grid-template-columns: 3fr 1fr;
     grid-template-rows: auto 1fr auto;
     gap: 10px;
+    width: 1000px;
+    height: 700px;
     padding: 10px;
   }
 
+  /* HEADER */
   #header {
     grid-column: 1 / 3;
     display: flex;
@@ -46,6 +47,7 @@
     height: 60px;
   }
 
+  /* MESSAGES PANEL */
   #messages-panel {
     grid-column: 1 / 2;
     grid-row: 2;
@@ -54,7 +56,7 @@
     padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     overflow-y: auto;
   }
 
@@ -62,9 +64,9 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #300000;
     padding: 5px 10px;
     border-radius: 5px;
+    background: #300000;
     box-shadow: var(--neon);
   }
 
@@ -76,6 +78,7 @@
     white-space: pre-wrap;
   }
 
+  /* USERS PANEL */
   #users-panel {
     grid-column: 2 / 3;
     grid-row: 2;
@@ -103,6 +106,7 @@
     box-shadow: 0 0 5px lime, 0 0 10px lime;
   }
 
+  /* INPUT AREA */
   #input-area {
     grid-column: 1 / 3;
     display: flex;
@@ -116,6 +120,7 @@
     border: none;
     background: var(--input-bg);
     color: var(--text);
+    resize: none;
   }
 
   button {
@@ -128,8 +133,9 @@
     box-shadow: var(--neon);
   }
 
+  /* COLOR PICKER */
   #color-picker {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -146,10 +152,11 @@
   #color-picker input[type=color] {
     width: 100%;
     height: 35px;
-    border: none;
     border-radius: 5px;
+    border: none;
     cursor: pointer;
   }
+
 </style>
 </head>
 <body>
@@ -157,7 +164,7 @@
 <div id="chat-container">
   <div id="header">
     <img src="https://raw.githubusercontent.com/andreyzhorik/VIXEL/main/logonobg.png" alt="Vixel Logo">
-    <button id="color-btn">Colors</button>
+    <button id="color-btn">Pick Colors</button>
   </div>
 
   <div id="messages-panel"></div>
@@ -170,9 +177,9 @@
 </div>
 
 <div id="color-picker">
-  <label>Your Name Color:</label>
+  <label>Name Color:</label>
   <input type="color" id="name-color" value="#ff1a1a">
-  <label>Your Avatar Color:</label>
+  <label>Avatar Color:</label>
   <input type="color" id="avatar-color" value="#ff1a1a">
   <button id="save-colors">Save</button>
 </div>
@@ -181,7 +188,13 @@
 const SUPABASE_URL = "https://ehciyxvbasqiiiurjuwu.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
 
-const username = prompt("Enter your username:") || "Guest";
+// LocalStorage username
+let username = localStorage.getItem("vixel-username");
+if(!username){
+  username = prompt("Enter your username:") || "Guest";
+  localStorage.setItem("vixel-username", username);
+}
+
 let nameColor = "#ff1a1a";
 let avatarColor = "#ff1a1a";
 
@@ -195,11 +208,11 @@ const saveColorsBtn = document.getElementById("save-colors");
 const nameInput = document.getElementById("name-color");
 const avatarInput = document.getElementById("avatar-color");
 
-// Events
+// EVENTS
 sendBtn.onclick = sendMessage;
 messageInput.onkeydown = e => {
-  if (e.shiftKey && e.key === "Enter") return;
-  if (e.key === "Enter") { e.preventDefault(); sendMessage(); }
+  if(e.shiftKey && e.key === "Enter") return;
+  if(e.key === "Enter"){ e.preventDefault(); sendMessage(); }
 };
 colorBtn.onclick = () => colorPicker.style.display = "flex";
 saveColorsBtn.onclick = () => {
@@ -209,79 +222,88 @@ saveColorsBtn.onclick = () => {
   savePresence();
 }
 
-// Clean text from bad words
+// Anti-spam / badwords
 const badWords = ["badword1","badword2"];
-function cleanText(text) {
+function cleanText(text){
   badWords.forEach(bw => text = text.replaceAll(bw, "***"));
   return text;
 }
 
-// Supabase helpers
-async function fetchPresence() {
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/presence?select=*`, {
-      headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+// Fetch presence
+async function fetchPresence(){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/presence?select=*`,{
+      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
     });
     return await res.json();
-  } catch(e){ console.error(e); return []; }
+  }catch(e){ console.error(e); return []; }
 }
 
-async function savePresence() {
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/presence`, {
-      method: "POST",
-      headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ username, online: true, name_color: nameColor, avatar_color: avatarColor, lastseen: new Date().toISOString() })
+// Save presence (upsert to avoid duplicates)
+async function savePresence(){
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/presence`,{
+      method:"POST",
+      headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type":"application/json",
+        "Prefer": "resolution=merge-duplicates"
+      },
+      body: JSON.stringify({ username, online:true, name_color:nameColor, avatar_color:avatarColor, lastseen: new Date().toISOString() })
     });
-  } catch(e){ console.error(e); }
+  }catch(e){ console.error(e); }
 }
 
 // Messages
-async function loadMessages() {
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/messages?select=*&order=created_at.asc&limit=200`, {
-      headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+async function loadMessages(){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/messages?select=*&order=created_at.asc&limit=200`,{
+      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
     });
     const data = await res.json();
     messagesPanel.innerHTML = "";
-    data.forEach(m => {
+    data.forEach(m=>{
       const div = document.createElement("div");
-      div.className = "message";
-      div.innerHTML = `<span class="username" style="color:${m.name_color}">${m.user}</span>: <span class="text">${m.text}</span>`;
+      div.className="message";
+      div.innerHTML=`<span class="username" style="color:${m.name_color}">${m.user}</span>: <span class="text">${m.text}</span>`;
       messagesPanel.appendChild(div);
     });
     messagesPanel.scrollTop = messagesPanel.scrollHeight;
-  } catch(e){ console.error(e); }
+  }catch(e){ console.error(e); }
 }
 
-async function sendMessage() {
+async function sendMessage(){
   let text = cleanText(messageInput.value);
-  if (!text.trim()) return;
-  messageInput.value = "";
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/messages`, {
-      method: "POST",
-      headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ user: username, text, name_color: nameColor, avatar_color: avatarColor, created_at: new Date().toISOString() })
+  if(!text.trim()) return;
+  messageInput.value="";
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/messages`,{
+      method:"POST",
+      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type":"application/json" },
+      body: JSON.stringify({ user: username, text, name_color:nameColor, avatar_color:avatarColor, created_at: new Date().toISOString() })
     });
     loadMessages();
-  } catch(e){ console.error(e); }
+  }catch(e){ console.error(e); }
 }
 
 // Users
-async function loadUsers() {
+async function loadUsers(){
   const data = await fetchPresence();
+  const seen = new Set();
   usersPanel.innerHTML = "";
-  data.forEach(u => {
+  data.forEach(u=>{
+    if(seen.has(u.username)) return; // skip duplicates
+    seen.add(u.username);
     const div = document.createElement("div");
-    div.className = `user ${u.online ? "online" : ""}`;
-    div.innerHTML = `<div class="avatar" style="background:${u.avatar_color}"></div><span style="color:${u.name_color}">${u.username}</span>`;
+    div.className=`user ${u.online?"online":""}`;
+    div.innerHTML=`<div class="avatar" style="background:${u.avatar_color}"></div><span style="color:${u.name_color}">${u.username}</span>`;
     usersPanel.appendChild(div);
   });
 }
 
 // Auto refresh
-setInterval(() => { savePresence(); loadUsers(); loadMessages(); }, 5000);
+setInterval(()=>{ savePresence(); loadUsers(); loadMessages(); }, 5000);
 
 // Init
 savePresence();
