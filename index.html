@@ -216,189 +216,86 @@
   </div>
 </div>
 
-<script>
-/* config */
-const WORKER_URL = "https://vixel-chat.mrviktor2426.workers.dev";
-const POLL = 2000;      // fetch messages interval
-const PRESENCE = 8000;  // presence heartbeat
-const NAME_LIMIT = 7 * 24 * 60 * 60 * 1000; // 1 week name change cooldown
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-/* state */
-let token = localStorage.getItem('vixel_token');
-let username = localStorage.getItem('vixel_user');
-let lastMsgId = ''; /* server uses string ids like ts:rand */
+  // Supabase config
+  const supabaseUrl = "https://ehciyxvbasqiiiurjuwu.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
-const messagesEl = document.getElementById('messages');
-const playerListEl = document.getElementById('playerList');
-const statusBadge = document.getElementById('statusBadge');
-const msgInput = document.getElementById('messageInput');
-const nameInput = document.getElementById('nameInput');
+  // Elements
+  const chatEl = document.getElementById("chat");
+  const msgInput = document.getElementById("messageInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const nameInput = document.getElementById("nameInput");
+  const loginBtn = document.getElementById("loginBtn");
 
-function escapeHtml(t){ return String(t||'').replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m])); }
-function setStatus(t){ statusBadge.textContent = t; }
+  // Username saved locally
+  let username = localStorage.getItem("vixel_user") || "";
 
-/* API helper */
-async function API(path, method='GET', body=null){
-  const headers = {'Accept':'application/json'};
-  if(token) headers['Authorization'] = 'Bearer '+token;
-  if(body) headers['Content-Type'] = 'application/json';
-  const res = await fetch(WORKER_URL + path, { method, headers, body: body ? JSON.stringify(body) : null });
-  if(!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-/* register (set name) with cooldown */
-async function setName(){
-  const name = nameInput.value.trim();
-  if(!name) return alert('enter a name bro');
-  const lastChange = Number(localStorage.getItem('vixel_last_name_change') || 0);
-  if(lastChange && (Date.now() - lastChange) < NAME_LIMIT){
-    const daysLeft = Math.ceil((NAME_LIMIT - (Date.now() - lastChange)) / (1000*60*60*24));
-    return alert('you can change your name again in '+daysLeft+' day(s)');
+  // Add a message to DOM
+  function addMessage(msg) {
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.innerHTML = `<strong>${msg.user}:</strong> ${msg.text}`;
+    chatEl.appendChild(div);
+    chatEl.scrollTop = chatEl.scrollHeight;
   }
-  try{
-    const r = await API('/register','POST',{name});
-    token = r.token;
+
+  // Fetch existing messages
+  async function loadMessages() {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .order("ts", { ascending: true });
+
+    if (!data) return;
+
+    chatEl.innerHTML = "";
+    data.forEach(addMessage);
+  }
+
+  // Send a message
+  async function sendMessage() {
+    const text = msgInput.value.trim();
+    if (!username) return alert("Enter your name first");
+    if (!text) return;
+
+    await supabase.from("messages").insert([
+      { user: username, text }
+    ]);
+
+    msgInput.value = "";
+  }
+
+  // Login / set name
+  loginBtn.onclick = () => {
+    const name = nameInput.value.trim();
+    if (!name) return;
     username = name;
-    localStorage.setItem('vixel_token', token);
-    localStorage.setItem('vixel_user', name);
-    localStorage.setItem('vixel_last_name_change', Date.now());
-    setStatus('connected as '+name);
-    nameInput.value = '';
-    await heartbeat(); // announce presence immediately
-    fetchPlayers();
-    fetchMessages();
-  }catch(e){
-    alert('register failed: '+e.message);
-  }
-}
+    localStorage.setItem("vixel_user", name);
+    nameInput.value = "";
+  };
 
-/* send message to server */
-async function sendMessage(){
-  const text = msgInput.value.trim();
-  if(!text) return;
-  try{
-    await API('/send','POST',{text});
-    msgInput.value = '';
-    // fetch new messages ASAP
-    fetchMessages();
-  }catch(e){
-    alert('send failed: '+e.message);
-  }
-}
+  // Send on click or Enter
+  sendBtn.onclick = sendMessage;
+  msgInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") sendMessage();
+  });
 
-/* fetch messages after lastMsgId */
-async function fetchMessages(){
-  try{
-    const q = lastMsgId ? '?after=' + encodeURIComponent(lastMsgId) : '';
-    const r = await API('/messages' + q, 'GET');
-    // r.messages contains filtered messages (after), r.all contains all
-    if(r.messages && r.messages.length){
-      // append only new messages to DOM (we'll render from r.all for simplicity)
-      const all = r.all || [];
-      lastMsgId = all.length ? all[all.length-1].id : lastMsgId;
-      renderMessages(all);
-    } else if(!lastMsgId && r.all && r.all.length){
-      // initial load
-      const all = r.all;
-      lastMsgId = all[all.length-1].id;
-      renderMessages(all);
-    }
-  }catch(e){
-    console.error('fetchMessages err', e);
-  }
-}
+  // Realtime updates
+  supabase
+    .channel("realtime:messages")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages" },
+      (payload) => addMessage(payload.new)
+    )
+    .subscribe();
 
-/* render messages array (server-sent order) */
-function renderMessages(arr){
-  messagesEl.innerHTML = arr.map(m => {
-    const own = (m.user === username);
-    const cls = own ? 'msg own' : 'msg other';
-    const avatar = escapeHtml((m.user||' ').charAt(0).toUpperCase() || '?');
-    const time = new Date(m.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    return `<div class="${cls}">
-      <div class="avatar">${avatar}</div>
-      <div style="display:flex;flex-direction:column;">
-        <div class="meta">${escapeHtml(m.user)} <span class="time">${time}</span></div>
-        <div class="text">${escapeHtml(m.text)}</div>
-      </div>
-    </div>`;
-  }).join('');
-  // keep scroll pinned to bottom if already near bottom
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-}
-
-/* fetch players */
-async function fetchPlayers(){
-  try{
-    const r = await API('/players','GET');
-    const players = r.players || [];
-    // sort by lastSeen desc (worker already does but safe)
-    players.sort((a,b)=> (b.lastSeen||0) - (a.lastSeen||0));
-    const now = Date.now();
-    let onlineCount = 0;
-    playerListEl.innerHTML = players.map(p=>{
-      const isOnline = (now - (p.lastSeen||0)) < 20000;
-      if(isOnline) onlineCount++;
-      return `<div class="player">
-        <div class="dot ${isOnline ? 'online' : 'offline'}"></div>
-        <div class="avatar">${escapeHtml((p.name||' ').charAt(0).toUpperCase()||'?')}</div>
-        <div style="display:flex;flex-direction:column;">
-          <div style="font-weight:700">${escapeHtml(p.name)}</div>
-          <div style="font-size:12px;color:var(--muted)">${isOnline ? 'online' : timeAgo(p.lastSeen)}</div>
-        </div>
-      </div>`;
-    }).join('');
-    document.getElementById('onlineCount').textContent = onlineCount + ' online';
-  }catch(e){
-    console.error('fetchPlayers err', e);
-  }
-}
-
-/* presence heartbeat */
-async function heartbeat(){
-  try{
-    if(!token) return;
-    await API('/presence','POST', {});
-  }catch(e){
-    console.warn('presence err', e);
-  }
-}
-
-/* util: time ago for player last seen */
-function timeAgo(ts){
-  if(!ts) return 'never';
-  const s = Math.floor((Date.now() - ts) / 1000);
-  if(s < 60) return `${s}s`;
-  if(s < 3600) return `${Math.floor(s/60)}m`;
-  if(s < 86400) return `${Math.floor(s/3600)}h`;
-  return `${Math.floor(s/86400)}d`;
-}
-
-/* events */
-document.getElementById('loginBtn').onclick = setName;
-document.getElementById('sendBtn').onclick = sendMessage;
-msgInput.addEventListener('keydown', e => { if(e.key==='Enter') sendMessage(); });
-
-/* polling */
-setInterval(fetchMessages, POLL);
-setInterval(()=>{ heartbeat(); fetchPlayers(); }, PRESENCE);
-
-/* init */
-(async function(){
-  if(token && username){
-    setStatus('connected as '+username);
-    // announce presence immediately
-    await heartbeat();
-    fetchMessages();
-    fetchPlayers();
-  } else {
-    setStatus('not connected');
-    // still can load messages publicly even if not registered
-    fetchMessages();
-    fetchPlayers();
-  }
-})();
+  // Load old messages on page load
+  loadMessages();
 </script>
 </body>
 </html>
