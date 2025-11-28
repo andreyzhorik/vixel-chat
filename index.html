@@ -1,905 +1,430 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Vixel Chat — Clean Red</title>
-
-<!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
-
 <style>
-/* ==========================
-   DESIGN TOKENS (RED THEME)
-   ========================== */
+  /* ---------- Design tokens (red theme) ---------- */
+  :root{
+    --bg: #0b0b0b;
+    --panel: #120101;
+    --panel-2: #170303;
+    --muted: #2b2020;
+    --accent: #ff2b2b;
+    --accent-2: #ff6b6b;
+    --text: #f6f6f6;
+    --subtle: #b7b1b1;
+    --radius: 12px;
+    --shadow: 0 10px 30px rgba(0,0,0,0.6);
+    --glass: rgba(255,255,255,0.02);
+    --input-bg: rgba(255,255,255,0.02);
+    --gap: 12px;
+  }
 
-:root{
-  --bg: #0b0b0b;
-  --container: #120101;
-  --panel: #1b0404;
-  --muted: #2b2020;
-  --accent: #ff2b2b;        /* main red */
-  --accent-2: #ff7a7a;
-  --text: #f6f6f6;
-  --subtle: #b7b1b1;
-  --online: #4fe1a6;
-  --shadow: 0 6px 18px rgba(0,0,0,0.6);
-  --glass: rgba(255,255,255,0.02);
-  --radius: 12px;
-  --glass-2: rgba(255,255,255,0.01);
-  --transition: 160ms;
-}
+  /* ---------- Reset & base ---------- */
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background: linear-gradient(180deg,#070707 0%, #0c0c0c 100%);
+    color:var(--text);
+    font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
 
-/* Basic reset */
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  background: linear-gradient(180deg, #070707 0%, #0c0c0c 100%);
-  color:var(--text);
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  min-height:100vh;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-}
+  /* ---------- App container ---------- */
+  .app {
+    width:1060px;
+    height:720px;
+    background: linear-gradient(180deg,var(--panel), var(--panel-2));
+    border-radius:16px;
+    padding:18px;
+    box-shadow: var(--shadow);
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
 
-/* Outer container */
-.app {
-  width:1060px;
-  height:720px;
-  border-radius:16px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.04));
-  padding:18px;
-  box-shadow: var(--shadow);
-  position:relative;
-  overflow:hidden;
-}
+  /* ---------- Header ---------- */
+  .header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo {
+    width:56px;height:56px;border-radius:10px;
+    background: linear-gradient(180deg, rgba(255,0,0,0.08), rgba(0,0,0,0.15));
+    display:flex;align-items:center;justify-content:center;
+    font-family:Orbitron, monospace;font-weight:700;color:var(--accent);font-size:20px;
+    border:1px solid rgba(255,255,255,0.03)
+  }
+  .title {font-size:18px; font-weight:700}
+  .subtitle {font-size:12px;color:var(--subtle)}
 
-/* subtle particle-like background (CSS only) */
-.particles {
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  opacity:0.06;
-  background-image:
-    radial-gradient(circle at 10% 20%, rgba(255,80,80,0.12) 0 2px, transparent 3px),
-    radial-gradient(circle at 30% 80%, rgba(255,80,80,0.08) 0 2px, transparent 3px),
-    radial-gradient(circle at 70% 40%, rgba(255,80,80,0.06) 0 2px, transparent 3px),
-    radial-gradient(circle at 90% 75%, rgba(255,80,80,0.06) 0 2px, transparent 3px);
-  mix-blend-mode:screen;
-  transform: translateZ(0);
-}
+  /* ---------- Main grid ---------- */
+  .main {
+    display:grid;
+    grid-template-columns: 1fr 320px;
+    gap:14px;
+    flex:1;
+    min-height:0;
+  }
 
-/* Layout: header, main grid (chat + users), footer input */
-.header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:12px;
-}
-.brand {
-  display:flex;
-  gap:12px;
-  align-items:center;
-}
-.logo {
-  width:56px;
-  height:56px;
-  border-radius:10px;
-  background: linear-gradient(180deg, rgba(255,0,0,0.14), rgba(0,0,0,0.2));
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family: "Orbitron", monospace;
-  font-weight:700;
-  color:var(--accent);
-  letter-spacing:1px;
-  font-size:18px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-}
-.brand h1{
-  font-size:18px;
-  letter-spacing:0.6px;
-  margin:0;
-}
-.controls{
-  display:flex;
-  gap:8px;
-  align-items:center;
-}
+  /* ---------- Chat panel ---------- */
+  .chat {
+    background: linear-gradient(180deg, rgba(255,0,0,0.015), rgba(0,0,0,0.03));
+    border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;
+    border:1px solid rgba(255,255,255,0.02); min-height:0;
+  }
+  .chat-top {display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .meta {display:flex;gap:8px;align-items:center}
+  .meta .small {font-size:13px;color:var(--subtle)}
 
-/* Buttons (subtle red glow on hover, not obnoxious) */
-.button {
-  background:linear-gradient(180deg,var(--accent),var(--accent-2));
-  color:white;
-  border:none;
-  padding:8px 12px;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:600;
-  transition: transform var(--transition), box-shadow var(--transition);
-  box-shadow: 0 6px 18px rgba(255,43,43,0.12);
-}
-.button:active{ transform:translateY(1px) }
-.button.ghost{
-  background:transparent;
-  color:var(--subtle);
-  border:1px solid rgba(255,255,255,0.03);
-  box-shadow:none;
-}
+  .messages {
+    flex:1; overflow:auto; padding-right:6px; display:flex;flex-direction:column;gap:10px;
+    scroll-behavior:smooth;
+  }
 
-/* Main grid */
-.grid {
-  display:grid;
-  grid-template-columns: 1fr 320px;
-  grid-template-rows: 1fr;
-  gap:14px;
-  height: calc(100% - 126px); /* header + footer accounted */
-}
+  /* message row: avatar + bubble */
+  .msg-row {display:flex;gap:10px;align-items:flex-start;max-width:900px}
+  .avatar {
+    width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:700;color:#fff;background:var(--accent);flex-shrink:0;border:2px solid rgba(0,0,0,0.35)
+  }
+  .bubble {
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+    padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.45); max-width:820px;
+  }
+  .bubble-header {display:flex;align-items:center;justify-content:space-between;gap:6px}
+  .username {font-weight:700}
+  .ts {font-size:12px;color:var(--subtle)}
+  .msg-text {margin-top:6px;line-height:1.35;word-break:break-word;color:var(--text)}
+  .msg-text code {background:rgba(0,0,0,0.12);padding:2px 6px;border-radius:6px;font-family:ui-monospace}
+  .msg-text pre {background:rgba(0,0,0,0.12);padding:8px;border-radius:8px;overflow:auto}
 
-/* Chat panel */
-.chat-panel {
-  background: linear-gradient(180deg,var(--panel), rgba(255,10,10,0.02) 120%);
-  border-radius:var(--radius);
-  padding:14px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  border:1px solid rgba(255,255,255,0.03);
-  overflow:hidden;
-}
+  /* hover lift */
+  .msg-row:hover .bubble{ transform: translateY(-3px); transition:transform 160ms ease; }
 
-/* Messages container */
-.messages {
-  flex:1;
-  overflow:auto;
-  padding:8px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  scroll-behavior:smooth;
-}
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+    border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;border:1px solid rgba(255,255,255,0.02);
+    min-height:0;
+  }
+  .players {display:flex;flex-direction:column;gap:8px;overflow:auto;padding-right:6px}
+  .player-row {display:flex;gap:10px;align-items:center;padding:6px;border-radius:8px}
+  .player-row:hover {background: rgba(255,255,255,0.02)}
+  .player-avatar {width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:var(--accent);border:1px solid rgba(0,0,0,0.25)}
+  .player-name {font-weight:600}
+  .player-meta {font-size:12px;color:var(--subtle)}
 
-/* Sticky bottom helper: ensures last item visible */
-.messages .bottom-spacer{
-  height: 8px;
-}
+  /* ---------- Footer input ---------- */
+  .footer {display:flex;gap:10px;align-items:center;padding-top:6px}
+  .input-area {flex:1;display:flex;gap:8px;align-items:flex-end}
+  .textarea {
+    flex:1;min-height:56px;border-radius:10px;padding:10px;background:var(--input-bg);border:1px solid rgba(255,255,255,0.02);
+    color:var(--text);resize:none;font-size:14px;
+  }
+  .right-tools {display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+  .button {background:linear-gradient(180deg,var(--accent),var(--accent-2));border:none;color:#fff;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700}
+  .button.ghost {background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--subtle);font-weight:600}
 
-/* Message bubble (two columns: avatar + bubble) */
-.message-row {
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
-  animation: slideUp 260ms ease;
-  max-width: 880px;
-}
-@keyframes slideUp {
-  from{opacity:0; transform:translateY(8px)}
-  to{opacity:1; transform:translateY(0)}
-}
+  /* emoji grid (simple) */
+  .emoji-grid {display:grid;grid-template-columns:repeat(8,1fr);gap:6px;padding:8px;background:var(--panel);border-radius:10px;border:1px solid rgba(255,255,255,0.02);max-height:160px;overflow:auto}
+  .emoji-btn {padding:6px;border-radius:8px;background:transparent;border:none;cursor:pointer;font-size:18px}
 
-/* Avatar (first letter) */
-.avatar-circle{
-  width:44px;
-  height:44px;
-  min-width:44px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:700;
-  color:white;
-  background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.12));
-  border: 2px solid rgba(255,255,255,0.03);
-  position:relative;
-  flex-shrink:0;
-  font-size:16px;
-}
+  /* small helpers */
+  .hint {font-size:12px;color:var(--subtle)}
+  .loading {width:28px;height:28px;border-radius:8px;border:3px solid rgba(255,255,255,0.03);border-top-color:var(--accent-2);animation:spin 900ms linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .bottom-space {height:8px}
 
-/* online pulse (subtle) */
-.avatar-circle.online::after{
-  content:"";
-  position:absolute;
-  right:-2px;
-  bottom:-2px;
-  width:12px;
-  height:12px;
-  border-radius:50%;
-  background:var(--online);
-  box-shadow:0 6px 14px rgba(79,225,166,0.12);
-  border:2px solid #0b0b0b;
-  animation: pulseSmall 1600ms infinite;
-}
-@keyframes pulseSmall {
-  0%{transform:scale(0.9); opacity:0.9}
-  50%{transform:scale(1.28); opacity:0.6}
-  100%{transform:scale(0.9); opacity:0.9}
-}
-
-/* Bubble itself */
-.bubble {
-  background: linear-gradient(180deg, rgba(255,255,255,0.012), rgba(0,0,0,0.02));
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,0.02);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  position:relative;
-  transition: transform var(--transition);
-}
-.message-row:hover .bubble{
-  transform: translateY(-3px);
-}
-/* colored shadow based on username color */
-.bubble.color-shadow{
-  box-shadow: 0 8px 22px rgba(255,43,43,0.06), inset 0 1px 0 rgba(255,255,255,0.02);
-}
-
-/* header inside bubble */
-.bubble-header{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  justify-content:space-between;
-}
-.name {
-  font-weight:700;
-  letter-spacing:0.2px;
-}
-.small {
-  color:var(--subtle);
-  font-size:13px;
-}
-
-/* message content — supports code blocks, markdown-ish */
-.msg-content{
-  color:var(--text);
-  font-size:14px;
-  line-height:1.35;
-  word-break:break-word;
-}
-/* inline code and code blocks */
-.msg-content code{
-  background: rgba(0,0,0,0.18);
-  padding:2px 6px;
-  border-radius:6px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
-  font-size:13px;
-}
-.msg-content pre{
-  background: rgba(0,0,0,0.12);
-  padding:8px;
-  border-radius:8px;
-  overflow:auto;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
-  font-size:13px;
-}
-
-/* reactions row */
-.reactions {
-  display:flex;
-  gap:6px;
-  margin-top:6px;
-}
-.react {
-  padding:4px 8px;
-  background:rgba(255,255,255,0.02);
-  border-radius:999px;
-  font-size:13px;
-  display:inline-flex;
-  gap:6px;
-  align-items:center;
-  cursor:pointer;
-  transition: all var(--transition);
-  border:1px solid rgba(255,255,255,0.02);
-}
-.react:hover{
-  transform:translateY(-2px);
-  background: rgba(255,43,43,0.06);
-}
-
-/* Sidebar / users */
-.sidebar{
-  background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(255,0,0,0.01));
-  border-radius:var(--radius);
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  border:1px solid rgba(255,255,255,0.02);
-  min-height:100%;
-}
-.sidebar h3{margin:0;font-size:15px}
-.user-row{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  padding:6px;
-  border-radius:8px;
-  transition: background var(--transition);
-}
-.user-row:hover{
-  background: rgba(255,255,255,0.02);
-}
-.user-name{
-  font-weight:600;
-  font-size:14px;
-  color:var(--text);
-}
-.user-meta{
-  font-size:12px;
-  color:var(--subtle);
-}
-
-/* Input footer */
-.footer {
-  margin-top:12px;
-  display:flex;
-  gap:12px;
-  align-items:center;
-  justify-content:space-between;
-}
-.input-wrapper{
-  display:flex;
-  gap:8px;
-  align-items:flex-end;
-  flex:1;
-}
-.textarea{
-  flex:1;
-  min-height:58px;
-  border-radius:12px;
-  background:var(--glass);
-  border:1px solid rgba(255,255,255,0.02);
-  padding:10px;
-  color:var(--text);
-  resize:none;
-  font-size:14px;
-}
-.tools{
-  display:flex;
-  gap:8px;
-  align-items:center;
-}
-
-/* emoji picker basic */
-.emoji-picker{
-  background:var(--panel);
-  border-radius:10px;
-  padding:8px;
-  display:grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap:6px;
-  width:260px;
-  max-height:160px;
-  overflow:auto;
-  border:1px solid rgba(255,255,255,0.02);
-}
-
-/* small helpers */
-.hint{font-size:12px; color:var(--subtle)}
-.loading {
-  height:34px;
-  width:34px;
-  border-radius:10px;
-  display:inline-block;
-  border:3px solid rgba(255,255,255,0.03);
-  border-top-color:var(--accent-2);
-  animation: spin 900ms linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* fullscreen */
-.fullscreen {
-  position: fixed !important;
-  inset: 8px !important;
-  width: auto !important;
-  height: auto !important;
-  z-index: 9999;
-  background: linear-gradient(180deg, #0b0b0b, #0b0b0b);
-  border-radius: 12px;
-  padding: 18px;
-}
-
-/* responsive-ish (desktop-first) */
-@media (max-width:1200px){
-  .app{ width:940px }
-}
-@media (max-width:980px){
-  .grid{ grid-template-columns: 1fr }
-  .sidebar{ order:2 }
-  .chat-panel{ order:1 }
-}
-
-/* END OF CSS */
+  /* responsive */
+  @media (max-width:1000px) {
+    .app { width:920px }
+  }
+  @media (max-width:820px){
+    .main { grid-template-columns: 1fr; grid-auto-rows:auto }
+    .sidebar { order:2 }
+    .chat { order:1 }
+  }
 </style>
 </head>
 <body>
 
 <div class="app" id="appRoot">
-  <div class="particles" aria-hidden="true"></div>
-
-  <!-- HEADER -->
-  <div class="header" role="banner">
+  <!-- header -->
+  <div class="header">
     <div class="brand">
-      <div class="logo" aria-hidden="true">V</div>
+      <div class="logo" aria-hidden="true">
+        <!-- restore your logo textically — you can replace this with <img src="..."> if you have a PNG -->
+        V
+      </div>
       <div>
-        <h1>Vixel Chat</h1>
-        <div style="font-size:12px;color:var(--subtle);margin-top:4px">Clean red theme — desktop first</div>
+        <div class="title">Vixel Chat</div>
+        <div class="subtitle">Clean • Red • Desktop-first</div>
       </div>
     </div>
 
-    <div class="controls">
-      <button class="button ghost" id="btn-full">Fullscreen</button>
-      <button class="button ghost" id="btn-clear-cache">Clear Cache</button>
-      <button class="button" id="btn-theme">Colors & Theme</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="meta">
+        <div class="small" id="net-status">• online</div>
+        <div style="width:12px"></div>
+        <div class="small" id="last-seen">Last seen: —</div>
+      </div>
+      <!-- removed theme/color button per request -->
     </div>
   </div>
 
-  <!-- GRID (CHAT + SIDEBAR) -->
-  <div class="grid">
-    <!-- Chat panel -->
-    <div class="chat-panel" role="main">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div style="display:flex;gap:12px;align-items:center">
-          <div style="display:flex;gap:8px;align-items:center">
-            <div class="hint">Logged in as</div>
-            <div style="font-weight:700" id="display-username">Guest</div>
-            <div id="color-preview" style="width:14px;height:14px;border-radius:6px;border:1px solid rgba(0,0,0,0.2)"></div>
-          </div>
+  <!-- main -->
+  <div class="main">
+    <!-- chat -->
+    <section class="chat" aria-label="Chat panel">
+      <div class="chat-top">
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="hint">Logged in as</div>
+          <div style="font-weight:700" id="display-username">Guest</div>
         </div>
-
-        <div style="display:flex;gap:8px;align-items:center">
-          <div class="hint" id="status-lastseen">Last seen: —</div>
-          <div class="hint" id="net-status">• online</div>
-        </div>
+        <div class="hint" id="players-count">Players: 0</div>
       </div>
 
-      <!-- Messages -->
       <div class="messages" id="messages" aria-live="polite">
         <!-- messages appended here -->
-        <div class="bottom-spacer" aria-hidden="true"></div>
+        <div class="bottom-space"></div>
       </div>
 
-      <!-- footer area (input + tools) -->
       <div class="footer">
-        <div class="input-wrapper">
-          <textarea class="textarea" id="input" placeholder="Shift+Enter for newline — :emoji: or click emoji"></textarea>
+        <div class="input-area">
+          <textarea id="input" class="textarea" placeholder="Shift+Enter for newline — Enter to send"></textarea>
+        </div>
 
-          <div class="tools" style="flex-direction:column;align-items:flex-end">
-            <div style="display:flex;gap:8px">
-              <button class="button ghost" id="btn-emoji" title="Open emoji picker">😀</button>
-              <button class="button ghost" id="btn-markdown" title="Markdown help">MD</button>
-              <button class="button" id="btn-send">Send</button>
-            </div>
-            <div style="margin-top:6px" class="hint">Tip: type <code>:smile:</code> or click emoji</div>
+        <div class="right-tools">
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="button ghost" id="btn-emoji">😀</button>
+            <button class="button" id="btn-send">Send</button>
           </div>
+          <div class="hint">Tip: use <code>:smile:</code> or click emoji</div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Sidebar -->
-    <aside class="sidebar" role="complementary">
+    <!-- sidebar -->
+    <aside class="sidebar" aria-label="Players & settings">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <h3>Players</h3>
-        <div class="hint" id="players-count">0</div>
+        <h3 style="margin:0">Players</h3>
+        <div class="hint" id="players-count-side">0</div>
       </div>
 
-      <div id="players-list" style="display:flex;flex-direction:column;gap:8px;overflow:auto;padding-right:6px"></div>
+      <div class="players" id="players-list"></div>
 
       <hr style="border:none;height:1px;background:rgba(255,255,255,0.02);margin:6px 0;border-radius:2px">
 
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <h3>Settings</h3>
-        <div class="hint">persisted</div>
-      </div>
+      <div>
+        <h3 style="margin:0 0 8px 0">Settings</h3>
 
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
-        <div style="display:flex;gap:8px;align-items:center">
-          <label style="font-size:13px;color:var(--subtle)">Name</label>
-          <input id="input-username" style="flex:1;background:var(--glass-2);border-radius:8px;padding:6px;border:1px solid rgba(255,255,255,0.02);color:var(--text)" />
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <input id="input-username" placeholder="Change name (1/week)" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:var(--glass);color:var(--text)">
           <button class="button ghost" id="btn-save-name">Save</button>
         </div>
 
-        <div style="display:flex;gap:8px;align-items:center">
-          <label style="font-size:13px;color:var(--subtle)">Name color</label>
-          <input type="color" id="set-name-color" value="#ff2b2b" />
-          <label style="font-size:13px;color:var(--subtle)">Avatar color</label>
-          <input type="color" id="set-avatar-color" value="#ff2b2b" />
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <label class="hint">Name color</label>
+          <input type="color" id="set-name-color" value="#ff2b2b">
+          <label class="hint">Avatar color</label>
+          <input type="color" id="set-avatar-color" value="#ff2b2b">
         </div>
 
-        <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
-          <button class="button ghost" id="btn-toggle-theme">Toggle Accent</button>
-          <button class="button ghost" id="btn-debounce">Debounce: on</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="button ghost" id="btn-clear-cache">Clear Cache</button>
+          <button class="button ghost" id="btn-fullscreen">Fullscreen</button>
         </div>
       </div>
     </aside>
   </div>
-
 </div>
 
-<!-- Color & theme modal (lighter UI) -->
-<div id="modal-theme" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--panel);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.02);display:none;z-index:999">
-  <div style="display:flex;gap:12px;align-items:center">
-    <div style="width:46px;height:46px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700">V</div>
-    <div>
-      <div style="font-weight:700">Customize colors</div>
-      <div class="hint">Name / avatar / background</div>
-    </div>
-  </div>
-
-  <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
-    <div style="display:flex;flex-direction:column;gap:6px">
-      <label class="hint">Name color</label>
-      <input type="color" id="modal-name-color" value="#ff2b2b" />
-    </div>
-    <div style="display:flex;flex-direction:column;gap:6px">
-      <label class="hint">Avatar color</label>
-      <input type="color" id="modal-avatar-color" value="#ff2b2b" />
-    </div>
-    <div style="display:flex;flex-direction:column;gap:6px">
-      <label class="hint">Accent</label>
-      <input type="color" id="modal-accent-color" value="#ff2b2b" />
-    </div>
-  </div>
-
-  <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px">
-    <button class="button ghost" id="modal-cancel">Cancel</button>
-    <button class="button" id="modal-save">Save</button>
-  </div>
+<!-- emoji panel (absolute) -->
+<div id="emoji-panel" style="position:fixed;left:50%;bottom:110px;transform:translateX(-50%);display:none;z-index:1000">
+  <div class="emoji-grid" id="emoji-grid"></div>
 </div>
-
-<!-- Emoji picker (hidden by default) -->
-<div id="emoji-panel" style="position:fixed;left:50%;bottom:110px;transform:translateX(-50%);display:none;z-index:999">
-  <div class="emoji-picker" id="emoji-grid"></div>
-</div>
-
-<!-- tiny confetti canvas -->
-<canvas id="confetti" style="position:fixed;left:0;top:0;pointer-events:none;z-index:10000" width="200" height="200"></canvas>
 
 <script>
-/* ==================================================
-   Vixel Chat — Clean Red (All-in-one JS)
-   Features included (short):
+/* ========================
+   Vixel Chat — Clean Red
+   Features in this build:
+   - Clean red Discord-like UI
+   - No reactions, no theme button
+   - Avatars = first letter (normal, no pulse)
+   - Username change limited to 7 days (localStorage)
    - LocalStorage username + colors
-   - Avatar first-letter + online pulse
-   - Message bubbles, markdown-ish & code blocks
-   - Emoji picker & shortcodes
-   - Reactions + click-to-react
-   - Debounced polling + caching
-   - Presence upsert to supabase
-   - Message caching (in-memory)
-   - Confetti trigger on special keywords
-   - Fullscreen toggle
-   - No audio
-   ================================================== */
+   - Emoji picker + shortcodes
+   - Simple markdown: **bold**, *italic*, `inline code`, ```code```
+   - Debounced polling, presence upsert, message caching
+   - No audio, no modals that block input
+   - Works with your existing Supabase tables (unchanged)
+   ======================== */
 
-/* -------------------------
-   CONFIG - EDIT THIS IF NEEDED
-   ------------------------- */
+/* ---------- CONFIG (use your same supabase) ---------- */
 const SUPABASE_URL = "https://ehciyxvbasqiiiurjuwu.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
 
-/* -------------------------
-   DOM ELEMENTS
-   ------------------------- */
-const root = document.getElementById('appRoot');
+/* ---------- DOM ---------- */
 const messagesEl = document.getElementById('messages');
 const playersListEl = document.getElementById('players-list');
 const playersCountEl = document.getElementById('players-count');
+const playersCountSideEl = document.getElementById('players-count-side');
 const displayUsernameEl = document.getElementById('display-username');
-const colorPreviewEl = document.getElementById('color-preview');
+const lastSeenEl = document.getElementById('last-seen');
 const netStatusEl = document.getElementById('net-status');
-const lastSeenEl = document.getElementById('status-lastseen');
 
 const inputEl = document.getElementById('input');
-const sendBtn = document.getElementById('btn-send');
-const emojiBtn = document.getElementById('btn-emoji');
-const emojiGridEl = document.getElementById('emoji-grid');
+const btnSend = document.getElementById('btn-send');
+const btnEmoji = document.getElementById('btn-emoji');
 const emojiPanel = document.getElementById('emoji-panel');
-const btnTheme = document.getElementById('btn-theme');
-const modalTheme = document.getElementById('modal-theme');
-const modalSave = document.getElementById('modal-save');
-const modalCancel = document.getElementById('modal-cancel');
-const modalNameColor = document.getElementById('modal-name-color');
-const modalAvatarColor = document.getElementById('modal-avatar-color');
-const modalAccentColor = document.getElementById('modal-accent-color');
+const emojiGrid = document.getElementById('emoji-grid');
 
-const inputUsername = document.getElementById('input-username');
+const inputNameEl = document.getElementById('input-username');
 const btnSaveName = document.getElementById('btn-save-name');
 const setNameColor = document.getElementById('set-name-color');
 const setAvatarColor = document.getElementById('set-avatar-color');
-const btnToggleTheme = document.getElementById('btn-toggle-theme');
-const btnDebounce = document.getElementById('btn-debounce');
 const btnClearCache = document.getElementById('btn-clear-cache');
-const btnFullscreen = document.getElementById('btn-full');
+const btnFullscreen = document.getElementById('btn-fullscreen');
 
-const confettiCanvas = document.getElementById('confetti');
-
-/* -------------------------
-   STATE & UTILS
-   ------------------------- */
+/* ---------- STATE ---------- */
 let username = localStorage.getItem('vixel-username') || '';
 let nameColor = localStorage.getItem('vixel-name-color') || '#ff2b2b';
 let avatarColor = localStorage.getItem('vixel-avatar-color') || '#ff2b2b';
-let accentColor = localStorage.getItem('vixel-accent') || '#ff2b2b';
-let debounceEnabled = true;  // toggleable
 
-let cache = { messages: [], presence: [] }; // in-memory cache
-let lastMessagesETag = null; // not using ETag here, but placeholder
+let cache = { messages: [], presence: [] };
 let isAtBottom = true;
-let typing = false;
 
-/* -------------------------
-   BASIC STARTUP (username)
-   ------------------------- */
+/* ---------- INIT ---------- */
 if(!username){
   username = prompt('Enter username') || `Guest${Math.floor(Math.random()*999)}`;
   localStorage.setItem('vixel-username', username);
 }
 displayUsernameEl.textContent = username;
-inputUsername.value = username;
+inputNameEl.value = username;
 setNameColor.value = nameColor;
 setAvatarColor.value = avatarColor;
-modalNameColor.value = nameColor;
-modalAvatarColor.value = avatarColor;
-modalAccentColor.value = accentColor;
-colorPreviewEl.style.background = nameColor;
 
-/* set accent color globally */
-document.documentElement.style.setProperty('--accent', accentColor);
-document.documentElement.style.setProperty('--accent-2', accentColor);
+/* apply small color preview */
+function applyLocalColors(){
+  // show name color by styling the display username
+  displayUsernameEl.style.color = nameColor;
+}
+applyLocalColors();
 
-/* -------------------------
-   SMALL HELPERS
-   ------------------------- */
-const byId = id => document.getElementById(id);
-const nowISO = ()=> (new Date()).toISOString();
+/* ---------- HELPERS ---------- */
+const nowISO = ()=> new Date().toISOString();
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
-const clamp = (v,a,b)=> Math.max(a, Math.min(b,v));
+const debounce = (fn, wait=300)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),wait); }};
 
-/* simple debounce helper (used for polling toggles etc) */
-function debounce(fn, wait){
-  let t;
-  return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn.apply(this,args), wait); };
+function escapeHtml(s){
+  return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 }
 
-/* sanitize text (basic) */
-function sanitize(text){
-  // escape basic HTML
-  return text.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-}
-
-/* very small markdown-ish parser:
-   - `**bold**`
-   - `*italic*`
-   - ```code block```
-   - `inline code` */
+/* mini markdown */
 function miniMarkdown(raw){
   if(!raw) return '';
-  // code blocks
-  let text = sanitize(raw);
-  text = text.replace(/```([\s\S]*?)```/g, (m, p1)=> `<pre><code>${p1}</code></pre>`);
-  text = text.replace(/`([^`]+)`/g, (m,p1)=> `<code>${p1}</code>`);
-  text = text.replace(/\*\*([^*]+)\*\*/g, (m,p1)=> `<strong>${p1}</strong>`);
-  text = text.replace(/\*([^*]+)\*/g, (m,p1)=> `<em>${p1}</em>`);
-  // emoji shortcodes like :smile:
-  text = text.replace(/:([a-z0-9_+-]+):/gi, (m, name)=>{
-    let e = emojiMap[name];
-    return e ? e : m;
-  });
-  // line breaks
-  text = text.replace(/\n/g, '<br/>');
+  let text = escapeHtml(raw);
+  text = text.replace(/```([\s\S]*?)```/g, (m,p1)=>`<pre><code>${p1}</code></pre>`);
+  text = text.replace(/`([^`]+)`/g, (m,p1)=>`<code>${p1}</code>`);
+  text = text.replace(/\*\*([^*]+)\*\*/g, (m,p1)=>`<strong>${p1}</strong>`);
+  text = text.replace(/\*([^*]+)\*/g, (m,p1)=>`<em>${p1}</em>`);
+  // emoji shortcodes e.g. :smile:
+  text = text.replace(/:([a-z0-9_+-]+):/gi, (m,name)=> emojiMap[name] || m);
+  text = text.replace(/\n/g,'<br/>');
   return text;
 }
 
-/* small emoji set + shortcodes */
+/* emoji map */
 const emojiMap = {
   smile: "😄", grin: "😁", heart: "❤️", thumbs: "👍", cry: "😢", wink: "😉",
   clap: "👏", fire: "🔥", star: "⭐", wave: "👋", party: "🥳", rocket: "🚀",
-  ok: "👌", poop: "💩", think: "🤔", kiss: "😚", smile_cat: "😸"
+  ok: "👌", think: "🤔", kiss: "😚"
 };
 const emojiList = Object.values(emojiMap);
 
-/* -------------------------
-   DOM MOUNTING HELPERS
-   ------------------------- */
+/* short time */
+function timeAgo(iso){
+  if(!iso) return '';
+  const d = new Date(iso); const diff = Math.floor((Date.now() - d)/1000);
+  if(diff<5) return 'just now';
+  if(diff<60) return `${diff}s`;
+  if(diff<3600) return `${Math.floor(diff/60)}m`;
+  if(diff<86400) return `${Math.floor(diff/3600)}h`;
+  return d.toLocaleString();
+}
 
-/* create avatar element (first-letter) */
-function createAvatar(name, color, online){
+/* ---------- DOM RENDER ---------- */
+
+function createAvatarEl(name, color){
   const el = document.createElement('div');
-  el.className = 'avatar-circle' + (online ? ' online' : '');
-  el.style.background = color;
-  el.textContent = (name || 'U').trim().charAt(0).toUpperCase();
+  el.className = 'player-avatar';
+  el.style.background = color || avatarColor;
+  el.textContent = (name||'U').trim().charAt(0).toUpperCase();
   return el;
 }
 
-/* create single message DOM */
-function createMessageDOM(msg){
-  // msg: { id, user, text, name_color, avatar_color, created_at, reactions: {':heart:': 2} }
+function createMessageNode(m){
   const row = document.createElement('div');
-  row.className = 'message-row';
-  row.dataset.id = msg.id || ('tmp-' + Math.random().toString(36).slice(2,9));
+  row.className = 'msg-row';
+  row.dataset.id = m.id || '';
 
-  const avatar = createAvatar(msg.user, msg.avatar_color || avatarColor, true);
-  row.appendChild(avatar);
+  const av = document.createElement('div');
+  av.className = 'avatar';
+  av.style.background = m.avatar_color || avatarColor;
+  av.textContent = (m.user||'U').trim().charAt(0).toUpperCase();
+  row.appendChild(av);
 
   const bubble = document.createElement('div');
-  bubble.className = 'bubble color-shadow';
-  // inline colored shadow: set small CSS variable using name_color
-  bubble.style.boxShadow = `0 10px 30px ${hexToRgba(msg.name_color || nameColor, 0.06)}, inset 0 1px 0 rgba(255,255,255,0.02)`;
+  bubble.className = 'bubble';
 
   const header = document.createElement('div');
   header.className = 'bubble-header';
 
   const nameEl = document.createElement('div');
-  nameEl.className = 'name';
-  nameEl.textContent = msg.user;
-  nameEl.style.color = msg.name_color || nameColor;
-  header.appendChild(nameEl);
+  nameEl.className = 'username';
+  nameEl.textContent = m.user || 'Unknown';
+  nameEl.style.color = m.name_color || nameColor;
 
   const ts = document.createElement('div');
-  ts.className = 'small';
-  ts.textContent = timeAgo(msg.created_at || nowISO());
+  ts.className = 'ts';
+  ts.textContent = timeAgo(m.created_at);
+
+  header.appendChild(nameEl);
   header.appendChild(ts);
 
   const content = document.createElement('div');
-  content.className = 'msg-content';
-  content.innerHTML = miniMarkdown(msg.text || '');
-
-  // reactions (if any)
-  const reacts = document.createElement('div');
-  reacts.className = 'reactions';
-  const reactions = msg.reactions || {};
-  // render existing reactions
-  for(const code in reactions){
-    const count = reactions[code] || 0;
-    const r = document.createElement('div');
-    r.className = 'react';
-    r.innerHTML = `${renderEmoji(code)} <span style="opacity:0.7;margin-left:6px">${count}</span>`;
-    r.addEventListener('click', ()=> handleReactionClick(msg.id, code));
-    reacts.appendChild(r);
-  }
-
-  // small quick react suggestions
-  const quickRow = document.createElement('div');
-  quickRow.style.marginTop = '6px';
-  const quickList = ['heart','thumbs','fire','clap'];
-  quickList.forEach(k=>{
-    const btn = document.createElement('button');
-    btn.className = 'react';
-    btn.style.padding = '4px 8px';
-    btn.style.fontSize = '13px';
-    btn.innerHTML = `${emojiMap[k] || ''}`;
-    btn.addEventListener('click', ()=> handleReactionClick(msg.id, ':'+k+':', true));
-    quickRow.appendChild(btn);
-  });
+  content.className = 'msg-text';
+  content.innerHTML = miniMarkdown(m.text || '');
 
   bubble.appendChild(header);
   bubble.appendChild(content);
-  if(reacts.children.length) bubble.appendChild(reacts);
-  bubble.appendChild(quickRow);
 
   row.appendChild(bubble);
-
-  // small hover to copy message id / open DM etc
-  row.addEventListener('contextmenu', (ev)=>{
-    ev.preventDefault();
-    // show small native copy prompt (simple)
-    navigator.clipboard?.writeText(msg.text || '').then(()=> {
-      flashHint('message copied');
-    }).catch(()=>{ flashHint('copy failed'); });
-  });
-
   return row;
 }
 
-/* convert :name: -> emoji string */
-function renderEmoji(code){
-  if(!code) return code;
-  const key = code.replace(/:/g,'');
-  return emojiMap[key] || code;
+function renderMessages(list){
+  messagesEl.innerHTML = '';
+  if(!Array.isArray(list)) list = [];
+  list.forEach(m => {
+    const node = createMessageNode(m);
+    messagesEl.appendChild(node);
+  });
+  const spacer = document.createElement('div'); spacer.className='bottom-space';
+  messagesEl.appendChild(spacer);
+  // if user not scrolled up, keep at bottom
+  if(isAtBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-/* convert hex + alpha */
-function hexToRgba(hex, alpha=1){
-  try{
-    const v = hex.replace('#','');
-    const r = parseInt(v.substring(0,2),16);
-    const g = parseInt(v.substring(2,4),16);
-    const b = parseInt(v.substring(4,6),16);
-    return `rgba(${r},${g},${b},${alpha})`;
-  }catch(e){ return `rgba(255,43,43,${alpha})`; }
-}
-
-/* time ago */
-function timeAgo(iso){
-  if(!iso) return '';
-  const d = new Date(iso);
-  const now = new Date();
-  const diff = Math.floor((now - d) / 1000);
-  if(diff < 5) return 'just now';
-  if(diff < 60) return `${diff}s`;
-  if(diff < 3600) return `${Math.floor(diff/60)}m`;
-  if(diff < 86400) return `${Math.floor(diff/3600)}h`;
-  return d.toLocaleString();
-}
-
-/* flash small hint near bottom */
-function flashHint(msg){
-  const el = document.createElement('div');
-  el.style.position = 'fixed';
-  el.style.left = '50%';
-  el.style.bottom = '24px';
-  el.style.transform = 'translateX(-50%)';
-  el.style.background = 'rgba(0,0,0,0.6)';
-  el.style.color = 'white';
-  el.style.padding = '8px 12px';
-  el.style.borderRadius = '8px';
-  el.style.zIndex = 9999;
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(()=> el.style.transition = '200ms', 10);
-  setTimeout(()=> el.remove(), 1600);
-}
-
-/* -------------------------
-   RENDER & CACHING
-   ------------------------- */
-
-function renderMessages(list, opt = {append:false}){
-  // list: array of messages
-  if(!Array.isArray(list)) return;
-  // dedupe by id
-  const seen = new Set();
-  const nodes = [];
-  for(const m of list){
-    if(seen.has(m.id)) continue;
-    seen.add(m.id);
-    nodes.push(m);
-  }
-  // optionally append only new
-  if(opt.append){
-    for(const msg of nodes){
-      const el = createMessageDOM(msg);
-      messagesEl.insertBefore(el, messagesEl.querySelector('.bottom-spacer'));
-    }
-  } else {
-    messagesEl.innerHTML = '';
-    for(const msg of nodes){
-      const el = createMessageDOM(msg);
-      messagesEl.appendChild(el);
-    }
-    const spacer = document.createElement('div');
-    spacer.className = 'bottom-spacer';
-    messagesEl.appendChild(spacer);
-  }
-  // maintain cache
-  cache.messages = list.slice();
-  // keep scroll bottom if user is near bottom
-  if(isAtBottom) scrollMessagesToBottom();
-}
-
-/* scroll helper */
-function scrollMessagesToBottom(){
-  try{
-    messagesEl.scrollTop = messagesEl.scrollHeight + 120;
-  }catch(e){}
-}
-
-/* detect user scroll pos */
-messagesEl.addEventListener('scroll', ()=>{
-  const nearBottom = (messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight) < 100;
-  isAtBottom = nearBottom;
-});
-
-/* render players */
 function renderPlayers(list){
   playersListEl.innerHTML = '';
   const seen = new Set();
@@ -910,468 +435,250 @@ function renderPlayers(list){
     seen.add(u.username);
     count++;
     const row = document.createElement('div');
-    row.className = 'user-row';
-    const avatar = createAvatar(u.username, u.avatar_color || '#ff2b2b', u.online);
-    avatar.classList.remove('avatar-circle');
-    avatar.style.width = '36px';
-    avatar.style.height = '36px';
-    avatar.style.minWidth = '36px';
-    avatar.style.fontSize = '14px';
-    avatar.style.border = '1px solid rgba(255,255,255,0.03)';
-    const nameWrap = document.createElement('div');
-    nameWrap.style.display = 'flex';
-    nameWrap.style.flexDirection = 'column';
-    nameWrap.style.gap = '2px';
-    const nameEl = document.createElement('div');
-    nameEl.className = 'user-name';
-    nameEl.textContent = u.username;
-    nameEl.style.color = u.name_color || '#ff2b2b';
-    const meta = document.createElement('div');
-    meta.className = 'user-meta';
-    const last = u.lastseen ? new Date(u.lastseen).toLocaleTimeString() : '—';
-    meta.textContent = u.online ? 'online' : `last: ${last}`;
-    nameWrap.appendChild(nameEl);
-    nameWrap.appendChild(meta);
-    row.appendChild(avatar);
-    row.appendChild(nameWrap);
+    row.className = 'player-row';
+    const av = createAvatarEl(u.username, u.avatar_color || avatarColor);
+    const wrap = document.createElement('div');
+    wrap.style.display = 'flex'; wrap.style.flexDirection='column'; wrap.style.gap='2px';
+    const name = document.createElement('div'); name.className = 'player-name'; name.textContent = u.username; name.style.color = u.name_color || nameColor;
+    const meta = document.createElement('div'); meta.className = 'player-meta';
+    meta.textContent = u.online ? 'online' : `last: ${u.lastseen ? new Date(u.lastseen).toLocaleTimeString() : '—'}`;
+    wrap.appendChild(name); wrap.appendChild(meta);
+    row.appendChild(av); row.appendChild(wrap);
     playersListEl.appendChild(row);
   });
-  playersCountEl.textContent = count;
-  cache.presence = list.slice();
+  playersCountEl.textContent = `Players: ${count}`;
+  playersCountSideEl.textContent = count;
 }
 
-/* -------------------------
-   REACTIONS
-   ------------------------- */
+/* ---------- NETWORK: presence & messages ---------- */
 
-/* toggle reaction (local optimistic UI + simple server add) */
-async function handleReactionClick(msgId, code, quick=false){
-  // code maybe ':heart:' or emoji literal. Normalize to :name:
-  if(!msgId) return;
-  const normalized = code.startsWith(':') ? code : (':' + code.replace(/:/g,'') + ':');
-
-  // optimistic: find message in DOM and increase count UI
-  // We maintain server side simple object in "messages" table under `reactions` JSON column (if available).
-  const row = messagesEl.querySelector(`[data-id="${msgId}"]`);
-  if(row){
-    const reactBtn = row.querySelector('.reactions .react');
-    // naive: append a small bubble
-    const r = document.createElement('div');
-    r.className = 'react';
-    r.innerHTML = `${renderEmoji(normalized)} <span style="opacity:0.7;margin-left:6px">+</span>`;
-    row.querySelector('.bubble').appendChild(r);
-    // fade out after quick
-    if(quick) setTimeout(()=> r.remove(), 1200);
-  }
-
-  // Send to server (merge into reactions JSON)
-  try{
-    await fetch(`${SUPABASE_URL}/rest/v1/messages?id=eq.${encodeURIComponent(msgId)}`, {
-      method: 'PATCH',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({ reactions: { [normalized]: 1 } }) // server should upsert/merge-duplicates ideally
-    });
-    // reload after small delay
-    setTimeout(()=> loadMessagesDebounced(), 800);
-  }catch(e){
-    console.error('react err', e);
-  }
+async function fetchPresence(){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/presence?select=*&order=lastseen.desc&limit=300`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  });
+  if(!res.ok) throw new Error('presence fetch failed');
+  return await res.json();
 }
 
-/* -------------------------
-   POLLING / DEBOUNCE / NETWORK
-   ------------------------- */
-
-let pollingTimer = null;
-const POLL_INTERVAL = 4500;
-
-function setNetStatus(text, ok=true){
-  netStatusEl.textContent = text;
-  netStatusEl.style.color = ok ? 'var(--accent-2)' : 'var(--subtle)';
-}
-
-/* simple polling function with debounce option */
-async function pollAll(){
-  // skip if offline
-  setNetStatus('syncing…', true);
-  try{
-    await Promise.all([loadPresence(), loadMessages()]);
-    setNetStatus('• online', true);
-  }catch(e){
-    console.error('poll err', e);
-    setNetStatus('offline', false);
-  }
-}
-
-/* toggle poll debounce */
-btnDebounce.addEventListener('click', ()=>{
-  debounceEnabled = !debounceEnabled;
-  btnDebounce.textContent = `Debounce: ${debounceEnabled ? 'on' : 'off'}`;
-});
-
-/* start polling loop */
-function startPolling(){
-  if(pollingTimer) clearInterval(pollingTimer);
-  pollingTimer = setInterval(()=>{
-    if(debounceEnabled){
-      debouncedPoll();
-    } else {
-      pollAll();
-    }
-  }, POLL_INTERVAL);
-}
-const debouncedPoll = debounce(() => pollAll(), 300);
-
-/* -------------------------
-   PRESENCE / USERS
-   ------------------------- */
-
-async function loadPresence(){
-  try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/presence?select=*&order=lastseen.desc&limit=200`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-    });
-    const data = await res.json();
-    // dedupe by username later in renderPlayers
-    renderPlayers(data);
-    // update last seen element (self)
-    const me = data.find(u => u.username === username);
-    if(me){
-      lastSeenEl.textContent = `Last seen: ${new Date(me.lastseen).toLocaleString()}`;
-    }
-    return data;
-  }catch(e){
-    console.error('presence load', e);
-    throw e;
-  }
-}
-
-/* upsert presence (merge duplicates) */
 async function savePresence(){
-  try{
-    // Upsert: use POST with Prefer header to merge duplicates (depends on supabase config)
-    await fetch(`${SUPABASE_URL}/rest/v1/presence`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify({
-        username,
-        online: true,
-        name_color: nameColor,
-        avatar_color: avatarColor,
-        lastseen: nowISO()
-      })
-    });
-  }catch(e){
-    console.error('save presence', e);
-  }
+  // upsert-like POST with Prefer header (merge duplicates)
+  await fetch(`${SUPABASE_URL}/rest/v1/presence`, {
+    method:'POST',
+    headers:{
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates'
+    },
+    body: JSON.stringify({
+      username,
+      online: true,
+      name_color: nameColor,
+      avatar_color: avatarColor,
+      lastseen: nowISO()
+    })
+  }).catch(e=>console.error('presence save',e));
 }
 
-/* -------------------------
-   MESSAGES LOAD / SEND
-   ------------------------- */
-
-async function loadMessages(){
-  try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/messages?select=*&order=created_at.asc&limit=500`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-    });
-    const data = await res.json();
-    // Update cache only if changed length (simple)
-    if(JSON.stringify(data.map(d=>d.id)) !== JSON.stringify(cache.messages.map(m=>m.id))){
-      cache.messages = data;
-      renderMessages(data);
-    }
-    return data;
-  }catch(e){
-    console.error('load messages', e);
-    throw e;
-  }
+async function fetchMessages(){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/messages?select=*&order=created_at.asc&limit=500`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  });
+  if(!res.ok) throw new Error('messages fetch failed');
+  return await res.json();
 }
 
-/* send message */
+/* ---------- load loops (debounced) ---------- */
+let polling = null;
+const POLL_MS = 4500;
+function startPolling(){
+  if(polling) clearInterval(polling);
+  polling = setInterval(()=>{ syncNow(); }, POLL_MS);
+}
+const syncNow = debounce(async ()=>{
+  try{
+    netStatusEl.textContent = 'syncing…';
+    const [p,m] = await Promise.all([fetchPresence(), fetchMessages()]);
+    cache.presence = p; cache.messages = m;
+    renderPlayers(p);
+    renderMessages(m);
+    lastSeenEl.textContent = `Last seen: ${new Date().toLocaleString()}`;
+    netStatusEl.textContent = '• online';
+    // store a local message cache (small)
+    try{ localStorage.setItem('vixel-msg-cache', JSON.stringify(m.slice(-200))); }catch(e){}
+  }catch(e){
+    console.error(e);
+    netStatusEl.textContent = 'offline';
+  }
+}, 250);
+
+/* initial load (uses local cache fast) */
+async function init(){
+  const local = localStorage.getItem('vixel-msg-cache');
+  if(local){
+    try{ cache.messages = JSON.parse(local); renderMessages(cache.messages); }catch(e){}
+  }
+  // do initial network load
+  await savePresence();
+  try{
+    const [p,m] = await Promise.all([fetchPresence(), fetchMessages()]);
+    cache.presence = p; cache.messages = m;
+    renderPlayers(p);
+    renderMessages(m);
+  }catch(e){ console.error('init load err', e); }
+  startPolling();
+}
+init();
+
+/* ---------- send message ---------- */
 async function sendMessage(){
-  const raw = (inputEl.value || '').trim();
-  if(!raw) return;
-  const clean = filterBadWords(raw);
-  // optimistic insert into DOM as temp
+  const raw = (inputEl.value || '');
+  if(!raw.trim()) return;
+  const clean = filterBadWords(raw.trim());
+  inputEl.value = '';
+  // optimistic append
   const tmp = {
-    id: 'tmp-' + Math.random().toString(36).slice(2,9),
+    id: 'tmp-' + Math.random().toString(36).slice(2,8),
     user: username,
     text: clean,
     name_color: nameColor,
     avatar_color: avatarColor,
-    created_at: new Date().toISOString(),
-    reactions: {}
+    created_at: new Date().toISOString()
   };
-  // append optimistic
-  renderMessages([...cache.messages, tmp], { append: false });
-  inputEl.value = '';
-  scrollMessagesToBottom();
+  cache.messages.push(tmp);
+  renderMessages(cache.messages);
 
   try{
     await fetch(`${SUPABASE_URL}/rest/v1/messages`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json'
-      },
+      method:'POST',
+      headers:{ 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         user: username,
         text: clean,
         name_color: nameColor,
         avatar_color: avatarColor,
-        created_at: new Date().toISOString(),
-        reactions: {}
+        created_at: new Date().toISOString()
       })
     });
-    // reload (debounced)
-    setTimeout(()=> loadMessagesDebounced(), 250);
-    // special keywords for confetti
-    if(/(gg|win|victory|rekt|party)/i.test(clean)){
-      confettiBurst();
-    }
+    // reload messages after small delay
+    setTimeout(()=> syncNow(), 300);
   }catch(e){
     console.error('send err', e);
-    flashHint('failed to send');
   }
 }
 
-/* small debounce wrappers for network calls */
-const loadMessagesDebounced = debounce(()=> { loadMessages(); }, 400);
-
-/* filter bad words (simple list, replace with stars) */
-let badWords = ['badword1','badword2'];
-function filterBadWords(text){
-  let t = text;
-  for(const w of badWords){
-    const re = new RegExp(w, 'gi');
-    t = t.replace(re, '***');
-  }
-  return t;
+/* ---------- badword filter ---------- */
+const badWords = ['badword1','badword2'];
+function filterBadWords(t){
+  let out = t;
+  badWords.forEach(w=>{
+    const r = new RegExp(w,'gi');
+    out = out.replace(r,'***');
+  });
+  return out;
 }
 
-/* -------------------------
-   EMOJI PICKER
-   ------------------------- */
-
-function populateEmojiGrid(){
-  emojiGridEl.innerHTML = '';
+/* ---------- emoji picker ---------- */
+function populateEmoji(){
+  emojiGrid.innerHTML = '';
   emojiList.forEach(e=>{
     const b = document.createElement('button');
-    b.className = 'react';
-    b.style.justifyContent = 'center';
-    b.style.padding = '6px';
+    b.className = 'emoji-btn';
     b.textContent = e;
-    b.addEventListener('click', ()=>{
-      inputEl.value += ' ' + e;
+    b.addEventListener('click', ()=> {
+      inputEl.value = (inputEl.value || '') + ' ' + e;
       inputEl.focus();
       emojiPanel.style.display = 'none';
     });
-    emojiGridEl.appendChild(b);
+    emojiGrid.appendChild(b);
   });
 }
-
-emojiBtn.addEventListener('click', ()=>{
-  emojiPanel.style.display = emojiPanel.style.display === 'none' ? 'block' : 'none';
-});
-populateEmojiGrid();
-
-/* -------------------------
-   THEME / COLOR MODAL
-   ------------------------- */
-
-btnTheme.addEventListener('click', ()=> {
-  modalTheme.style.display = 'block';
-});
-modalCancel.addEventListener('click', ()=> modalTheme.style.display = 'none');
-modalSave.addEventListener('click', ()=>{
-  nameColor = modalNameColor.value;
-  avatarColor = modalAvatarColor.value;
-  accentColor = modalAccentColor.value;
-  // persist
-  localStorage.setItem('vixel-name-color', nameColor);
-  localStorage.setItem('vixel-avatar-color', avatarColor);
-  localStorage.setItem('vixel-accent', accentColor);
-  // apply
-  document.documentElement.style.setProperty('--accent', accentColor);
-  document.documentElement.style.setProperty('--accent-2', accentColor);
-  colorPreviewEl.style.background = nameColor;
-  modalTheme.style.display = 'none';
-  savePresence();
+populateEmoji();
+btnEmoji.addEventListener('click', ()=> {
+  emojiPanel.style.display = (emojiPanel.style.display === 'block') ? 'none' : 'block';
 });
 
-/* quick settings */
-btnSaveName.addEventListener('click', ()=>{
-  const v = inputUsername.value.trim();
-  if(v){
-    username = v;
-    localStorage.setItem('vixel-username', username);
-    displayUsernameEl.textContent = username;
-    flashHint('username saved');
-    savePresence();
-  }
-});
-setNameColor.addEventListener('change', (e)=>{
-  nameColor = e.target.value;
-  localStorage.setItem('vixel-name-color', nameColor);
-  displayUsernameEl.style.color = nameColor;
-  colorPreviewEl.style.background = nameColor;
-  savePresence();
-});
-setAvatarColor.addEventListener('change', (e)=>{
-  avatarColor = e.target.value;
-  localStorage.setItem('vixel-avatar-color', avatarColor);
-  savePresence();
-});
-btnToggleTheme.addEventListener('click', ()=>{
-  // toggle accent (subtle AF)
-  if(accentColor === '#ff2b2b'){ accentColor = '#ff7a7a'; }
-  else accentColor = '#ff2b2b';
-  localStorage.setItem('vixel-accent', accentColor);
-  document.documentElement.style.setProperty('--accent', accentColor);
+/* ---------- input behavior (fix typing issue) ---------- */
+messagesEl.addEventListener('scroll', ()=>{
+  const nearBottom = (messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight) < 120;
+  isAtBottom = nearBottom;
 });
 
-/* -------------------------
-   INPUT BEHAVIOR
-   ------------------------- */
-
-/* shift+enter for newline, enter to send */
-inputEl.addEventListener('keydown', (ev)=>{
-  if(ev.key === 'Enter' && !ev.shiftKey){
-    ev.preventDefault();
+/* enter to send, shift+enter newline */
+inputEl.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
     sendMessage();
   }
 });
 
-/* typing indicator local only (server-side typing not implemented) */
-let typingTimer = null;
-inputEl.addEventListener('input', ()=>{
-  typing = true;
-  // show small hint
-  lastSeenEl.textContent = `${username} is typing...`;
-  if(typingTimer) clearTimeout(typingTimer);
-  typingTimer = setTimeout(()=>{
-    typing = false;
-    lastSeenEl.textContent = `Last seen: ${new Date().toLocaleString()}`;
-  }, 900);
-});
+/* ---------- name change limit: 1/week ---------- */
+const WEEK_MS = 1000 * 60 * 60 * 24 * 7;
+btnSaveName.addEventListener('click', ()=>{
+  const newName = (inputNameEl.value || '').trim();
+  if(!newName) return flash('enter name');
 
-/* -------------------------
-   UTIL: CONFETTI (simple)
-   ------------------------- */
-function confettiBurst(){
-  try{
-    const canvas = confettiCanvas;
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const pieces = [];
-    const colors = ['#ff6b6b','#ff2b2b','#ff9b9b','#ffd6d6','#ff7a7a'];
-    for(let i=0;i<80;i++){
-      pieces.push({
-        x: Math.random()*canvas.width,
-        y: -Math.random()*200,
-        vx: (Math.random()-0.5)*4,
-        vy: Math.random()*4+2,
-        size: Math.random()*6+4,
-        c: colors[Math.floor(Math.random()*colors.length)],
-        rot: Math.random()*360,
-        vr: (Math.random()-0.5)*8
-      });
-    }
-    let frame = 0;
-    function draw(){
-      frame++;
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      for(const p of pieces){
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.08;
-        p.rot += p.vr;
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot*Math.PI/180);
-        ctx.fillStyle = p.c;
-        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
-        ctx.restore();
-      }
-      if(frame < 140) requestAnimationFrame(draw);
-      else ctx.clearRect(0,0,canvas.width,canvas.height);
-    }
-    draw();
-  }catch(e){ console.error('confetti err', e); }
-}
-
-/* -------------------------
-   FULLSCREEN
-   ------------------------- */
-btnFullscreen.addEventListener('click', ()=>{
-  if(!document.fullscreenElement){
-    document.getElementById('appRoot').requestFullscreen?.();
-    btnFullscreen.textContent = 'Exit Fullscreen';
-  } else {
-    document.exitFullscreen?.();
-    btnFullscreen.textContent = 'Fullscreen';
+  const lastChange = Number(localStorage.getItem('vixel-name-changed-at') || 0);
+  const now = Date.now();
+  if(lastChange && (now - lastChange) < WEEK_MS){
+    const daysLeft = Math.ceil((WEEK_MS - (now - lastChange)) / (1000*60*60*24));
+    return flash(`name locked for ${daysLeft} day(s)`);
   }
+
+  username = newName;
+  localStorage.setItem('vixel-username', username);
+  localStorage.setItem('vixel-name-changed-at', now.toString());
+  displayUsernameEl.textContent = username;
+  flash('name updated');
+  savePresence();
 });
 
-/* -------------------------
-   CACHE CLEAR
-   ------------------------- */
+/* ---------- color inputs persist ---------- */
+setNameColor.addEventListener('change', e=>{
+  nameColor = e.target.value;
+  localStorage.setItem('vixel-name-color', nameColor);
+  displayUsernameEl.style.color = nameColor;
+  savePresence();
+});
+setAvatarColor.addEventListener('change', e=>{
+  avatarColor = e.target.value;
+  localStorage.setItem('vixel-avatar-color', avatarColor);
+  savePresence();
+});
+
+/* ---------- clear cache & fullscreen ---------- */
 btnClearCache.addEventListener('click', ()=>{
-  cache = { messages: [], presence: [] };
   localStorage.removeItem('vixel-msg-cache');
-  flashHint('cache cleared');
+  cache.messages = [];
+  renderMessages([]);
+  flash('cache cleared');
+});
+btnFullscreen.addEventListener('click', ()=>{
+  const root = document.getElementById('appRoot');
+  if(!document.fullscreenElement) root.requestFullscreen?.();
+  else document.exitFullscreen?.();
 });
 
-/* -------------------------
-   STARTUP / POLLING LOOP
-   ------------------------- */
-
-async function init(){
-  // show local data if present
-  const localMsgs = localStorage.getItem('vixel-msg-cache');
-  if(localMsgs){
-    try{
-      const parsed = JSON.parse(localMsgs);
-      cache.messages = parsed;
-      renderMessages(parsed);
-    }catch(e){}
-  }
-  // initial fetches
-  await Promise.all([savePresence(), loadPresence(), loadMessages()]);
-  // persist a copy
-  try{ localStorage.setItem('vixel-msg-cache', JSON.stringify(cache.messages.slice(-200))); }catch(e){}
-  startPolling();
+/* ---------- small UI helpers ---------- */
+function flash(msg){
+  const el = document.createElement('div');
+  el.style.position='fixed'; el.style.left='50%'; el.style.bottom='28px'; el.style.transform='translateX(-50%)';
+  el.style.background='rgba(0,0,0,0.7)'; el.style.color='white'; el.style.padding='8px 12px'; el.style.borderRadius='8px';
+  el.style.zIndex = 9999; el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=> el.remove(), 1500);
 }
 
-/* run init (no background tasks promised — runs now) */
-init();
+/* ---------- utility: save presence periodically ---------- */
+setInterval(()=>{ savePresence().catch(()=>{}); }, 5000);
 
-/* -------------------------
-   small helper: update messages cache on unload
-   ------------------------- */
+/* ---------- small: on unload persist messages cache ---------- */
 window.addEventListener('beforeunload', ()=>{
   try{ localStorage.setItem('vixel-msg-cache', JSON.stringify(cache.messages.slice(-200))); }catch(e){}
 });
 
-/* -------------------------
-   utility: loadMessagesDebounced exported earlier
-   ------------------------- */
-
-/* End of big JS */
+/* ---------- small: show network status initially ---------- */
+netStatusEl.textContent = '• online';
 </script>
-
 </body>
 </html>
