@@ -1,811 +1,195 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Vixel Chat — Clean Red</title>
+<title>Vixel Chat — Server Powered</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
 <style>
-  /* ---------- Design tokens (red theme) ---------- */
   :root{
-    --bg: #0b0b0b;
-    --panel: #120101;
-    --panel-2: #170303;
-    --muted: #2b2020;
-    --accent: #ff2b2b;
-    --accent-2: #ff6b6b;
-    --text: #f6f6f6;
-    --subtle: #b7b1b1;
-    --radius: 12px;
-    --shadow: 0 10px 30px rgba(0,0,0,0.6);
-    --glass: rgba(255,255,255,0.02);
-    --input-bg: rgba(255,255,255,0.02);
-    --gap: 12px;
+    --bg:#0b0b0b;
+    --panel:#120101;
+    --panel-2:#170303;
+    --accent:#ff2b2b;
+    --accent-2:#ff6b6b;
+    --text:#f6f6f6;
+    --subtle:#b7b1b1;
+    --radius:12px;
+    --shadow:0 10px 30px rgba(0,0,0,0.6);
+    --input-bg:rgba(255,255,255,0.02);
   }
-
-  /* ---------- Reset & base ---------- */
   *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    background: linear-gradient(180deg,#070707 0%, #0c0c0c 100%);
-    color:var(--text);
-    font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-  }
-
-  /* ---------- App container ---------- */
-  .app {
-    width:1060px;
-    height:720px;
-    background: linear-gradient(180deg,var(--panel), var(--panel-2));
-    border-radius:16px;
-    padding:18px;
-    box-shadow: var(--shadow);
-    position:relative;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-  }
-
-  /* ---------- Header ---------- */
-  .header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .brand{display:flex;gap:12px;align-items:center}
-  .logo {
-    width:56px;height:56px;border-radius:10px;
-    background: linear-gradient(180deg, rgba(255,0,0,0.08), rgba(0,0,0,0.15));
-    display:flex;align-items:center;justify-content:center;
-    font-family:Orbitron, monospace;font-weight:700;color:var(--accent);font-size:20px;
-    border:1px solid rgba(255,255,255,0.03)
-  }
-  .title {font-size:18px; font-weight:700}
-  .subtitle {font-size:12px;color:var(--subtle)}
-
-  /* ---------- Main grid ---------- */
-  .main {
-    display:grid;
-    grid-template-columns: 1fr 320px;
-    gap:14px;
-    flex:1;
-    min-height:0;
-  }
-
-  /* ---------- Chat panel ---------- */
-  .chat {
-    background: linear-gradient(180deg, rgba(255,0,0,0.015), rgba(0,0,0,0.03));
-    border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;
-    border:1px solid rgba(255,255,255,0.02); min-height:0;
-  }
-  .chat-top {display:flex;justify-content:space-between;align-items:center;gap:8px}
-  .meta {display:flex;gap:8px;align-items:center}
-  .meta .small {font-size:13px;color:var(--subtle)}
-
-  .messages {
-    flex:1; overflow:auto; padding-right:6px; display:flex;flex-direction:column;gap:10px;
-    scroll-behavior:smooth;
-  }
-
-  /* message row: avatar + bubble */
-  .msg-row {display:flex;gap:10px;align-items:flex-start;max-width:900px}
-  .avatar {
-    width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    font-weight:700;color:#fff;background:var(--accent);flex-shrink:0;border:2px solid rgba(0,0,0,0.35)
-  }
-  .bubble {
-    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
-    padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.45); max-width:820px;
-  }
-  .bubble-header {Display:flex;align-items:center;justify-content:space-between;gap:6px}
-  .username {font-weight:700}
-  .ts {font-size:12px;color:var(--subtle)}
-  .msg-text {margin-top:6px;line-height:1.35;word-break:break-word;color:var(--text)}
-  .msg-text code {background:rgba(0,0,0,0.12);padding:2px 6px;border-radius:6px;font-family:ui-monospace}
-  .msg-text pre {background:rgba(0,0,0,0.12);padding:8px;border-radius:8px;overflow:auto}
-
-  /* hover lift */
-  .msg-row:hover .bubble{ transform: translateY(-3px); transition:transform 160ms ease; }
-
-  /* ---------- Sidebar ---------- */
-  .sidebar {
-    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
-    border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;border:1px solid rgba(255,255,255,0.02);
-    min-height:0;
-  }
-  .players {display:flex;flex-direction:column;gap:8px;overflow:auto;padding-right:6px}
-  .player-row {display:flex;gap:10px;align-items:center;padding:6px;border-radius:8px}
-  .player-row:hover {background: rgba(255,255,255,0.02)}
-  .player-avatar {width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:var(--accent);border:1px solid rgba(0,0,0,0.25)}
-  .player-name {font-weight:600}
-  .player-meta {font-size:12px;color:var(--subtle)}
-
-  /* ---------- Footer input ---------- */
-  .footer {display:flex;gap:10px;align-items:center;padding-top:6px}
-  .input-area {flex:1;display:flex;gap:8px;align-items:flex-end}
-  .textarea {
-    flex:1;min-height:56px;border-radius:10px;padding:10px;background:var(--input-bg);border:1px solid rgba(255,255,255,0.02);
-    color:var(--text);resize:none;font-size:14px;
-  }
-  .right-tools {display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-  .button {background:linear-gradient(180deg,var(--accent),var(--accent-2));border:none;color:#fff;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700}
-  .button.ghost {background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--subtle);font-weight:600}
-
-  /* emoji grid (simple) */
-  .emoji-grid {display:grid;grid-template-columns:repeat(8,1fr);gap:6px;padding:8px;background:var(--panel);border-radius:10px;border:1px solid rgba(255,255,255,0.02);max-height:160px;overflow:auto}
-  .emoji-btn {padding:6px;border-radius:8px;background:transparent;border:none;cursor:pointer;font-size:18px}
-
-  /* small helpers */
-  .hint {font-size:12px;color:var(--subtle)}
-  .loading {width:28px;height:28px;border-radius:8px;border:3px solid rgba(255,255,255,0.03);border-top-color:var(--accent-2);animation:spin 900ms linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .bottom-space {height:8px}
-
-  /* responsive */
-  @media (max-width:1000px) {
-    .app { width:920px }
-  }
-  @media (max-width:820px){
-    .main { grid-template-columns: 1fr; grid-auto-rows:auto }
-    .sidebar { order:2 }
-    .chat { order:1 }
-  }
+  body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text);display:flex;justify-content:center;align-items:center;height:100vh;padding:10px}
+  .app{width:100%;max-width:1060px;height:90%;background:linear-gradient(180deg,var(--panel),var(--panel-2));border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+  .header{display:flex;justify-content:space-between;align-items:center}
+  .brand{display:flex;gap:10px;align-items:center}
+  .logo{width:50px;height:50px;border-radius:12px;background:linear-gradient(180deg,rgba(255,0,0,0.08),rgba(0,0,0,0.15));display:flex;justify-content:center;align-items:center;font-family:Orbitron;font-weight:700;color:var(--accent);font-size:20px;border:1px solid rgba(255,255,255,0.03)}
+  .main{flex:1;display:flex;gap:12px;overflow:hidden;border-radius:12px}
+  .chat{flex:1;background:linear-gradient(180deg,rgba(255,0,0,0.015),rgba(0,0,0,0.03));padding:12px;display:flex;flex-direction:column;gap:10px;overflow:hidden;border-radius:12px}
+  .messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:6px;scroll-behavior:smooth}
+  .msg-row{display:flex;gap:10px;align-items:flex-start}
+  .avatar{width:40px;height:40px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-weight:700;color:#fff;background:var(--accent)}
+  .bubble{background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.02));padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);max-width:80%}
+  .bubble-header{display:flex;justify-content:space-between;align-items:center;gap:6px}
+  .username{font-weight:700}
+  .ts{font-size:12px;color:var(--subtle)}
+  .msg-text{margin-top:4px;line-height:1.35;word-break:break-word}
+  .footer{display:flex;gap:8px;align-items:center;padding-top:6px}
+  .textarea{flex:1;min-height:50px;padding:8px;border-radius:8px;background:var(--input-bg);border:1px solid rgba(255,255,255,0.03);color:var(--text)}
+  .button{background:linear-gradient(180deg,var(--accent),var(--accent-2));border:none;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
+  .sidebar{width:280px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.02));border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+  .player-row{display:flex;gap:10px;align-items:center;padding:6px;border-radius:8px}
+  .player-avatar{width:36px;height:36px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-weight:700;color:#fff;background:var(--accent)}
+  @media(max-width:820px){.main{flex-direction:column}.sidebar{width:100%}}
 </style>
 </head>
 <body>
-
-<div class="app" id="appRoot">
-  <!-- header -->
+<div class="app">
   <div class="header">
     <div class="brand">
-      <div class="logo" aria-hidden="true">
-        <!-- restore your logo textically — you can replace this with <img src="..."> if you have a PNG -->
-        V
-      </div>
+      <div class="logo">V</div>
       <div>
         <div class="title">Vixel Chat</div>
-        <div class="subtitle">Clean • Red • Desktop-first</div>
+        <div class="subtitle">Server-powered • Red Theme</div>
       </div>
-    </div>
-
-    <div style="display:flex;gap:8px;align-items:center">
-      <div class="meta">
-        <div class="small" id="net-status">• online</div>
-        <div style="width:12px"></div>
-        <div class="small" id="last-seen">Last seen: —</div>
-      </div>
-      <!-- removed theme/color button per request -->
     </div>
   </div>
 
-  <!-- main -->
   <div class="main">
-    <!-- chat -->
-    <section class="chat" aria-label="Chat panel">
-      <div class="chat-top">
-        <div style="display:flex;gap:10px;align-items:center">
-          <div class="hint">Logged in as</div>
-          <div style="font-weight:700" id="display-username">Guest</div>
-        </div>
-        <div class="hint" id="players-count">Players: 0</div>
-      </div>
-
-      <div class="messages" id="messages" aria-live="polite">
-        <!-- messages appended here -->
-        <div class="bottom-space"></div>
-      </div>
-
+    <section class="chat">
+      <div class="messages" id="messages"></div>
       <div class="footer">
-        <div class="input-area">
-          <textarea id="input" class="textarea" placeholder="Shift+Enter for newline — Enter to send"></textarea>
-        </div>
-
-        <div class="right-tools">
-          <div style="display:flex;gap:8px;align-items:center">
-            <button class="button ghost" id="btn-emoji">😀</button>
-            <button class="button" id="btn-send">Send</button>
-          </div>
-          <div class="hint">Tip: use <code>:smile:</code> or click emoji</div>
-        </div>
+        <textarea id="input" class="textarea" placeholder="Enter to send…"></textarea>
+        <button id="btn-send" class="button">Send</button>
       </div>
     </section>
 
-    <!-- sidebar -->
-    <aside class="sidebar" aria-label="Players & settings">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <h3 style="margin:0">Players</h3>
-        <div class="hint" id="players-count-side">0</div>
-      </div>
-
-      <div class="players" id="players-list"></div>
-
-      <hr style="border:none;height:1px;background:rgba(255,255,255,0.02);margin:6px 0;border-radius:2px">
-
-      <div>
-        <h3 style="margin:0 0 8px 0">Settings</h3>
-
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-          <input id="input-username" placeholder="Change name (1/week)" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:var(--glass);color:var(--text)">
-          <button class="button ghost" id="btn-save-name">Save</button>
-        </div>
-
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-          <label class="hint">Name color</label>
-          <input type="color" id="set-name-color" value="#ff2b2b">
-          <label class="hint">Avatar color</label>
-          <input type="color" id="set-avatar-color" value="#ff2b2b">
-        </div>
-
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="button ghost" id="btn-clear-cache">Clear Cache</button>
-          <button class="button ghost" id="btn-fullscreen">Fullscreen</button>
-        </div>
-      </div>
+    <aside class="sidebar">
+      <h3>Players</h3>
+      <div id="players-list"></div>
     </aside>
   </div>
 </div>
 
-<!-- emoji panel (absolute) -->
-<div id="emoji-panel" style="position:fixed;left:50%;bottom:110px;transform:translateX(-50%);display:none;z-index:1000">
-  <div class="emoji-grid" id="emoji-grid"></div>
-</div>
-
 <script>
-/* ========================
-   Vixel Chat — Clean Red
-   Features in this build:
-   - Clean red Discord-like UI
-   - No reactions, no theme button
-   - Avatars = first letter (normal, no pulse)
-   - Username change limited to 7 days (localStorage)
-   - LocalStorage username + colors
-   - Emoji picker + shortcodes
-   - Simple markdown: **bold**, *italic*, `inline code`, ```code```
-   - Debounced polling, presence upsert, message caching
-   - No audio, no modals that block input
-   - Works with your existing Supabase tables (unchanged)
-   ======================== */
+const MESSAGES_API = "https://ehciyxvbasqiiiurjuwu.supabase.co/functions/v1/super-function";
+const USERS_API = "https://ehciyxvbasqiiiurjuwu.supabase.co/functions/v1/super-function";
 
-/* ---------- CONFIG (use your same supabase) ---------- */
-const SUPABASE_URL = "https://ehciyxvbasqiiiurjuwu.supabase.co";
-let SUPABASE_KEY = sessionStorage.getItem('vixel-sb-key') || '';
+let username = localStorage.getItem("vixel-username");
+let nameColor = localStorage.getItem("vixel-name-color")||"#ff2b2b";
+let avatarColor = localStorage.getItem("vixel-avatar-color")||"#ff2b2b";
 
-// If there's no key in session, prompt for a client anon/public key. Do NOT use a service_role key here.
-if(!SUPABASE_KEY){
-  try{
-    const provided = prompt('Paste your Supabase anon/public key (client-side). This will be stored only in this session. Do NOT use a service_role key:');
-    if(provided){
-      if(/service_role|ROLE_SERVICE|role=service/i.test(provided)){
-        alert('Detected a service role key. For security, use an anon/public key. Aborting key set.');
-        SUPABASE_KEY = '';
-      } else {
-        SUPABASE_KEY = provided;
-        sessionStorage.setItem('vixel-sb-key', SUPABASE_KEY);
-      }
-    }
-  }catch(e){console.error('key prompt',e)}
-}
-
-function getAuthHeaders(){
-  const headers = {};
-  if(SUPABASE_KEY) headers['apikey'] = SUPABASE_KEY, headers['Authorization'] = `Bearer ${SUPABASE_KEY}`;
-  return headers;
-}
-
-/* ---------- DOM ---------- */
-const messagesEl = document.getElementById('messages');
-const playersListEl = document.getElementById('players-list');
-const playersCountEl = document.getElementById('players-count');
-const playersCountSideEl = document.getElementById('players-count-side');
-const displayUsernameEl = document.getElementById('display-username');
-const lastSeenEl = document.getElementById('last-seen');
-const netStatusEl = document.getElementById('net-status');
-
-const inputEl = document.getElementById('input');
-const btnSend = document.getElementById('btn-send');
-const btnEmoji = document.getElementById('btn-emoji');
-const emojiPanel = document.getElementById('emoji-panel');
-const emojiGrid = document.getElementById('emoji-grid');
-
-const inputNameEl = document.getElementById('input-username');
-const btnSaveName = document.getElementById('btn-save-name');
-const setNameColor = document.getElementById('set-name-color');
-const setAvatarColor = document.getElementById('set-avatar-color');
-const btnClearCache = document.getElementById('btn-clear-cache');
-const btnFullscreen = document.getElementById('btn-fullscreen');
-
-/* ---------- STATE ---------- */
-let username = localStorage.getItem('vixel-username') || '';
-let nameColor = localStorage.getItem('vixel-name-color') || '#ff2b2b';
-let avatarColor = localStorage.getItem('vixel-avatar-color') || '#ff2b2b';
-
-let cache = { messages: [], presence: [] };
-let isAtBottom = true;
-let presenceId = null;
-
-/* ---------- INIT ---------- */
 if(!username){
-  username = prompt('Enter username') || `Guest${Math.floor(Math.random()*999)}`;
-  localStorage.setItem('vixel-username', username);
-}
-displayUsernameEl.textContent = username;
-inputNameEl.value = username;
-setNameColor.value = nameColor;
-setAvatarColor.value = avatarColor;
-
-/* apply small color preview */
-function applyLocalColors(){
-  // show name color by styling the display username
-  displayUsernameEl.style.color = nameColor;
-}
-applyLocalColors();
-
-/* ---------- HELPERS ---------- */
-const nowISO = ()=> new Date().toISOString();
-const sleep = ms => new Promise(r=>setTimeout(r,ms));
-const debounce = (fn, wait=300)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),wait); }};
-
-function escapeHtml(s){
-  return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+  username = prompt("Enter your username") || "Guest"+Math.floor(Math.random()*999);
+  localStorage.setItem("vixel-username", username);
+  localStorage.setItem("vixel-name-color", nameColor);
+  localStorage.setItem("vixel-avatar-color", avatarColor);
 }
 
-/* mini markdown */
-function miniMarkdown(raw){
-  if(!raw) return '';
-  let text = escapeHtml(raw);
-  text = text.replace(/```([\s\S]*?)```/g, (m,p1)=>`<pre><code>${p1}</code></pre>`);
-  text = text.replace(/`([^`]+)`/g, (m,p1)=>`<code>${p1}</code>`);
-  text = text.replace(/\*\*([^*]+)\*\*/g, (m,p1)=>`<strong>${p1}</strong>`);
-  text = text.replace(/\*([^*]+)\*/g, (m,p1)=>`<em>${p1}</em>`);
-  // emoji shortcodes e.g. :smile:
-  text = text.replace(/:([a-z0-9_+-]+):/gi, (m,name)=> emojiMap[name] || m);
-  text = text.replace(/\n/g,'<br/>');
-  return text;
-}
+const messagesEl = document.getElementById("messages");
+const playersListEl = document.getElementById("players-list");
+const inputEl = document.getElementById("input");
+const btnSend = document.getElementById("btn-send");
 
-/* emoji map */
-const emojiMap = {
-  smile: "😄", grin: "😁", heart: "❤️", thumbs: "👍", cry: "😢", wink: "😉",
-  clap: "👏", fire: "🔥", star: "⭐", wave: "👋", party: "🥳", rocket: "🚀",
-  ok: "👌", think: "🤔", kiss: "😚"
-};
-const emojiList = Object.values(emojiMap);
-
-/* short time */
-function timeAgo(iso){
-  if(!iso) return '';
-  const d = new Date(iso); const diff = Math.floor((Date.now() - d)/1000);
-  if(diff<5) return 'just now';
-  if(diff<60) return `${diff}s`;
-  if(diff<3600) return `${Math.floor(diff/60)}m`;
-  if(diff<86400) return `${Math.floor(diff/3600)}h`;
-  return d.toLocaleString();
-}
-
-/* ---------- DOM RENDER ---------- */
-
-function createAvatarEl(name, color){
-  const el = document.createElement('div');
-  el.className = 'player-avatar';
-  el.style.background = color || avatarColor;
-  el.textContent = (name||'U').trim().charAt(0).toUpperCase();
-  return el;
-}
-
-function createMessageNode(m){
-  const row = document.createElement('div');
-  row.className = 'msg-row';
-  row.dataset.id = m.id || '';
-
-  const av = document.createElement('div');
-  av.className = 'avatar';
-  av.style.background = m.avatar_color || avatarColor;
-  av.textContent = (m.user||'U').trim().charAt(0).toUpperCase();
-  row.appendChild(av);
-
-  const bubble = document.createElement('div');
-  bubble.className = 'bubble';
-
-  const header = document.createElement('div');
-  header.className = 'bubble-header';
-
-  const nameEl = document.createElement('div');
-  nameEl.className = 'username';
-  nameEl.textContent = m.user || 'Unknown';
-  nameEl.style.color = m.name_color || nameColor;
-
-  const ts = document.createElement('div');
-  ts.className = 'ts';
-  ts.textContent = timeAgo(m.created_at);
-
-  header.appendChild(nameEl);
-  header.appendChild(ts);
-
-  const content = document.createElement('div');
-  content.className = 'msg-text';
-  content.innerHTML = miniMarkdown(m.text || '');
-
-  bubble.appendChild(header);
-  bubble.appendChild(content);
-
-  row.appendChild(bubble);
-  return row;
-}
-
-function renderMessages(list){
-  messagesEl.innerHTML = '';
-  if(!Array.isArray(list)) list = [];
-
-  // Deduplicate by id (or by user+text+created_at when id missing)
-  const seen = new Set();
-  const ordered = [];
-  list.forEach(m=>{
-    const key = m.id || `${m.user}|${m.text}|${m.created_at}`;
-    if(seen.has(key)) return;
-    seen.add(key);
-    ordered.push(m);
-  });
-
-  ordered.forEach(m => {
-    const node = createMessageNode(m);
-    messagesEl.appendChild(node);
-  });
-  const spacer = document.createElement('div'); spacer.className='bottom_space';
-  messagesEl.appendChild(spacer);
-  // if user not scrolled up, keep at bottom
-  if(isAtBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
-}
-
-function renderPlayers(list){
-  playersListEl.innerHTML = '';
-  const seen = new Set();
-  let count = 0;
-  list.forEach(u=>{
-    if(!u || !u.username) return;
-    if(seen.has(u.username)) return;
-    seen.add(u.username);
-    count++;
-    const row = document.createElement('div');
-    row.className = 'player-row';
-    const av = createAvatarEl(u.username, u.avatar_color || avatarColor);
-    const wrap = document.createElement('div');
-    wrap.style.display = 'flex'; wrap.style.flexDirection='column'; wrap.style.gap='2px';
-    const name = document.createElement('div'); name.className = 'player-name'; name.textContent = u.username; name.style.color = u.name_color || nameColor;
-    const meta = document.createElement('div'); meta.className = 'player-meta';
-    meta.textContent = u.online ? 'online' : `last: ${u.lastseen ? new Date(u.lastseen).toLocaleTimeString() : '—'}`;
-    wrap.appendChild(name); wrap.appendChild(meta);
-    row.appendChild(av); row.appendChild(wrap);
-    playersListEl.appendChild(row);
-  });
-  playersCountEl.textContent = `Players: ${count}`;
-  playersCountSideEl.textContent = count;
-}
-
-/* ---------- NETWORK: presence & messages ---------- */
-
-async function fetchPresence(){
-  if(!SUPABASE_KEY) return [];
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/presence?select=*&order=lastseen.desc&limit=300`, {
-    headers: { ...getAuthHeaders() }
-  });
-  if(!res.ok) throw new Error('presence fetch failed');
-  return await res.json();
-}
+const sleep = ms=>new Promise(r=>setTimeout(r,ms));
+const nowISO = ()=>new Date().toISOString();
 
 async function fetchMessages(){
-  if(!SUPABASE_KEY) return [];
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/messages?select=*&order=created_at.asc&limit=500`, {
-    headers: { ...getAuthHeaders() }
+  try{
+    const res = await fetch(MESSAGES_API, { method:"GET" });
+    if(!res.ok) throw new Error("Fetch messages failed");
+    return await res.json();
+  }catch(e){console.error(e);return[]}
+}
+
+async function renderMessages(){
+  const list = await fetchMessages();
+  messagesEl.innerHTML = "";
+  list.forEach(m=>{
+    const row = document.createElement("div");
+    row.className="msg-row";
+
+    const av = document.createElement("div");
+    av.className="avatar";
+    av.style.background = m.avatar_color||avatarColor;
+    av.textContent = (m.username||"U")[0].toUpperCase();
+
+    const bubble = document.createElement("div");
+    bubble.className="bubble";
+
+    const header = document.createElement("div");
+    header.className="bubble-header";
+
+    const uname = document.createElement("div");
+    uname.className="username";
+    uname.style.color=m.name_color||nameColor;
+    uname.textContent = m.username||m.user||"Unknown";
+
+    const ts = document.createElement("div");
+    ts.className="ts";
+    ts.textContent = new Date(m.created_at).toLocaleTimeString();
+
+    header.appendChild(uname);
+    header.appendChild(ts);
+
+    const content = document.createElement("div");
+    content.className="msg-text";
+    content.textContent = m.text;
+
+    bubble.appendChild(header);
+    bubble.appendChild(content);
+    row.appendChild(av);
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
   });
-  if(!res.ok) throw new Error('messages fetch failed');
-  return await res.json();
-}
-
-// upsert presence: PATCH when record exists, POST otherwise. store presenceId for later updates
-async function savePresence(){
-  if(!SUPABASE_KEY) return null;
-  try{
-    const q = `${SUPABASE_URL}/rest/v1/presence?username=eq.${encodeURIComponent(username)}`;
-    const res = await fetch(q, { headers: { ...getAuthHeaders() } });
-    if(!res.ok) throw new Error('presence lookup failed');
-    const rows = await res.json();
-    const payload = {
-      username,
-      online: true,
-      name_color: nameColor,
-      avatar_color: avatarColor,
-      lastseen: nowISO()
-    };
-    if(rows.length){
-      const id = rows[0].id;
-      // PATCH to existing
-      const p = await fetch(`${SUPABASE_URL}/rest/v1/presence?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body: JSON.stringify(payload)
-      });
-      if(p.ok){
-        const updated = await p.json();
-        presenceId = updated && updated[0] && updated[0].id ? updated[0].id : id;
-        return presenceId;
-      }
-    } else {
-      // create new
-      const c = await fetch(`${SUPABASE_URL}/rest/v1/presence`, {
-        method: 'POST',
-        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body: JSON.stringify(payload)
-      });
-      if(c.ok){
-        const created = await c.json();
-        presenceId = created && created[0] && created[0].id ? created[0].id : null;
-        return presenceId;
-      }
-    }
-  }catch(e){ console.error('savePresence', e) }
-  return null;
-}
-
-// set online/offline using presenceId when possible; use keepalive on unload
-async function setOnline(flag){
-  if(!SUPABASE_KEY) return;
-  try{
-    if(!presenceId){
-      await savePresence();
-    }
-    const body = JSON.stringify({ online: !!flag, lastseen: nowISO() });
-    if(presenceId){
-      // use PATCH; keepalive when called from unload
-      await fetch(`${SUPABASE_URL}/rest/v1/presence?id=eq.${presenceId}`, {
-        method: 'PATCH',
-        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body,
-        keepalive: true
-      });
-    } else {
-      // fallback: attempt to upsert
-      await savePresence();
-    }
-  }catch(e){ console.error('setOnline', e) }
-}
-
-/* ---------- load loops (debounced) ---------- */
-let polling = null;
-const POLL_MS = 4500;
-function startPolling(){
-  if(polling) clearInterval(polling);
-  polling = setInterval(()=>{ syncNow(); }, POLL_MS);
-}
-const syncNow = debounce(async ()=>{
-  if(!SUPABASE_KEY){ netStatusEl.textContent = 'no key'; return; }
-  try{
-    netStatusEl.textContent = 'syncing…';
-    const [p,m] = await Promise.all([fetchPresence(), fetchMessages()]);
-
-    // Merge server messages with local pending (tmp) messages so pending stay at bottom until confirmed
-    const server = Array.isArray(m) ? m : [];
-    const pending = (cache.messages || []).filter(msg=> String(msg.id || '').startsWith('tmp-'));
-
-    // Use a Map to dedupe server messages by id
-    const map = new Map();
-    server.forEach(msg=>{
-      const key = msg.id || `${msg.user}|${msg.text}|${msg.created_at}`;
-      map.set(key, msg);
-    });
-    // add pending (they may not exist on server yet)
-    pending.forEach(msg=>{
-      const key = msg.id || `${msg.user}|${msg.text}|${msg.created_at}`;
-      if(!map.has(key)) map.set(key, msg);
-    });
-
-    // create arrays: non-pending then pending to keep pending messages at bottom
-    const all = Array.from(map.values());
-    const nonPending = all.filter(x=> !String(x.id || '').startsWith('tmp-'))
-      .sort((a,b)=> new Date(a.created_at) - new Date(b.created_at));
-    const pendingSorted = all.filter(x=> String(x.id || '').startsWith('tmp-'))
-      .sort((a,b)=> new Date(a.created_at) - new Date(b.created_at));
-
-    cache.presence = Array.isArray(p) ? p : [];
-    cache.messages = nonPending.concat(pendingSorted);
-
-    renderPlayers(cache.presence);
-    renderMessages(cache.messages);
-    lastSeenEl.textContent = `Last seen: ${new Date().toLocaleString()}`;
-    netStatusEl.textContent = '• online';
-    // store a local message cache (small)
-    try{ localStorage.setItem('vixel-msg-cache', JSON.stringify(cache.messages.slice(-200))); }catch(e){}
-  }catch(e){
-    console.error(e);
-    netStatusEl.textContent = 'offline';
-  }
-}, 250);
-
-/* initial load (uses local cache fast) */
-async function init(){
-  const local = localStorage.getItem('vixel-msg-cache');
-  if(local){
-    try{ cache.messages = JSON.parse(local); renderMessages(cache.messages); }catch(e){}
-  }
-  // do initial network load
-  await savePresence();
-  try{
-    const [p,m] = await Promise.all([fetchPresence(), fetchMessages()]);
-    cache.presence = p || [];
-    cache.messages = m || [];
-    renderPlayers(cache.presence);
-    renderMessages(cache.messages);
-  }catch(e){ console.error('init load err', e); }
-  startPolling();
-}
-init();
-
-/* ---------- send message ---------- */
-async function sendMessage(){
-  const raw = (inputEl.value || '');
-  if(!raw.trim()) return;
-  const clean = filterBadWords(raw.trim());
-  inputEl.value = '';
-  // optimistic append
-  const tmp = {
-    id: 'tmp-' + Math.random().toString(36).slice(2,8),
-    user: username,
-    text: clean,
-    name_color: nameColor,
-    avatar_color: avatarColor,
-    created_at: new Date().toISOString()
-  };
-  cache.messages.push(tmp);
-  renderMessages(cache.messages);
-  // make sure we scroll to bottom for optimistic message
-  isAtBottom = true;
   messagesEl.scrollTop = messagesEl.scrollHeight;
+}
 
+async function updateUser(online=true){
   try{
-    await fetch(`${SUPABASE_URL}/rest/v1/messages`, {
-      method:'POST',
-      headers:{ ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    await fetch(USERS_API, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
       body: JSON.stringify({
-        user: username,
-        text: clean,
+        username,
+        online,
+        lastseen: nowISO(),
         name_color: nameColor,
-        avatar_color: avatarColor,
-        created_at: new Date().toISOString()
+        avatar_color: avatarColor
       })
     });
-    // reload messages after small delay
-    setTimeout(()=> syncNow(), 300);
-  }catch(e){
-    console.error('send err', e);
-  }
+  }catch(e){console.error(e)}
 }
 
-/* ---------- badword filter ---------- */
-const badWords = ['badword1','badword2'];
-function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-function filterBadWords(t){
-  let out = t;
-  badWords.forEach(w=>{
-    const re = new RegExp('\\b' + escapeRegExp(w) + '\\b','gi');
-    out = out.replace(re,'***');
-  });
-  return out;
-}
-
-/* ---------- emoji picker ---------- */
-function populateEmoji(){
-  emojiGrid.innerHTML = '';
-  emojiList.forEach(e=>{
-    const b = document.createElement('button');
-    b.className = 'emoji-btn';
-    b.textContent = e;
-    b.addEventListener('click', ()=> {
-      inputEl.value = (inputEl.value || '') + ' ' + e;
-      inputEl.focus();
-      emojiPanel.style.display = 'none';
+async function sendMessage(){
+  const text = inputEl.value.trim();
+  if(!text) return;
+  inputEl.value="";
+  try{
+    await fetch(MESSAGES_API, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({username,user:username,text,name_color:nameColor,avatar_color:avatarColor})
     });
-    emojiGrid.appendChild(b);
-  });
-}
-populateEmoji();
-btnEmoji.addEventListener('click', ()=> {
-  emojiPanel.style.display = (emojiPanel.style.display === 'block') ? 'none' : 'block';
-});
-
-/* ---------- input behavior (fix typing issue) ---------- */
-messagesEl.addEventListener('scroll', ()=>{
-  const nearBottom = (messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight) < 120;
-  isAtBottom = nearBottom;
-});
-
-/* enter to send, shift+enter newline */
-inputEl.addEventListener('keydown', (e)=>{
-  if(e.key === 'Enter' && !e.shiftKey){
-    e.preventDefault();
-    sendMessage();
-  }
-});
-
-/* ---------- name change limit: 1/week ---------- */
-const WEEK_MS = 1000 * 60 * 60 * 24 * 7;
-btnSaveName.addEventListener('click', ()=>{
-  const newName = (inputNameEl.value || '').trim();
-  if(!newName) return flash('enter name');
-
-  const lastChange = Number(localStorage.getItem('vixel-name-changed-at') || 0);
-  const now = Date.now();
-  if(lastChange && (now - lastChange) < WEEK_MS){
-    const daysLeft = Math.ceil((WEEK_MS - (now - lastChange)) / (1000*60*60*24));
-    return flash(`name locked for ${daysLeft} day(s)`);
-  }
-
-  username = newName;
-  localStorage.setItem('vixel-username', username);
-  localStorage.setItem('vixel-name-changed-at', now.toString());
-  displayUsernameEl.textContent = username;
-  flash('name updated');
-  savePresence();
-});
-
-/* ---------- color inputs persist ---------- */
-setNameColor.addEventListener('change', e=>{
-  nameColor = e.target.value;
-  localStorage.setItem('vixel-name-color', nameColor);
-  displayUsernameEl.style.color = nameColor;
-  savePresence();
-});
-setAvatarColor.addEventListener('change', e=>{
-  avatarColor = e.target.value;
-  localStorage.setItem('vixel-avatar-color', avatarColor);
-  savePresence();
-});
-
-/* ---------- clear cache & fullscreen ---------- */
-btnClearCache.addEventListener('click', ()=>{
-  localStorage.removeItem('vixel-msg-cache');
-  cache.messages = [];
-  renderMessages([]);
-  flash('cache cleared');
-});
-btnFullscreen.addEventListener('click', ()=>{
-  const root = document.getElementById('appRoot');
-  if(!document.fullscreenElement) root.requestFullscreen?.();
-  else document.exitFullscreen?.();
-});
-
-/* ---------- small UI helpers ---------- */
-function flash(msg){
-  const el = document.createElement('div');
-  el.style.position='fixed'; el.style.left='50%'; el.style.bottom='28px'; el.style.transform='translateX(-50%)';
-  el.style.background='rgba(0,0,0,0.7)'; el.style.color='white'; el.style.padding='8px 12px'; el.style.borderRadius='8px';
-  el.style.zIndex = 9999; el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(()=> el.remove(), 1500);
+    await renderMessages();
+  }catch(e){console.error(e)}
 }
 
-/* ---------- utility: save presence periodically ---------- */
-setInterval(()=>{ savePresence().catch(()=>{}); }, 5000);
-
-/* ---------- small: on unload persist messages cache & mark offline ---------- */
-window.addEventListener('beforeunload', ()=>{
-  try{ localStorage.setItem('vixel-msg-cache', JSON.stringify(cache.messages.slice(-200))); }catch(e){}
-  // try to mark offline using keepalive
-  setOnline(false);
+btnSend.addEventListener("click",sendMessage);
+inputEl.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); sendMessage(); }
 });
 
-// Also use pagehide to mark offline (more reliable on mobile)
-window.addEventListener('pagehide', ()=> setOnline(false));
+async function loop(){
+  while(true){
+    await updateUser(true);
+    await renderMessages();
+    await sleep(5000);
+  }
+}
+loop();
 
-// Toggle online when visibility changes
-document.addEventListener('visibilitychange', ()=>{
-  if(document.visibilityState === 'visible') setOnline(true);
-  else setOnline(false);
-});
-
-/* ---------- small: show network status initially ---------- */
-netStatusEl.textContent = SUPABASE_KEY ? '• online' : 'no key';
+window.addEventListener("beforeunload",()=>updateUser(false));
 </script>
 </body>
 </html>
