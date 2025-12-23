@@ -9,13 +9,13 @@
 *{box-sizing:border-box}
 body{
   margin:0;
-  background:#0b0b0b;
-  color:#fff;
-  font-family:system-ui, sans-serif;
-  display:flex;
-  justify-content:center;
-  align-items:center;
   height:100vh;
+  background:#0b0b0b;
+  font-family:system-ui, sans-serif;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 .app{
   width:100%;
@@ -28,14 +28,14 @@ body{
   overflow:hidden;
 }
 header{
-  padding:10px 14px;
   background:#180101;
+  padding:10px 14px;
   display:flex;
   justify-content:space-between;
   align-items:center;
   font-weight:700;
 }
-.main{
+main{
   flex:1;
   display:grid;
   grid-template-columns:1fr 260px;
@@ -44,10 +44,10 @@ header{
   overflow:hidden;
 }
 .chat{
-  display:flex;
-  flex-direction:column;
   background:#100000;
   border-radius:10px;
+  display:flex;
+  flex-direction:column;
   padding:8px;
 }
 .messages{
@@ -69,12 +69,12 @@ header{
   align-items:center;
   justify-content:center;
   font-weight:700;
+  color:#fff;
 }
 .bubble{
   background:#1a0202;
   padding:6px 10px;
   border-radius:8px;
-  max-width:100%;
 }
 .name{
   font-weight:700;
@@ -82,7 +82,6 @@ header{
 }
 .text{
   font-size:14px;
-  word-wrap:break-word;
 }
 .time{
   font-size:11px;
@@ -102,9 +101,9 @@ textarea{
   outline:none;
 }
 button{
-  padding:0 16px;
   border:none;
   border-radius:8px;
+  padding:0 16px;
   background:#ff2b2b;
   color:#fff;
   font-weight:700;
@@ -118,8 +117,8 @@ button{
 }
 .player{
   display:flex;
-  gap:6px;
   align-items:center;
+  gap:6px;
   margin-bottom:6px;
 }
 .p-avatar{
@@ -132,7 +131,7 @@ button{
   font-weight:700;
 }
 @media(max-width:800px){
-  .main{grid-template-columns:1fr}
+  main{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -145,38 +144,38 @@ button{
   <div id="status">offline</div>
 </header>
 
-<div class="main">
+<main>
   <div class="chat">
-    <div id="messages" class="messages">Loading messages…</div>
+    <div id="messages" class="messages">Loading…</div>
     <div class="input">
-      <textarea id="text" rows="2" placeholder="Type message"></textarea>
+      <textarea id="input" rows="2" placeholder="Type message"></textarea>
       <button id="send">Send</button>
     </div>
   </div>
 
   <div class="sidebar">
     <b>Players</b>
-    <div id="players">Loading players…</div>
+    <div id="players">Loading…</div>
   </div>
-</div>
+</main>
 </div>
 
 <script>
-const MSG_URL = "https://ehciyxvbasqiiiurjuwu.supabase.co/functions/v1/quick-endpoint";
-const USER_URL = "https://ehciyxvbasqiiiurjuwu.supabase.co/functions/v1/super-function";
+const MSG_API = "https://ehciyxvbasqiiiurjuwu.supabase.co/functions/v1/quick-endpoint";
+const USER_API = "https://ehciyxvbasqiiiurjuwu.supabase.co/functions/v1/super-function";
 
-// local identity
-let username = localStorage.getItem("vixel-username");
+/* ---------- identity ---------- */
+let username = localStorage.getItem("vixel_user");
 if(!username){
   username = prompt("Username") || "Guest"+Math.floor(Math.random()*999);
-  localStorage.setItem("vixel-username", username);
+  localStorage.setItem("vixel_user", username);
 }
-const name_color = localStorage.getItem("vixel-name") || "#ff2b2b";
-const avatar_color = localStorage.getItem("vixel-avatar") || "#ff2b2b";
+const name_color = "#ff2b2b";
+const avatar_color = "#ff2b2b";
 
-// update user online
-async function pingUser(online=true){
-  await fetch(USER_URL,{
+/* ---------- user ping ---------- */
+async function updateUser(online){
+  await fetch(USER_API,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({
@@ -188,16 +187,16 @@ async function pingUser(online=true){
   });
 }
 
-// load messages
+/* ---------- messages ---------- */
 async function loadMessages(){
   try{
-    const r = await fetch(MSG_URL);
+    const r = await fetch(MSG_API);
     const data = await r.json();
     const box = document.getElementById("messages");
     box.innerHTML = "";
 
-    if(!data.length){
-      box.textContent = "No messages yet";
+    if(!Array.isArray(data) || !data.length){
+      box.textContent = "No messages";
       return;
     }
 
@@ -212,7 +211,6 @@ async function loadMessages(){
 
       const bubble = document.createElement("div");
       bubble.className = "bubble";
-
       bubble.innerHTML = `
         <div class="name" style="color:${m.name_color}">${m.username}</div>
         <div class="text">${m.text}</div>
@@ -230,14 +228,14 @@ async function loadMessages(){
   }
 }
 
-// load players
+/* ---------- players ---------- */
 async function loadPlayers(){
-  const r = await fetch(USER_URL);
+  const r = await fetch(USER_API);
   const data = await r.json();
   const box = document.getElementById("players");
   box.innerHTML = "";
 
-  if(!data.length){
+  if(!Array.isArray(data) || !data.length){
     box.textContent = "No players";
     return;
   }
@@ -251,42 +249,48 @@ async function loadPlayers(){
     av.style.background = u.avatar_color;
     av.textContent = u.username[0].toUpperCase();
 
-    const txt = document.createElement("span");
-    txt.textContent = `${u.username} ${u.online?"• online":"• offline"}`;
-    txt.style.color = u.name_color;
+    const t = document.createElement("span");
+    t.textContent = `${u.username} ${u.online ? "• online" : "• offline"}`;
+    t.style.color = u.name_color;
 
     row.appendChild(av);
-    row.appendChild(txt);
+    row.appendChild(t);
     box.appendChild(row);
   });
 }
 
-// send message
-document.getElementById("send").onclick = async ()=>{
-  const t = document.getElementById("text");
-  if(!t.value.trim()) return;
+/* ---------- send ---------- */
+document.getElementById("send").onclick = async()=>{
+  const input = document.getElementById("input");
+  if(!input.value.trim()) return;
 
-  await fetch(MSG_URL,{
+  await fetch(MSG_API,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({
       username,
-      text:t.value,
+      text: input.value,
       name_color,
       avatar_color
     })
   });
 
-  t.value="";
+  input.value="";
   loadMessages();
 };
 
-// lifecycle
-pingUser(true);
+/* ---------- lifecycle ---------- */
+updateUser(true);
 loadMessages();
 loadPlayers();
-setInterval(()=>{ loadMessages(); loadPlayers(); pingUser(true); }, 5000);
-window.addEventListener("beforeunload", ()=> pingUser(false));
+
+setInterval(()=>{
+  updateUser(true);
+  loadMessages();
+  loadPlayers();
+}, 4000);
+
+window.addEventListener("beforeunload", ()=>updateUser(false));
 </script>
 
 </body>
