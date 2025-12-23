@@ -1,358 +1,163 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8" />
 <title>Vixel Chat</title>
-
-<!-- Supabase JS -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
-/* ================= RESET ================= */
-*{box-sizing:border-box}
-body{
-  margin:0;
-  height:100vh;
-  background:#0b0b0b;
-  color:#fff;
-  font-family:system-ui, -apple-system, BlinkMacSystemFont;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+body {
+  margin: 0;
+  font-family: Inter, system-ui;
+  background: #0b0b0b;
+  color: white;
+  display: flex;
+  height: 100vh;
 }
 
-/* ================= APP ================= */
-.app{
-  width:100%;
-  max-width:1100px;
-  height:92vh;
-  background:#120101;
-  border-radius:16px;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  box-shadow:0 20px 60px rgba(0,0,0,.6);
+#users {
+  width: 240px;
+  background: #111;
+  border-right: 1px solid #222;
+  padding: 10px;
+  overflow-y: auto;
 }
 
-/* ================= HEADER ================= */
-header{
-  background:#180101;
-  padding:12px 16px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-header .title{
-  font-weight:800;
-  letter-spacing:.5px;
-}
-header .status{
-  font-size:13px;
-  opacity:.8;
+#chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-/* ================= MAIN ================= */
-main{
-  flex:1;
-  display:grid;
-  grid-template-columns:1fr 280px;
-  gap:10px;
-  padding:10px;
-  overflow:hidden;
+#messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
 }
 
-/* ================= CHAT ================= */
-.chat{
-  background:#100000;
-  border-radius:14px;
-  display:flex;
-  flex-direction:column;
-  padding:10px;
-}
-.messages{
-  flex:1;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.msg{
-  display:flex;
-  gap:10px;
-}
-.avatar{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:800;
-}
-.bubble{
-  background:#1b0202;
-  padding:8px 12px;
-  border-radius:10px;
-  max-width:80%;
-}
-.name{
-  font-weight:700;
-  font-size:14px;
-}
-.text{
-  font-size:14px;
-  line-height:1.4;
-}
-.time{
-  font-size:11px;
-  opacity:.5;
+.msg {
+  margin-bottom: 8px;
 }
 
-/* ================= INPUT ================= */
-.input{
-  display:flex;
-  gap:8px;
-  margin-top:8px;
-}
-textarea{
-  flex:1;
-  resize:none;
-  border:none;
-  border-radius:10px;
-  padding:10px;
-  font-size:14px;
-}
-button{
-  background:#ff2b2b;
-  border:none;
-  border-radius:10px;
-  padding:0 18px;
-  font-weight:800;
-  color:#fff;
-  cursor:pointer;
+.input {
+  display: flex;
+  border-top: 1px solid #222;
 }
 
-/* ================= SIDEBAR ================= */
-.sidebar{
-  background:#100000;
-  border-radius:14px;
-  padding:10px;
-  overflow-y:auto;
+input {
+  flex: 1;
+  padding: 12px;
+  background: #111;
+  color: white;
+  border: none;
+  outline: none;
 }
-.player{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  margin-bottom:8px;
-}
-.p-avatar{
-  width:28px;
-  height:28px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:800;
-}
-.offline{opacity:.4}
 
-/* ================= MOBILE ================= */
-@media(max-width:900px){
-  main{grid-template-columns:1fr}
+button {
+  background: #ff2b2b;
+  border: none;
+  color: white;
+  padding: 12px 16px;
+  cursor: pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="app">
-<header>
-  <div class="title">Vixel Chat</div>
-  <div class="status" id="status">connecting…</div>
-</header>
+<div id="users"></div>
 
-<main>
-  <div class="chat">
-    <div class="messages" id="messages"></div>
-    <div class="input">
-      <textarea id="input" rows="2" placeholder="Type message…"></textarea>
-      <button id="send">Send</button>
-    </div>
+<div id="chat">
+  <div id="messages"></div>
+  <div class="input">
+    <input id="msg" placeholder="type..." />
+    <button onclick="send()">Send</button>
   </div>
-
-  <div class="sidebar">
-    <b>Players</b>
-    <div id="players"></div>
-  </div>
-</main>
 </div>
 
 <script>
-/* ======================================================
-   CONFIG
-====================================================== */
-const SUPABASE_URL = "https://ehciyxvbasqiiiurjuwu.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoY2l5eHZiYXNxaWlpdXJqdXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQzNTgsImV4cCI6MjA3OTY1MDM1OH0.yMZ8EqtPXJumjn2xHTXwG3jbWTNdDxrklYIkdXNcbQk";
+const API = "https://ehciyxvbasqiiiurjuwu.supabase.co/functions/v1/super-endpoint";
 
-/* ======================================================
-   INIT
-====================================================== */
-const supabase = supabaseJs.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
-
-/* ======================================================
-   USER IDENTITY (LOCKED)
-====================================================== */
-let username = localStorage.getItem("vixel-username");
-if(!username){
-  username = prompt("Choose a username");
-  if(!username) location.reload();
-  localStorage.setItem("vixel-username", username);
+let username = localStorage.getItem("username");
+if (!username) {
+  username = prompt("username?");
+  localStorage.setItem("username", username);
 }
 
+const avatar_color = "#180101";
 const name_color = "#ff2b2b";
-const avatar_color = "#ff2b2b";
 
-/* ======================================================
-   RATE LIMIT
-====================================================== */
-let lastSend = 0;
-const SEND_COOLDOWN = 1200;
+async function call(data) {
+  const res = await fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
 
-/* ======================================================
-   PRESENCE (AUTO CLEAN)
-====================================================== */
-async function heartbeat(online=true){
-  await fetch("https://ehciyxvbasqiiiurjuwu.supabase.co/functions/v1/super-function",{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      username,
-      online,
-      name_color,
-      avatar_color
-    })
+// ---- USERS ----
+async function ping() {
+  await call({
+    action: "ping_user",
+    username,
+    avatar_color,
+    name_color
   });
 }
 
-heartbeat(true);
-setInterval(()=>heartbeat(true), 5000);
-window.addEventListener("beforeunload", ()=>heartbeat(false));
-document.addEventListener("visibilitychange",()=>{
-  heartbeat(document.visibilityState === "visible");
-});
-
-/* ======================================================
-   RENDER
-====================================================== */
-function renderMessage(m){
-  const el = document.createElement("div");
-  el.className = "msg";
-  el.innerHTML = `
-    <div class="avatar" style="background:${m.avatar_color}">
-      ${m.username[0].toUpperCase()}
-    </div>
-    <div class="bubble">
-      <div class="name" style="color:${m.name_color}">
-        ${m.username}
-      </div>
-      <div class="text">${m.text}</div>
-      <div class="time">${new Date(m.created_at).toLocaleTimeString()}</div>
-    </div>
-  `;
-  document.getElementById("messages").appendChild(el);
-  document.getElementById("messages").scrollTop =
-    document.getElementById("messages").scrollHeight;
+async function loadUsers() {
+  const users = await call({ action: "get_users" });
+  const box = document.getElementById("users");
+  box.innerHTML = "<b>Players</b><br><br>";
+  users.forEach(u => {
+    box.innerHTML += `
+      <div style="color:${u.name_color}">
+        ● ${u.username} ${u.online ? "" : "(off)"}
+      </div>`;
+  });
 }
 
-function renderPlayers(list){
-  const box = document.getElementById("players");
+// ---- MESSAGES ----
+async function loadMessages() {
+  const msgs = await call({ action: "get_messages" });
+  const box = document.getElementById("messages");
   box.innerHTML = "";
-  list.forEach(u=>{
-    const row = document.createElement("div");
-    row.className = "player" + (u.online ? "" : " offline");
-    row.innerHTML = `
-      <div class="p-avatar" style="background:${u.avatar_color}">
-        ${u.username[0].toUpperCase()}
-      </div>
-      <span style="color:${u.name_color}">
-        ${u.username} ${u.online ? "• online" : "• offline"}
-      </span>
-    `;
-    box.appendChild(row);
+  msgs.forEach(m => {
+    box.innerHTML += `
+      <div class="msg">
+        <b style="color:${m.name_color}">${m.user}:</b>
+        ${m.text}
+      </div>`;
   });
+  box.scrollTop = box.scrollHeight;
 }
 
-/* ======================================================
-   LOAD INITIAL DATA
-====================================================== */
-async function loadInitial(){
-  const { data: msgs } = await supabase
-    .from("messages")
-    .select("*")
-    .order("created_at",{ ascending:true })
-    .limit(200);
+async function send() {
+  const input = document.getElementById("msg");
+  if (!input.value) return;
 
-  msgs.forEach(renderMessage);
-
-  const { data: users } = await supabase
-    .from("users")
-    .select("*");
-
-  renderPlayers(users);
-  document.getElementById("status").textContent = "online";
-}
-
-loadInitial();
-
-/* ======================================================
-   REALTIME
-====================================================== */
-supabase
-  .channel("chat-realtime")
-  .on(
-    "postgres_changes",
-    { event:"INSERT", schema:"public", table:"messages" },
-    payload => renderMessage(payload.new)
-  )
-  .on(
-    "postgres_changes",
-    { event:"UPDATE", schema:"public", table:"users" },
-    async ()=>{
-      const { data } = await supabase.from("users").select("*");
-      renderPlayers(data);
-    }
-  )
-  .subscribe();
-
-/* ======================================================
-   SEND MESSAGE
-====================================================== */
-document.getElementById("send").onclick = async()=>{
-  const now = Date.now();
-  if(now - lastSend < SEND_COOLDOWN) return;
-  lastSend = now;
-
-  const input = document.getElementById("input");
-  const text = input.value.trim();
-  if(!text) return;
+  await call({
+    action: "send_message",
+    username,
+    text: input.value,
+    avatar_color,
+    name_color
+  });
 
   input.value = "";
+  loadMessages();
+}
 
-  await fetch("https://ehciyxvbasqiiiurjuwu.supabase.co/functions/v1/quick-endpoint",{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      username,
-      text,
-      name_color,
-      avatar_color
-    })
-  });
-};
+// ---- LOOP ----
+ping();
+loadUsers();
+loadMessages();
+
+setInterval(ping, 5000);
+setInterval(loadUsers, 4000);
+setInterval(loadMessages, 2000);
 </script>
+
 </body>
 </html>
